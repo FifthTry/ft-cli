@@ -1,12 +1,9 @@
-
-use clap::ArgGroup;
-use std::env;
-
 extern crate clap;
 extern crate gitignore;
 
 fn main() {
     use clap::{App, Arg, SubCommand};
+    use std::env;
 
     let cmd = App::new(env!("CARGO_PKG_NAME"))
         .author(env!("CARGO_PKG_AUTHORS"))
@@ -33,7 +30,6 @@ fn main() {
         .get_matches();
 
     let config_file = cmd.value_of("config").unwrap();
-
     match cmd.subcommand() {
         ("status", _) => {}
         ("sync", args) => {}

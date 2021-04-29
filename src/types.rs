@@ -1,34 +1,45 @@
 use gitignore;
-use std::fmt::Error;
+use std;
+use std::convert::Into;
 
 pub struct Config<'a> {
-    ignored: Vec<gitignore::Pattern<'a>>,
-    repo: String,
-    collection: String,
-    backend: Backend,
-    root: String,
-    mode: SyncMode,
-    auth: Auth,
-    dot_ft: bool,
+    pub ignored: Vec<gitignore::Pattern<'a>>,
+    pub repo: String,
+    pub collection: String,
+    pub backend: Backend,
+    pub root: &'a std::path::Path,
+    pub mode: SyncMode,
+    pub auth: Auth,
+    pub dot_ft: bool,
 }
 
-enum Auth {
+pub enum Auth {
     SignedIn(User),
     AuthCode(String),
     Anonymous,
 }
 
-struct User {
-    cookie: String,
-    username: String,
-    name: String,
+pub struct User {
+    pub cookie: String,
+    pub username: String,
+    pub name: String,
 }
 
-enum Backend {
+pub enum Backend {
+    Unknown,
     FTD,
 }
 
-enum SyncMode {
+impl From<&str> for Backend {
+    fn from(s: &str) -> Backend {
+        match s {
+            "ftd" => Backend::FTD,
+            _ => Backend::Unknown,
+        }
+    }
+}
+
+pub enum SyncMode {
     LocalToRemote,
     RemoteToLocal,
     TwoWay,
