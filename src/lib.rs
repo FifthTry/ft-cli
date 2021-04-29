@@ -9,7 +9,7 @@ fn keys(header: ftd::p1::Header) -> HashMap<String, String> {
     todo!()
 }
 
-fn parse_config(name: &str) -> crate::types::Config {
+pub fn parse_config(name: &str) -> crate::types::Config {
     use ftd;
     use std::fs;
 
