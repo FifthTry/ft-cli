@@ -17,6 +17,7 @@ fn parse_config(name: &str) -> crate::types::Config {
     let sections = ftd::p1::parse(contents.as_str())?;
 
     let mut config = Config::default();
+    let mut ignored_lines: Vec<String> = vec![];
 
     for section in sections {
         match section.name.as_str() {
@@ -27,13 +28,32 @@ fn parse_config(name: &str) -> crate::types::Config {
                 let root = config_map.get("root")?;
                 let backend = config_map.get("backend")?;
 
-                config.set
+                config
+                    .set_repo(repo)
+                    .set_backend(backend.into())
+                    .set_root(root)
+                    .set_collection(collection);
             }
-            "ignored" => {}
+            "ignored" => {
+                if let Some(body) = section.body {
+                    for line in body.lines() {
+                        if !line.trim().is_empty() {
+                            ignored_lines.push(line.to_string());
+                        } else {
+                            None
+                        }
+                    }
+                }
+            }
             _ => {
                 todo!()
             }
         }
     }
-    todo!()
+
+    for line in ignored_lines {
+        let pattern = gitignore::Pattern::new(line.as_str(), config.root)?;
+        config.add_ignored(pattern);
+    }
+    config
 }

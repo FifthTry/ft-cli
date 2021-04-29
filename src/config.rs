@@ -1,4 +1,5 @@
 use crate::types::*;
+use std::path::Path;
 
 impl Default for Config {
     fn default() -> Self {
@@ -7,7 +8,7 @@ impl Default for Config {
             repo: "".to_string(),
             collection: "".to_string(),
             backend: Backend::FTD,
-            root: "".to_string(),
+            root: Path::new(""),
             mode: SyncMode::LocalToRemote,
             auth: Auth::Anonymous,
             dot_ft: false,
@@ -27,7 +28,7 @@ impl Config {
     }
 
     pub fn set_root(mut self, root: &str) -> Self {
-        self.root = root.to_string();
+        self.root = Path::new(root);
         self
     }
 

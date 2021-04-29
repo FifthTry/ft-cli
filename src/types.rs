@@ -1,4 +1,5 @@
 use gitignore;
+use std;
 use std::convert::Into;
 
 pub struct Config<'a> {
@@ -6,7 +7,7 @@ pub struct Config<'a> {
     pub repo: String,
     pub collection: String,
     pub backend: Backend,
-    pub root: String,
+    pub root: &'a std::path::Path,
     pub mode: SyncMode,
     pub auth: Auth,
     pub dot_ft: bool,
