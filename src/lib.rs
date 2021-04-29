@@ -1,6 +1,7 @@
 use crate::types::Config;
 use std::collections::HashMap;
 
+pub mod api;
 pub mod commands;
 pub mod config;
 pub mod types;
