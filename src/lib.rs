@@ -1,3 +1,8 @@
-use std::Result;
 
-fn parse_config(name: &str) -> Config {}
+pub mod types;
+pub mod commands;
+
+
+fn parse_config(name: &str) -> crate::types::Config {
+    todo!()
+}

@@ -1,3 +1,3 @@
-fn status(config: types::Config) {}
+fn status(config: crate::types::Config) {}
 
-fn sync(config: types::Config, dry_run: bool) {}
+fn sync(config: crate::types::Config, dry_run: bool) {}

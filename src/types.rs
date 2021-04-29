@@ -1,9 +1,7 @@
 use gitignore;
 use std::fmt::Error;
 
-type Result<T> = std::Result<T, Error>;
-
-struct Config<'a> {
+pub struct Config<'a> {
     ignored: Vec<gitignore::Pattern<'a>>,
     repo: String,
     collection: String,

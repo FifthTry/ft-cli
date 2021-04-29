@@ -1,5 +1,3 @@
-mod commands;
-mod types;
 
 use clap::ArgGroup;
 use std::env;
@@ -34,8 +32,9 @@ fn main() {
         ])
         .get_matches();
 
-    let config = cmd.value_of("config").unwrap();
-    config = match cmd.subcommand() {
+    let config_file = cmd.value_of("config").unwrap();
+
+    match cmd.subcommand() {
         ("status", _) => {}
         ("sync", args) => {}
         (_, _) => todo!("impossible!"),
