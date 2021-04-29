@@ -16,37 +16,37 @@ impl Default for Config {
 }
 
 impl Config {
-    fn set_repo(mut self, repo: &str) -> Self {
+    pub fn set_repo(mut self, repo: &str) -> Self {
         self.repo = repo.to_string();
         self
     }
 
-    fn set_collection(mut self, collection: &str) -> Self {
+    pub fn set_collection(mut self, collection: &str) -> Self {
         self.collection = collection.to_string();
         self
     }
 
-    fn set_root(mut self, root: &str) -> Self {
+    pub fn set_root(mut self, root: &str) -> Self {
         self.root = root.to_string();
         self
     }
 
-    fn set_backend(mut self, backend: Backend) -> Self {
+    pub fn set_backend(mut self, backend: Backend) -> Self {
         self.backend = backend;
         self
     }
 
-    fn add_ignored(mut self, ignored: gitignore::Pattern) -> Self {
+    pub fn add_ignored(mut self, ignored: gitignore::Pattern) -> Self {
         self.ignored.push(gitignore);
         self
     }
 
-    fn set_mode(mut self, mode: SyncMode) -> Self {
+    pub fn set_mode(mut self, mode: SyncMode) -> Self {
         self.mode = mode;
         self
     }
 
-    fn set_auth(mut self, auth: Auth) -> Self {
+    pub fn set_auth(mut self, auth: Auth) -> Self {
         self.auth = auth;
         self
     }

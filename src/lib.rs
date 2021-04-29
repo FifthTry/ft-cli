@@ -16,7 +16,7 @@ fn parse_config(name: &str) -> crate::types::Config {
     let contents = fs::read_to_string(filename).unwrap();
     let sections = ftd::p1::parse(contents.as_str())?;
 
-    let config = Config::default();
+    let mut config = Config::default();
 
     for section in sections {
         match section.name.as_str() {
@@ -26,6 +26,8 @@ fn parse_config(name: &str) -> crate::types::Config {
                 let collection = config_map.get("collection")?;
                 let root = config_map.get("root")?;
                 let backend = config_map.get("backend")?;
+
+                config.set
             }
             "ignored" => {}
             _ => {
