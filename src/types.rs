@@ -1,6 +1,7 @@
 use gitignore;
 use std;
-use std::convert::Into;
+// use std::convert::Into;
+// use std::fmt::Error;
 
 pub struct Config<'a> {
     pub ignored: Vec<gitignore::Pattern<'a>>,

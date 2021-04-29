@@ -26,8 +26,8 @@ fn bulk_update(
     let files = files
         .iter()
         .map(|(id, content)| File {
-            id: id.into_string(),
-            content: content.into_string(),
+            id: id.to_string(),
+            content: content.to_string(),
         })
         .collect();
 

@@ -1,7 +1,7 @@
 use crate::types::*;
 use std::path::Path;
 
-impl Default for Config {
+impl <'a> Default for Config<'a> {
     fn default() -> Self {
         Config {
             ignored: vec![],
@@ -16,7 +16,7 @@ impl Default for Config {
     }
 }
 
-impl Config {
+impl <'a>Config<'a> {
     pub fn set_repo(mut self, repo: &str) -> Self {
         self.repo = repo.to_string();
         self
@@ -27,7 +27,7 @@ impl Config {
         self
     }
 
-    pub fn set_root(mut self, root: &str) -> Self {
+    pub fn set_root(mut self, root: &'a str) -> Self {
         self.root = Path::new(root);
         self
     }
@@ -37,8 +37,8 @@ impl Config {
         self
     }
 
-    pub fn add_ignored(mut self, ignored: gitignore::Pattern) -> Self {
-        self.ignored.push(gitignore);
+    pub fn add_ignored(mut self, ignored: gitignore::Pattern<'a>) -> Self {
+        self.ignored.push(ignored);
         self
     }
 

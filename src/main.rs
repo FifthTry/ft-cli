@@ -1,3 +1,7 @@
+use clap::ArgGroup;
+use std::env;
+use std::io::prelude::*;
+
 extern crate clap;
 extern crate gitignore;
 
@@ -30,9 +34,28 @@ fn main() {
         .get_matches();
 
     let config_file = cmd.value_of("config").unwrap();
+    println!("{}", config_file);
+
     match cmd.subcommand() {
-        ("status", _) => {}
-        ("sync", args) => {}
+        ("status", _) => {
+            println!("status");
+            let file = match std::fs::File::open(config_file) {
+                Ok(file) => {
+                    file
+                }
+                Err(err) => {
+                    println!("{:?}", err.to_string());
+                    return;
+                }
+            };
+
+            let mut buf_reader = std::io::BufReader::new(file);
+            let mut contents = String::new();
+            buf_reader.read_to_string(&mut contents).unwrap();
+        }
+        ("sync", args) => {
+            println!("sync");
+        }
         (_, _) => todo!("impossible!"),
     }
 }

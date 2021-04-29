@@ -568,9 +568,9 @@ dependencies = [
 
 [[package]]
 name = "ftd"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b17f1e1b0b328ad848ea4ef5290817035ad9337f5a46386b91c552f97224b01e"
+checksum = "1ef305ec83c4bb9c02b311c83c82d9651def9ce7f8e9c3272841fb2d1574c2cf"
 dependencies = [
  "Inflector",
  "comrak",
@@ -690,9 +690,9 @@ checksum = "9b919933a397b79c37e33b77bb2aa3dc8eb6e165ad809e58ff75bc7db2e34574"
 
 [[package]]
 name = "h2"
-version = "0.3.2"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc018e188373e2777d0ef2467ebff62a08e66c3f5857b23c8fbec3018210dc00"
+checksum = "825343c4eef0b63f541f8903f395dc5beb362a979b5799a84062527ef1e37726"
 dependencies = [
  "bytes",
  "fnv",
