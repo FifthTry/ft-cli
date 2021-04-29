@@ -1,6 +1,7 @@
 #[derive(Debug, Clone)]
 pub enum Section {
-    FtSync(crate::ftd_parse::ft_sync::FtSync)
+    FtSync(crate::ftd_parse::ft_sync::FtSync),
+    Ignored
 }
 
 impl Section {

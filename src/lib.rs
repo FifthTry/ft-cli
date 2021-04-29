@@ -30,7 +30,7 @@ pub fn parse_config(name: &str) -> crate::types::Config {
                 let root = config_map.get("root").unwrap();
                 let backend = config_map.get("backend").unwrap();
 
-                // config
+                // config = config
                 //     .set_repo(repo)
                 //     .set_backend(backend.as_str().into())
                 //     .set_root(root)
