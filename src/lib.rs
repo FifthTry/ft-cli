@@ -7,6 +7,9 @@ pub mod config;
 pub mod types;
 pub mod ftd_parse;
 
+
+pub type Result<T> = std::result::Result<T, failure::Error>;
+
 fn keys(header: ftd::p1::Header) -> HashMap<String, String> {
     todo!()
 }
@@ -59,9 +62,14 @@ pub fn parse_config(name: &str) -> crate::types::Config {
 }
 
 
-pub fn parse(content: &str) -> Result<crate::types::Config, ftd::document::ParseError> {
-    let mut config = Config::default();
-    let config_sections = crate::ftd_parse::config::Config::parse(content)?;
+pub fn parse_conf(path: &str) -> Result<crate::types::Config> {
+    let content = std::fs::read_to_string(path)?;
+    self::parse(content).map_err(Into::into)
+}
+
+pub fn parse<'a>(content: String) -> std::result::Result<crate::types::Config<'a>, ftd::document::ParseError> {
+    let config = Config::default();
+    let config_sections = crate::ftd_parse::config::Config::parse(content.as_str())?;
     let ft_sync = config_sections.get_ft_sync().unwrap();
     let ignored = config_sections.get_ignored().unwrap();
     Ok(config)
