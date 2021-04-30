@@ -6,6 +6,7 @@ pub mod commands;
 pub mod config;
 pub mod types;
 pub mod ftd_parse;
+pub mod parse_config;
 
 fn keys(header: ftd::p1::Header) -> HashMap<String, String> {
     todo!()
