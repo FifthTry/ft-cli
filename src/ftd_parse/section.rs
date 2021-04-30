@@ -17,4 +17,11 @@ impl Section {
             }
         })
     }
+
+    pub fn is_ft_sync(&self) -> bool {
+        match self {
+            Self::FtSync(..) => true,
+            _ => false
+        }
+    }
 }

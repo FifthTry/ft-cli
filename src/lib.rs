@@ -6,7 +6,6 @@ pub mod commands;
 pub mod config;
 pub mod types;
 pub mod ftd_parse;
-pub mod parse_config;
 
 fn keys(header: ftd::p1::Header) -> HashMap<String, String> {
     todo!()
@@ -57,4 +56,13 @@ pub fn parse_config(name: &str) -> crate::types::Config {
         config = config.add_ignored(pattern);
     }
     config
+}
+
+
+pub fn parse(content: &str) -> Result<crate::types::Config, ftd::document::ParseError> {
+    let mut config = Config::default();
+    let config_sections = crate::ftd_parse::config::Config::parse(content)?;
+    let ft_sync = config_sections.get_ft_sync().unwrap();
+    let ignored = config_sections.get_ignored().unwrap();
+    Ok(config)
 }

@@ -15,4 +15,24 @@ impl Config {
             sections
         })
     }
+
+    pub fn get_ft_sync(&self) -> Option<&crate::ftd_parse::ft_sync::FtSync> {
+        for sec in self.sections.iter() {
+            match sec {
+                crate::ftd_parse::section::Section::FtSync(ft) => return Some(ft),
+                _ => {}
+            }
+        }
+        return None
+    }
+
+    pub fn get_ignored(&self) -> Option<&crate::ftd_parse::ignored::Ignored> {
+        for sec in self.sections.iter() {
+            match sec {
+                crate::ftd_parse::section::Section::Ignored(ig) => return Some(ig),
+                _ => {}
+            }
+        }
+        return None
+    }
 }
