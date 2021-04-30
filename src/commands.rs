@@ -1,7 +1,7 @@
-fn status(config: crate::types::Config) {
+fn status(_config: crate::types::Config) {
     todo!()
 }
 
-fn sync(config: crate::types::Config, dry_run: bool) {
+fn sync(_config: crate::types::Config, _dry_run: bool) {
     todo!()
 }

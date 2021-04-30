@@ -1,14 +1,14 @@
+use crate::error::FTSyncError;
 use crate::types::*;
-use std::path::Path;
 
-impl Default for Config {
+impl<'a> Default for Config<'a> {
     fn default() -> Self {
         Config {
             ignored: vec![],
             repo: "".to_string(),
             collection: "".to_string(),
             backend: Backend::FTD,
-            root: Path::new(""),
+            root: "".to_string(),
             mode: SyncMode::LocalToRemote,
             auth: Auth::Anonymous,
             dot_ft: false,
@@ -16,39 +16,39 @@ impl Default for Config {
     }
 }
 
-impl Config {
-    pub fn set_repo(mut self, repo: &str) -> Self {
-        self.repo = repo.to_string();
-        self
-    }
+impl<'a> Config<'a> {
+    pub fn new(
+        repo: String,
+        collection: String,
+        backend: Backend,
+        root: String,
+        ignored: Option<Vec<String>>,
+    ) -> FTResult<Self> {
+        use gitignore::Pattern;
 
-    pub fn set_collection(mut self, collection: &str) -> Self {
-        self.collection = collection.to_string();
-        self
-    }
+        let mut patterns: Vec<Pattern> = vec![];
 
-    pub fn set_root(mut self, root: &str) -> Self {
-        self.root = Path::new(root);
-        self
-    }
+        let mut config = Config {
+            ignored: patterns,
+            repo,
+            collection,
+            backend,
+            root,
+            mode: SyncMode::LocalToRemote,
+            auth: Auth::Anonymous,
+            dot_ft: false,
+        };
 
-    pub fn set_backend(mut self, backend: Backend) -> Self {
-        self.backend = backend;
-        self
-    }
+        for p in ignored.unwrap_or(vec![]) {
+            config.ignored.push(
+                gitignore::Pattern::new(p.as_str(), std::path::Path::new(config.root.as_str()))
+                    .map_err(|e| FTSyncError::ConfigFileParseError {
+                        file: "".to_string(),
+                        error: format!("error in ignored pattern {:?}", e),
+                    })?,
+            );
+        }
 
-    pub fn add_ignored(mut self, ignored: gitignore::Pattern) -> Self {
-        self.ignored.push(gitignore);
-        self
-    }
-
-    pub fn set_mode(mut self, mode: SyncMode) -> Self {
-        self.mode = mode;
-        self
-    }
-
-    pub fn set_auth(mut self, auth: Auth) -> Self {
-        self.auth = auth;
-        self
+        Ok(config)
     }
 }

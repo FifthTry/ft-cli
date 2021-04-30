@@ -1,13 +1,14 @@
 use gitignore;
 use std;
-use std::convert::Into;
+
+pub type FTResult<T> = anyhow::Result<T>;
 
 pub struct Config<'a> {
     pub ignored: Vec<gitignore::Pattern<'a>>,
     pub repo: String,
     pub collection: String,
     pub backend: Backend,
-    pub root: &'a std::path::Path,
+    pub root: String,
     pub mode: SyncMode,
     pub auth: Auth,
     pub dot_ft: bool,
@@ -36,6 +37,12 @@ impl From<&str> for Backend {
             "ftd" => Backend::FTD,
             _ => Backend::Unknown,
         }
+    }
+}
+
+impl From<&std::string::String> for Backend {
+    fn from(s: &std::string::String) -> Backend {
+        s.as_str().into()
     }
 }
 
