@@ -17,44 +17,44 @@ pub struct Config {
 impl Config {
     pub fn from_file(filename: &str) -> FTResult<Self> {
         use std::fs;
-        let contents = fs::read_to_string(name)?;
+        let contents = fs::read_to_string(filename)?;
         Self::parse(contents.as_str())
     }
 
     pub fn parse(content: &str) -> FTResult<Self> {
         let p1 = ftd::p1::parse(content)?;
-        let mut sections = vec![];
-
         let mut ftsync: Option<section::FtSync> = None;
         let mut ignored: Vec<section::Ignored> = vec![];
         for section in p1 {
-            let s = crate::config::Section::from_p1(&section)?;
+            let s = section::Section::from_p1(&section)?;
             match s {
-                section::FtSync(sec) => {
+                section::Section::FtSync(sec) => {
                     if ftsync.is_none() {
                         ftsync = Some(sec)
                     }
                     else {
-                        return Err(FTSyncError::ConfigFileParseError {error: "Duplicate FTSync section".to_string()});
+                        return Err(FTSyncError::ConfigFileParseError {error: "Duplicate FTSync section".to_string()}.into());
                     }
                 },
-                section::Ignored(sec) => ignored.push(sec)
+                section::Section::Ignored(sec) => ignored.push(sec)
             }
         };
 
         let ftsync = match ftsync {
             Some(f) => f,
             None =>
-                return Err(FTSyncError::ConfigFileParseError {error: "No FTSync section found".to_string()});
+                return Err(
+                    FTSyncError::ConfigFileParseError {error: "No FTSync section found".to_string()}.into()
+                )
         };
 
-        let patterns = ignored.iter().flat_map(|ig| ig.patterns).collect();
+        let patterns = ignored.into_iter().flat_map(|ig| ig.patterns).collect();
 
         Ok(Config {
             ignored: patterns,
             repo: ftsync.repo,
             collection: ftsync.collection,
-            backend: ftsync.backend.into(),
+            backend: ftsync.backend.as_str().into(),
             root: ftsync.root,
             mode: SyncMode::LocalToRemote,
             auth: Auth::Anonymous,

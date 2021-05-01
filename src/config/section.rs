@@ -7,8 +7,8 @@ pub enum Section {
 impl Section {
     pub fn from_p1(p1: &ftd::p1::Section) -> Result<Self, ftd::document::ParseError> {
         Ok(match p1.name.as_str() {
-            "ft-sync" => Self::FtSync(crate::config_parse::ft_sync::FtSync::from_p1(p1)?),
-            "ignored" => Self::Ignored(crate::config_parse::ignored::Ignored::from_p1(p1)?),
+            "ft-sync" => Self::FtSync(FtSync::from_p1(p1)?),
+            "ignored" => Self::Ignored(Ignored::from_p1(p1)?),
             t => {
                 return Err(ftd::document::ParseError::ValidationError(format!(
                     "unknown section {}",

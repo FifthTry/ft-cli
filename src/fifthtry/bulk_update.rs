@@ -1,5 +1,6 @@
 use crate::types::FTResult;
 use reqwest;
+pub use crate::*;
 
 #[derive(Serialize)]
 struct BulkUpdateInput {
@@ -17,13 +18,14 @@ struct File {
     content: String,
 }
 
-#[derive(DeSerialize)]
-struct BulkUpdateOutput {
-    success: bool,
-    errors: Vec<BulkUpdateError>,
+#[derive(Deserialize)]
+pub struct BulkUpdateOutput {
+    pub success: bool,
+    pub errors: Vec<BulkUpdateError>,
 }
 
-enum BulkUpdateError {
+#[derive(Deserialize)]
+pub enum BulkUpdateError {
     InvalidAuthCode,
     RepoNotFound,
     CollectionNotFound,
@@ -49,17 +51,17 @@ pub fn call(
         })
         .collect();
 
-    let update = BulkUpdate {
+    let update = BulkUpdateInput {
         collection: collection.to_string(),
         auth_code: auth_code.to_string(),
         current_hash: current_hash.to_string(),
         new_hash: new_hash.to_string(),
         repo: repo.to_string(),
-        files: files,
+        files,
     };
 
     let client = reqwest::blocking::Client::new();
-    let response = client.post(url).json(&update).send();
+    let response = client.post(url).json(&update).send()?;
 
-    OK(response)
+    Ok(response.json()?)
 }

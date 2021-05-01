@@ -1,7 +1,5 @@
-use crate::error::FTSyncError;
 use crate::types::FTResult;
 use reqwest;
-use serde_json::Deserializer;
 
 pub fn call(authcode: &str) -> FTResult<String> {
     let url = format!(
@@ -9,7 +7,7 @@ pub fn call(authcode: &str) -> FTResult<String> {
         authcode
     );
 
-    #[derive(DeSerialize)]
+    #[derive(Deserialize)]
     struct Status {
         last_synced_hash: String,
     }
@@ -19,5 +17,5 @@ pub fn call(authcode: &str) -> FTResult<String> {
 
     let status: Status = response.json()?;
 
-    OK(status.last_synced_hash)
+    Ok(status.last_synced_hash)
 }

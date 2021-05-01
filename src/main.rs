@@ -1,7 +1,7 @@
 extern crate clap;
 
 fn main() {
-    use clap::{App, Arg, ArgGroup, SubCommand};
+    use clap::{App, Arg, SubCommand};
     use std::env;
 
     let cmd = App::new(env!("CARGO_PKG_NAME"))
@@ -31,15 +31,13 @@ fn main() {
     let config_file = cmd.value_of("config").unwrap();
     println!("Config File: {}", config_file);
 
-    let config = crate::
-    match cmd.subcommand() {
+    let _config = match cmd.subcommand() {
         ("status", _) => {
             println!("Command: status()");
-            crate::
         },
-        ("sync", args) => {
+        ("sync", _args) => {
             println!("sync");
         }
         (_, _) => todo!("impossible!"),
-    }
+    };
 }

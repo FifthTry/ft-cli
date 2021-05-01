@@ -1,7 +1,7 @@
 use crate::types::FTResult;
-use std::process::Command;
 
-fn status(config: crate::types::Config, config_file_path: String) -> FTResult<()> {
+pub fn status(config: crate::config::Config, config_file_path: String) -> FTResult<()> {
+    use crate::types::Auth;
     /*
     Config: ../.ft-sync.p1
     Backend: mdBook
@@ -9,18 +9,23 @@ fn status(config: crate::types::Config, config_file_path: String) -> FTResult<()
     Last Sync On: 2021-04-21 3:05PM (CST).
     */
 
+    let authcode = match config.auth {
+        Auth::AuthCode(s) => s,
+        _ => return Ok(()),
+    };
+
     let synced_hash = crate::fifthtry::status::call(authcode.as_str())?;
 
     println!("Config: {}", config_file_path);
     println!("Backend: {}", config.backend.to_string());
     println!("Root: {}", config.root);
-    println!("Last Synced Hash: {}", if synced_hash.is_empty() "Never Synced" else synced_hash);
+    println!("Last Synced Hash: {}", if synced_hash.is_empty() {"Never Synced"} else {synced_hash.as_str()});
     //println!("Last Sync On: {}", "");
 
-    OK(())
+    Ok(())
 }
 
-fn sync(config: crate::types::Config, _dry_run: bool) -> FTResult<()> {
+pub fn sync(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
     use crate::types::Auth;
     use std::fs;
     use std::process::Command;
@@ -38,11 +43,13 @@ fn sync(config: crate::types::Config, _dry_run: bool) -> FTResult<()> {
     let git_diff = Command::new("git")
         .arg("diff")
         .arg("--name-only")
-        .arg(latest_hash)
-        .arg(synced_hash)
+        .arg(&latest_hash)
+        .arg(&synced_hash)
         .output()?;
 
-    let lines = String::from_utf8(git_diff.stdout)?.lines();
+    let lines = String::from_utf8(git_diff.stdout)?;
+
+    let lines = lines.lines();
 
     let mut files: Vec<(String, String)> = vec![];
     for filename in lines {
@@ -56,8 +63,8 @@ fn sync(config: crate::types::Config, _dry_run: bool) -> FTResult<()> {
         latest_hash.as_str(),
         config.repo.as_str(),
         files,
-        auth_code,
-    );
+        authcode.as_str(),
+    )?;
 
-    OK(())
+    Ok(())
 }
