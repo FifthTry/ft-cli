@@ -30,8 +30,8 @@ pub fn sync(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
     use std::fs;
     use std::process::Command;
 
-    let authcode = match config.auth {
-        Auth::AuthCode(s) => s,
+    let authcode = match &config.auth {
+        Auth::AuthCode(s) => s.to_string(),
         _ => return Ok(()),
     };
 
@@ -52,9 +52,15 @@ pub fn sync(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
     let lines = lines.lines();
 
     let mut files: Vec<(String, String)> = vec![];
+    let lines: Vec<_> = lines.into_iter()
+        .filter(|x| config.backend.accept(std::path::Path::new(x)))
+        .collect();
+
     for filename in lines {
-        let content = fs::read_to_string(filename).unwrap();
-        files.push((filename.to_string(), content));
+        let content = fs::read_to_string(filename)
+            .map_err(| e | crate::error::FTSyncError::ReadError(e))?;
+        let doc_id = filename.to_string();
+        files.push((doc_id, content));
     }
 
     crate::fifthtry::bulk_update::call(

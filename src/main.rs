@@ -1,4 +1,5 @@
 extern crate clap;
+extern crate ft_sync;
 
 fn main() {
     use clap::{App, Arg, SubCommand};
@@ -33,6 +34,7 @@ fn main() {
 
     let _config = match cmd.subcommand() {
         ("status", _) => {
+
             println!("Command: status()");
         },
         ("sync", _args) => {

@@ -2,9 +2,6 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum FTSyncError {
-    #[error("cannot open config file: {error:?}")]
-    ConfigFileReadError { error: std::io::Error },
-
     #[error("cannot parse config file {error:?}")]
     ConfigFileFTDError { error: ftd::document::ParseError },
 
@@ -13,17 +10,14 @@ pub enum FTSyncError {
 
     #[error("api error: {error:?}")]
     APIError { error: reqwest::Error },
+
+    #[error("cannot open config file: {}", _0)]
+    ReadError ( #[from] std::io::Error ),
 }
 
 impl From<reqwest::Error> for FTSyncError {
     fn from(e: reqwest::Error) -> Self {
         FTSyncError::APIError { error: e }
-    }
-}
-
-impl From<std::io::Error> for FTSyncError {
-    fn from(e: std::io::Error) -> Self {
-        FTSyncError::ConfigFileReadError { error: e }
     }
 }
 
