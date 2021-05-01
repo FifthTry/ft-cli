@@ -1,8 +1,7 @@
 extern crate clap;
-extern crate gitignore;
 
 fn main() {
-    use clap::{App, Arg, SubCommand};
+    use clap::{App, Arg, ArgGroup, SubCommand};
     use std::env;
 
     let cmd = App::new(env!("CARGO_PKG_NAME"))
@@ -30,9 +29,17 @@ fn main() {
         .get_matches();
 
     let config_file = cmd.value_of("config").unwrap();
+    println!("Config File: {}", config_file);
+
+    let config = crate::
     match cmd.subcommand() {
-        ("status", _) => {}
-        ("sync", args) => {}
+        ("status", _) => {
+            println!("Command: status()");
+            crate::
+        },
+        ("sync", args) => {
+            println!("sync");
+        }
         (_, _) => todo!("impossible!"),
     }
 }

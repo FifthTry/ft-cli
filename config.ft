@@ -1,0 +1,11 @@
+-- ft-sync:
+mode: local-to-remote
+backend: mdbook
+root: docs
+repo: https://github.com/amitu/realm
+
+
+
+-- ignored:
+
+*.py

@@ -32,7 +32,7 @@ enum BulkUpdateError {
     NoPermission(String),
 }
 
-fn bulk_update(
+pub fn call(
     collection: &str,
     current_hash: &str,
     new_hash: &str,
@@ -44,8 +44,8 @@ fn bulk_update(
     let files = files
         .iter()
         .map(|(id, content)| File {
-            id: id.to_owned(),
-            content: content.to_owned(),
+            id: id.to_string(),
+            content: content.to_string(),
         })
         .collect();
 
@@ -59,13 +59,7 @@ fn bulk_update(
     };
 
     let client = reqwest::blocking::Client::new();
-    let response = reqwest::Client::new().post(url).json(&update).send();
+    let response = client.post(url).json(&update).send();
 
     OK(response)
-}
-
-fn status(authcode: &str) -> FTResult<()> {
-    let url = "https://www.fifthtry.com/api/sync-status/";
-
-    todo!()
 }

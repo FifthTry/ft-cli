@@ -1,18 +1,6 @@
-use gitignore;
-use std;
+use std::fmt;
 
 pub type FTResult<T> = anyhow::Result<T>;
-
-pub struct Config<'a> {
-    pub ignored: Vec<gitignore::Pattern<'a>>,
-    pub repo: String,
-    pub collection: String,
-    pub backend: Backend,
-    pub root: String,
-    pub mode: SyncMode,
-    pub auth: Auth,
-    pub dot_ft: bool,
-}
 
 pub enum Auth {
     SignedIn(User),
@@ -43,6 +31,15 @@ impl From<&str> for Backend {
 impl From<&std::string::String> for Backend {
     fn from(s: &std::string::String) -> Backend {
         s.as_str().into()
+    }
+}
+
+impl fmt::Display for Backend {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Backend::FTD => write!(f, "FTD"),
+            Backend::Unknown => write!(f, "Unknown"),
+        }
     }
 }
 
