@@ -31,7 +31,13 @@ pub fn status_util(config: crate::config::Config, config_file_path: &str) -> FTR
     Ok(())
 }
 
-pub fn sync(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
+pub fn sync(file_name: &str, dry_run: bool) -> FTResult<()> {
+    let config = crate::config::Config::from_file(file_name)?;
+    sync_util(config, dry_run)?;
+    Ok(())
+}
+
+fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
     use crate::types::Auth;
     use std::fs;
     use std::process::Command;
@@ -49,8 +55,11 @@ pub fn sync(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
     let git_diff = Command::new("git")
         .arg("diff")
         .arg("--name-only")
-        .arg(&latest_hash)
-        .arg(&synced_hash)
+        .arg("06cd0db1d2a31ab075403891163e836511f960ad")
+        .arg("1e212e0882177b9c55bd5cf941843a47b3927134")
+
+        // .arg(&latest_hash)
+        // .arg(&synced_hash)
         .output()?;
 
     let lines = String::from_utf8(git_diff.stdout)?;
@@ -69,14 +78,16 @@ pub fn sync(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
         files.push((doc_id, content));
     }
 
-    crate::fifthtry::bulk_update::call(
-        config.collection.as_str(),
-        synced_hash.as_str(),
-        latest_hash.as_str(),
-        config.repo.as_str(),
-        files,
-        authcode.as_str(),
-    )?;
+    println!("{:?}", files);
+
+    // crate::fifthtry::bulk_update::call(
+    //     config.collection.as_str(),
+    //     synced_hash.as_str(),
+    //     latest_hash.as_str(),
+    //     config.repo.as_str(),
+    //     files,
+    //     authcode.as_str(),
+    // )?;
 
     Ok(())
 }

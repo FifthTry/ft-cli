@@ -41,7 +41,8 @@ fn main() {
             println!("Command: status()");
         },
         ("sync", _args) => {
-            println!("sync");
+            println!("syncing");
+            ft_sync::commands::sync(config_file, false);
         }
         (_, _) => todo!("impossible!"),
     };
