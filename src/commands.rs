@@ -68,11 +68,8 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
     let git_diff = Command::new("git")
         .arg("diff")
         .arg("--name-only")
-        .arg("1e2789e78fe9551ea71b9e560ec4b321c807795d")
-        .arg("62055661f93b891a12f884954a554172dc3266d7")
-
-        // .arg(&latest_hash)
-        // .arg(&synced_hash)
+        .arg(&latest_hash)
+        .arg(&synced_hash)
         .output()?;
 
 
