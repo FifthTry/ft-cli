@@ -52,42 +52,62 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
     let output = Command::new("git").arg("rev-parse").arg("HEAD").output()?;
     let latest_hash = String::from_utf8(output.stdout)?;
 
+    let root_dir_output = Command::new("git").arg("rev-parse").arg("--show-toplevel").output()?;
+    let root_dir = String::from_utf8(root_dir_output.stdout)?;
+
+    let data_dir = std::path::Path::new(&root_dir.trim()).join(&config.root);
+
+    let data_dir = match data_dir.to_str() {
+        Some(s) => s.to_string() + "/",
+        None => "/".to_string()
+    };
+    println!("{:?}", data_dir);
+
+
+
     let git_diff = Command::new("git")
         .arg("diff")
         .arg("--name-only")
-        .arg("06cd0db1d2a31ab075403891163e836511f960ad")
-        .arg("1e212e0882177b9c55bd5cf941843a47b3927134")
+        .arg("1e2789e78fe9551ea71b9e560ec4b321c807795d")
+        .arg("62055661f93b891a12f884954a554172dc3266d7")
 
         // .arg(&latest_hash)
         // .arg(&synced_hash)
         .output()?;
 
+
     let lines = String::from_utf8(git_diff.stdout)?;
 
     let lines = lines.lines();
-
     let mut files: Vec<(String, String)> = vec![];
+
     let lines: Vec<_> = lines.into_iter()
         .filter(|x| config.backend.accept(std::path::Path::new(x)))
+        .map(|x| std::path::Path::new(&root_dir.trim()).join(x))
+        .map(|x| x.to_str().map(|x| x.to_string()))
+        .filter_map(|x| x)
+        .map(|(x)| (x.replacen(&data_dir, "", 1), x))
+        .map(|(x, y) | (x.replacen(".ftd","", 1), y))
         .collect();
 
-    for filename in lines {
-        let content = fs::read_to_string(filename)
+    dbg!(&lines);
+
+    for (id, filename) in lines {
+        let content = fs::read_to_string(&filename)
             .map_err(| e | crate::error::FTSyncError::ReadError(e))?;
-        let doc_id = filename.to_string();
-        files.push((doc_id, content));
+        files.push((id.to_string(), content));
     }
 
-    println!("{:?}", files);
+    println!("sdas{:?}", files);
 
-    // crate::fifthtry::bulk_update::call(
-    //     config.collection.as_str(),
-    //     synced_hash.as_str(),
-    //     latest_hash.as_str(),
-    //     config.repo.as_str(),
-    //     files,
-    //     authcode.as_str(),
-    // )?;
+    crate::fifthtry::bulk_update::call(
+        config.collection.as_str(),
+        synced_hash.as_str(),
+        latest_hash.as_str(),
+        config.repo.as_str(),
+        files,
+        authcode.as_str(),
+    )?;
 
     Ok(())
 }

@@ -42,7 +42,10 @@ fn main() {
         },
         ("sync", _args) => {
             println!("syncing");
-            ft_sync::commands::sync(config_file, false);
+            match ft_sync::commands::sync(config_file, false){
+                Ok(()) => {},
+                Err(e) => println!("{:?}", e.to_string())
+            }
         }
         (_, _) => todo!("impossible!"),
     };
