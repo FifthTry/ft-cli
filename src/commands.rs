@@ -1,6 +1,12 @@
 use crate::types::FTResult;
 
-pub fn status(config: crate::config::Config, config_file_path: String) -> FTResult<()> {
+pub fn status(file_name: &str) -> FTResult<()> {
+    let config = crate::config::Config::from_file(file_name)?;
+    status_util(config, file_name)?;
+    Ok(())
+}
+
+pub fn status_util(config: crate::config::Config, config_file_path: &str) -> FTResult<()> {
     use crate::types::Auth;
     /*
     Config: ../.ft-sync.p1

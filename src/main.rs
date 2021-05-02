@@ -34,7 +34,10 @@ fn main() {
 
     let _config = match cmd.subcommand() {
         ("status", _) => {
-
+            match ft_sync::commands::status(config_file) {
+                Ok(()) => {},
+                Err(e) => println!("{:?}", e.to_string())
+            }
             println!("Command: status()");
         },
         ("sync", _args) => {

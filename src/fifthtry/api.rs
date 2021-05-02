@@ -3,7 +3,7 @@ use crate::types::FTResult;
 #[derive(Deserialize)]
 pub struct ApiResponse<T> {
     pub success: bool,
-    pub response: Option<T>,
+    pub result: Option<T>,
     pub error: Option<ApiError>,
 }
 
@@ -54,7 +54,10 @@ fn get_util(url: &str) -> crate::types::FTResult<serde_json::Value> {
         Ok(response) => if response.status() != reqwest::StatusCode::OK {
             Err(crate::error::FTSyncError::APIResponseNotOk("api response not OK".to_string()).into())
         } else {
+            // let j = response.json().map_err(|e| e.into());
+            // println!("{:?}", j);
             response.json().map_err(|e| e.into())
+            //response.json().map_err(|e| e.into())
         },
         Err(e) => {
             Err(crate::error::FTSyncError::APIError{error: e}.into())
