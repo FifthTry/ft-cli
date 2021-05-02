@@ -68,10 +68,9 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
     let git_diff = Command::new("git")
         .arg("diff")
         .arg("--name-only")
-        .arg(&latest_hash)
-        .arg(&synced_hash)
+        .arg(&synced_hash.trim())
+        .arg(&latest_hash.trim())
         .output()?;
-
 
     let lines = String::from_utf8(git_diff.stdout)?;
 
@@ -95,7 +94,7 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
         files.push((id.to_string(), content));
     }
 
-    println!("sdas{:?}", files);
+    println!("files {:?}", files);
 
     crate::fifthtry::bulk_update::call(
         config.collection.as_str(),
