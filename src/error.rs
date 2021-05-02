@@ -13,6 +13,15 @@ pub enum FTSyncError {
 
     #[error("cannot open config file: {}", _0)]
     ReadError ( #[from] std::io::Error ),
+
+    #[error("api status code: {}", _0)]
+    APIResponseNotOk(String),
+
+    #[error("DeserializeError: {}", _0)]
+    DeserializeError(String),
+
+    #[error("ResponseError: {}", _0)]
+    ResponseError(String)
 }
 
 impl From<reqwest::Error> for FTSyncError {

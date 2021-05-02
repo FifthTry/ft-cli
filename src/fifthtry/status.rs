@@ -1,5 +1,4 @@
 use crate::types::FTResult;
-use reqwest;
 
 pub fn call(authcode: &str) -> FTResult<String> {
     let url = format!(
@@ -10,12 +9,19 @@ pub fn call(authcode: &str) -> FTResult<String> {
     #[derive(Deserialize)]
     struct Status {
         last_synced_hash: String,
+        last_updated_on: String,
     }
 
-    let client = reqwest::blocking::Client::new();
-    let response = client.get(url).send()?;
+    let response: crate::fifthtry::api::ApiResponse<Status>  = crate::fifthtry::api::get(&url)?;
 
-    let status: Status = response.json()?;
+    if !response.success || response.response.is_none() {
+        return Err(crate::error::FTSyncError::ResponseError(
+            response.error.map(|x| x.error.to_string())
+                .unwrap_or("".to_string())).into())
+        //crate::error::FTSyncError::ResponseError("response in none".to_string()).into()
+    }
 
-    Ok(status.last_synced_hash)
+    let resp = response.response.unwrap();
+
+    Ok(resp.last_synced_hash)
 }
