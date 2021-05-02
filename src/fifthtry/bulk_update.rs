@@ -19,12 +19,6 @@ struct File {
 }
 
 #[derive(Deserialize)]
-pub struct BulkUpdateOutput {
-    pub success: bool,
-    pub errors: Vec<BulkUpdateError>,
-}
-
-#[derive(Deserialize)]
 pub enum BulkUpdateError {
     InvalidAuthCode,
     RepoNotFound,
@@ -41,8 +35,8 @@ pub fn call(
     repo: &str,
     files: Vec<(String, String)>,
     auth_code: &str,
-) -> FTResult<BulkUpdateOutput> {
-    let url = "https://www.fifthtry.com/api/bulk-update/";
+) -> FTResult<()> {
+    let url = "http://127.0.0.1:3000/testuser/index/~/bulk-update/";
     let files = files
         .iter()
         .map(|(id, content)| File {
@@ -60,8 +54,23 @@ pub fn call(
         files,
     };
 
-    let client = reqwest::blocking::Client::new();
-    let response = client.post(url).json(&update).send()?;
+    #[derive(Serialize)]
+    struct UpdatedWrapper {
+        data: BulkUpdateInput,
+    }
 
-    Ok(response.json()?)
+    let update = UpdatedWrapper {
+        data: update
+    };
+
+    let response: crate::fifthtry::api::ApiResponse<std::collections::HashMap<String, String>>  =
+        crate::fifthtry::api::post(&url, serde_json::to_value(update)?.to_string())?;
+
+    if !response.success {
+        return Err(crate::error::FTSyncError::ResponseError(
+            response.error.map(|x| x.error.to_string())
+                .unwrap_or("".to_string())).into())
+    }
+
+    Ok(())
 }

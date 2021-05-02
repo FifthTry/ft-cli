@@ -54,10 +54,7 @@ fn get_util(url: &str) -> crate::types::FTResult<serde_json::Value> {
         Ok(response) => if response.status() != reqwest::StatusCode::OK {
             Err(crate::error::FTSyncError::APIResponseNotOk("api response not OK".to_string()).into())
         } else {
-            // let j = response.json().map_err(|e| e.into());
-            // println!("{:?}", j);
             response.json().map_err(|e| e.into())
-            //response.json().map_err(|e| e.into())
         },
         Err(e) => {
             Err(crate::error::FTSyncError::APIError{error: e}.into())
@@ -72,3 +69,35 @@ pub fn get<T: serde::de::DeserializeOwned>(url: &str) -> FTResult<ApiResponse<T>
         Err(e) => Err(e)
     }
 }
+
+fn post_util<B: Into<reqwest::blocking::Body>>(
+    url: &str,
+    body: B
+) -> crate::types::FTResult<serde_json::Value> {
+    let client = reqwest::blocking::Client::new();
+    match client
+        .post(url)
+        .body(body)
+        .header("content-type", "application/json")
+        .header("Accept", "application/json")
+        .header("user-agent", "rust")
+        .send() {
+        Ok(response) => if response.status() != reqwest::StatusCode::OK {
+            Err(crate::error::FTSyncError::APIResponseNotOk("post api response not OK".to_string()).into())
+        } else {
+            response.json().map_err(|e| e.into())
+        },
+        Err(e) => {
+            Err(crate::error::FTSyncError::APIError{error: e}.into())
+        }
+    }
+}
+
+pub fn post<T: serde::de::DeserializeOwned, B: Into<reqwest::blocking::Body>>(url: &str, body: B) -> FTResult<ApiResponse<T>> {
+    match post_util(url, body) {
+        Ok(response) => serde_json::from_value(response)
+            .map_err(|e| crate::error::FTSyncError::DeserializeError(e.to_string()).into()),
+        Err(e) => Err(e)
+    }
+}
+

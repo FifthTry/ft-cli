@@ -86,7 +86,7 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
         .map(|x| std::path::Path::new(&root_dir.trim()).join(x))
         .map(|x| x.to_str().map(|x| x.to_string()))
         .filter_map(|x| x)
-        .map(|(x)| (x.replacen(&data_dir, "", 1), x))
+        .map(|x| (x.replacen(&data_dir, "", 1), x))
         .map(|(x, y) | (x.replacen(".ftd","", 1), y))
         .collect();
 
