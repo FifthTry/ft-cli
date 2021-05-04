@@ -1,17 +1,18 @@
 use crate::types::FTResult;
 use chrono::TimeZone;
 
+#[derive(Deserialize)]
+pub struct Status {
+    pub last_synced_hash: String,
+    pub last_updated_on: i64,
+}
+
+
 pub fn call(authcode: &str) -> FTResult<(String, chrono::DateTime<chrono::Utc>)> {
     let url = format!(
         "http://127.0.0.1:3000/a/b/~/sync-status/?auth_code={}&realm_mode=api",
         authcode
     );
-
-    #[derive(Deserialize)]
-    struct Status {
-        last_synced_hash: String,
-        last_updated_on: i64,
-    }
 
     let response: crate::fifthtry::api::ApiResponse<Status>  = crate::fifthtry::api::get(&url)?;
 

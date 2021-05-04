@@ -62,7 +62,7 @@ pub fn call(
         data: update
     };
 
-    let response: crate::fifthtry::api::ApiResponse<std::collections::HashMap<String, String>>  =
+    let response: crate::fifthtry::api::ApiResponse<crate::fifthtry::status::Status>  =
         crate::fifthtry::api::post(&url, serde_json::to_value(update)?.to_string())?;
 
     if !response.success {
