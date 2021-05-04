@@ -65,12 +65,15 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
 
 
 
-    let git_diff = Command::new("git")
-        .arg("diff")
-        .arg("--name-only")
-        .arg(&synced_hash.trim())
-        .arg(&latest_hash.trim())
-        .output()?;
+    let git_diff = if synced_hash.is_empty() {
+        Command::new("git")
+            .args(&["ls-tree", "-r", "--name-only", latest_hash.trim()])
+            .output()?
+    } else {
+        Command::new("git")
+            .args(&["diff", "--name-only", synced_hash.trim(), latest_hash.trim()])
+            .output()?
+    };
 
     let lines = String::from_utf8(git_diff.stdout)?;
 
