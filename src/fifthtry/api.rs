@@ -9,7 +9,7 @@ pub struct ApiResponse<T> {
 
 #[derive(Deserialize, Debug)]
 pub struct ApiError {
-    pub error: Error
+    pub error: String
 }
 
 #[derive(Deserialize, Debug)]

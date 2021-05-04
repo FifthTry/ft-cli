@@ -1,5 +1,4 @@
 use crate::types::FTResult;
-use reqwest;
 pub use crate::*;
 
 #[derive(Serialize)]
@@ -36,7 +35,7 @@ pub fn call(
     files: Vec<(String, String)>,
     auth_code: &str,
 ) -> FTResult<()> {
-    let url = "http://127.0.0.1:3000/testuser/index/~/bulk-update/";
+    let url = "http://127.0.0.1:3000/testuser/index/~/bulk-update/?realm_mode=api";
     let files = files
         .iter()
         .map(|(id, content)| File {
@@ -46,11 +45,11 @@ pub fn call(
         .collect();
 
     let update = BulkUpdateInput {
-        collection: collection.to_string(),
-        auth_code: auth_code.to_string(),
-        current_hash: current_hash.to_string(),
-        new_hash: new_hash.to_string(),
-        repo: repo.to_string(),
+        collection: collection.trim().to_string(),
+        auth_code: auth_code.trim().to_string(),
+        current_hash: current_hash.trim().to_string(),
+        new_hash: new_hash.trim().to_string(),
+        repo: repo.trim().to_string(),
         files,
     };
 

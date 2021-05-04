@@ -57,7 +57,7 @@ impl Config {
             backend: ftsync.backend.as_str().into(),
             root: ftsync.root,
             mode: SyncMode::LocalToRemote,
-            auth: Auth::AuthCode("asd".to_string()),
+            auth: Auth::AuthCode("ZV6cN8i6B8VUrb5PgPKc".to_string()),
             dot_ft: false
         })
     }
