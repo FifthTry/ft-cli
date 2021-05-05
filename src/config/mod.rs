@@ -4,7 +4,7 @@ use crate::types::*;
 use crate::error::FTSyncError;
 
 pub struct Config {
-    pub ignored: Vec<String>,
+    pub ignored: Vec<Ignored>,
     pub repo: String,
     pub collection: String,
     pub backend: Backend,
@@ -12,6 +12,10 @@ pub struct Config {
     pub mode: SyncMode,
     pub auth: Auth,
     pub dot_ft: bool,
+}
+
+pub struct Ignored {
+    pub pattern: String,
 }
 
 impl Config {
@@ -48,7 +52,8 @@ impl Config {
                 )
         };
 
-        let patterns = ignored.into_iter().flat_map(|ig| ig.patterns).collect();
+        let patterns = ignored.into_iter().flat_map(|ig| ig.patterns).collect::<Vec<_>>();
+        let patterns = patterns.into_iter().map(|x| Ignored{pattern: x}).collect();
 
         Ok(Config {
             ignored: patterns,
