@@ -20,7 +20,7 @@ pub fn status_util(config: crate::config::Config, config_file_path: &str) -> FTR
         _ => return Ok(()),
     };
 
-    let (synced_hash, updated_on) = crate::fifthtry::status::call(authcode.as_str())?;
+    let (synced_hash, updated_on) = ft_api::status::call(authcode.as_str())?;
 
     println!("Config: {}", config_file_path);
     println!("Backend: {}", config.backend.to_string());
@@ -47,7 +47,7 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
         _ => return Ok(()),
     };
 
-    let (synced_hash, _) = crate::fifthtry::status::call(authcode.as_str())?;
+    let (synced_hash, _) = ft_api::status::call(authcode.as_str())?;
 
     let output = Command::new("git").arg("rev-parse").arg("HEAD").output()?;
     let latest_hash = String::from_utf8(output.stdout)?;
@@ -97,7 +97,7 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
 
     println!("files {:?}", files);
 
-    crate::fifthtry::bulk_update::call(
+    ft_api::bulk_update::call(
         config.collection.as_str(),
         synced_hash.as_str(),
         latest_hash.as_str(),
