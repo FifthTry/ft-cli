@@ -61,7 +61,7 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
         Some(s) => s.to_string() + "/",
         None => "/".to_string()
     };
-    println!("{:?}", data_dir);
+    // println!("{:?}", data_dir);
 
 
 
@@ -88,8 +88,6 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
         .map(|x| (x.replacen(&data_dir, "", 1), x))
         .map(|(x, y) | (x.replacen(".ftd","", 1), y))
         .collect();
-
-    dbg!(&lines);
 
     for (id, filename) in lines {
         let content = fs::read_to_string(&filename)
