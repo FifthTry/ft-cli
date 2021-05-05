@@ -564,6 +564,14 @@ dependencies = [
 [[package]]
 name = "ft-api"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "reqwest",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "thiserror",
+]
 
 [[package]]
 name = "ft-sync"
@@ -572,6 +580,7 @@ dependencies = [
  "anyhow",
  "chrono",
  "clap",
+ "ft-api",
  "ftd",
  "gitignore",
  "reqwest",

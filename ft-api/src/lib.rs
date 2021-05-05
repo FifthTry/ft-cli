@@ -1,4 +1,8 @@
+#[macro_use]
+extern crate serde_derive;
 
-fn main() {
-    println!("Hello, world!");
-}
+pub mod types;
+pub mod api;
+pub mod error;
+
+pub type FTResult<T> = anyhow::Result<T>;
