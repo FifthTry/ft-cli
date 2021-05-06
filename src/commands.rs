@@ -183,24 +183,16 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
         }
     }
 
-    // let mut files: Vec<(String, String)> = vec![];
-    // for (status, id, filename) in lines {
-    //     println!("{:?}, {:?}, {:?}", status, id, filename);
-    //     let content = fs::read_to_string(&filename)
-    //         .map_err(| e | crate::error::FTSyncError::ReadError(e))?;
-    //     files.push((id.to_string(), content));
-    //    }
-
     println!("files {:#?}", actions);
 
-    // ft_api::bulk_update::call(
-    //     config.collection.as_str(),
-    //     synced_hash.as_str(),
-    //     latest_hash.as_str(),
-    //     config.repo.as_str(),
-    //     files,
-    //     authcode.as_str(),
-    // )?;
+    ft_api::bulk_update::call(
+        config.collection.as_str(),
+        synced_hash.as_str(),
+        latest_hash.as_str(),
+        config.repo.as_str(),
+        actions,
+        authcode.as_str(),
+    )?;
 
     Ok(())
 }
