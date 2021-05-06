@@ -63,48 +63,69 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
     };
     // println!("{:?}", data_dir);
 
+    fn parse_line(line: &str) -> (String, String) {
+        let sp = line.split("\t").collect::<Vec<_>>();
+        let mode = sp[0].chars().next().unwrap();
 
+        let file_name = match mode {
+            'A' | 'M' | 'D' => sp[1],
+            'R' => sp[2],
+            _ => panic!("file with unknown mode : {}", line)
+        };
+        (mode.to_string(), file_name.to_string())
+    }
 
-    let git_diff = if synced_hash.is_empty() {
-        Command::new("git")
+    let files = if synced_hash.is_empty() {
+        let cmd = Command::new("git")
             .args(&["ls-tree", "-r", "--name-only", latest_hash.trim()])
-            .output()?
+            .output()?;
+        let files = String::from_utf8(cmd.stdout.clone())?;
+        let files = files.lines();
+        files.into_iter().map(|x| ("A".to_string(), x.to_string())).collect()
     } else {
-        Command::new("git")
-            .args(&["diff", "--name-only", synced_hash.trim(), latest_hash.trim()])
-            .output()?
+        let cmd = Command::new("git")
+            .args(&["diff", "--name-status", synced_hash.trim(), latest_hash.trim()])
+            .output()?;
+        let files = String::from_utf8(cmd.stdout.clone())?;
+        let files = files.lines();
+
+        files.into_iter()
+            .map(parse_line)
+            .map(|x| x)
+            .collect::<Vec<_>>()
     };
 
-    let lines = String::from_utf8(git_diff.stdout)?;
-
-    let lines = lines.lines();
-    let mut files: Vec<(String, String)> = vec![];
-
-    let lines: Vec<_> = lines.into_iter()
-        .filter(|x| config.backend.accept(std::path::Path::new(x)))
-        .map(|x| std::path::Path::new(&root_dir.trim()).join(x))
-        .map(|x| x.to_str().map(|x| x.to_string()))
+    let lines: Vec<_> = files.into_iter()
+        .filter(|x| config.backend.accept(std::path::Path::new(&x.1)))
+        .map(|x| (x.0, std::path::Path::new(&root_dir.trim()).join(x.1)))
+        .map(|x|
+            if let Some(p) =  x.1.to_str().map(|x| x.to_string()) {
+                Some ((x.0, p))
+            } else { None })
         .filter_map(|x| x)
-        .map(|x| (x.replacen(&data_dir, "", 1), x))
-        .map(|(x, y) | (x.replacen(".ftd","", 1), y))
+        .map(|x| (x.0, x.1.replacen(&data_dir, "", 1), x.1))
+        .map(|(x, y, z) | (x, y.replacen(".ftd","", 1), z))
         .collect();
 
-    for (id, filename) in lines {
+    let mut files: Vec<(String, String)> = vec![];
+
+    for (status, id, filename) in lines {
+        println!("{:?}, {:?}, {:?}", status, id, filename);
         let content = fs::read_to_string(&filename)
             .map_err(| e | crate::error::FTSyncError::ReadError(e))?;
         files.push((id.to_string(), content));
     }
 
-    println!("files {:?}", files);
+    // println!("files {:?}", files);
 
-    ft_api::bulk_update::call(
-        config.collection.as_str(),
-        synced_hash.as_str(),
-        latest_hash.as_str(),
-        config.repo.as_str(),
-        files,
-        authcode.as_str(),
-    )?;
+    // ft_api::bulk_update::call(
+    //     config.collection.as_str(),
+    //     synced_hash.as_str(),
+    //     latest_hash.as_str(),
+    //     config.repo.as_str(),
+    //     files,
+    //     authcode.as_str(),
+    // )?;
 
     Ok(())
 }
