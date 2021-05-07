@@ -73,14 +73,14 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
     };
     // println!("{:?}", data_dir);
 
-    fn parse_line(line: &str) -> ft_api::FileMode {
+    fn parse_line(line: &str) -> crate::git::FileMode {
         let sp = line.split("\t").collect::<Vec<_>>();
         let mode = sp[0].chars().next().unwrap();
         match mode {
-            'A' => ft_api::FileMode::Added(sp[1].to_string()),
-            'M' => ft_api::FileMode::Modified(sp[1].to_string()),
-            'D' => ft_api::FileMode::Deleted(sp[1].to_string()),
-            'R' => ft_api::FileMode::Renamed(sp[1].to_string(), sp[2].to_string()),
+            'A' => crate::git::FileMode::Added(sp[1].to_string()),
+            'M' => crate::git::FileMode::Modified(sp[1].to_string()),
+            'D' => crate::git::FileMode::Deleted(sp[1].to_string()),
+            'R' => crate::git::FileMode::Renamed(sp[1].to_string(), sp[2].to_string()),
             _ => panic!("file with unknown mode : {}", line),
         }
     }
@@ -93,7 +93,7 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
         let files = files.lines();
         files
             .into_iter()
-            .map(|x| ft_api::FileMode::Added(x.to_string()))
+            .map(|x| crate::git::FileMode::Added(x.to_string()))
             .collect()
     } else {
         let cmd = Command::new("git")
@@ -122,7 +122,7 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
 
     for file in files.into_iter() {
         match file {
-            ft_api::FileMode::Added(path) => {
+            crate::git::FileMode::Added(path) => {
                 let path = std::path::Path::new(root_dir).join(path);
                 if config.backend.accept(&path) {
                     if let Some(path) = path.to_str() {
@@ -135,7 +135,7 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
                     }
                 }
             }
-            ft_api::FileMode::Renamed(p1, p2) => {
+            crate::git::FileMode::Renamed(p1, p2) => {
                 let path = std::path::Path::new(root_dir).join(p2);
                 if config.backend.accept(&path) {
                     if let Some(path) = path.to_str() {
@@ -157,7 +157,7 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
                     }
                 }
             }
-            ft_api::FileMode::Modified(path) => {
+            crate::git::FileMode::Modified(path) => {
                 let path = std::path::Path::new(root_dir).join(path);
                 if config.backend.accept(&path) {
                     if let Some(path) = path.to_str() {
@@ -170,7 +170,7 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
                     }
                 }
             }
-            ft_api::FileMode::Deleted(path) => {
+            crate::git::FileMode::Deleted(path) => {
                 let path = std::path::Path::new(root_dir).join(path);
                 if config.backend.accept(&path) {
                     if let Some(path) = path.to_str() {
