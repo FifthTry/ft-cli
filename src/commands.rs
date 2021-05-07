@@ -71,47 +71,11 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
         Some(s) => s.to_string() + "/",
         None => "/".to_string(),
     };
-    // println!("{:?}", data_dir);
-
-    fn parse_line(line: &str) -> crate::git::FileMode {
-        let sp = line.split("\t").collect::<Vec<_>>();
-        let mode = sp[0].chars().next().unwrap();
-        match mode {
-            'A' => crate::git::FileMode::Added(sp[1].to_string()),
-            'M' => crate::git::FileMode::Modified(sp[1].to_string()),
-            'D' => crate::git::FileMode::Deleted(sp[1].to_string()),
-            'R' => crate::git::FileMode::Renamed(sp[1].to_string(), sp[2].to_string()),
-            _ => panic!("file with unknown mode : {}", line),
-        }
-    }
 
     let files = if synced_hash.is_empty() {
-        let cmd = Command::new("git")
-            .args(&["ls-tree", "-r", "--name-only", latest_hash.trim()])
-            .output()?;
-        let files = String::from_utf8(cmd.stdout.clone())?;
-        let files = files.lines();
-        files
-            .into_iter()
-            .map(|x| crate::git::FileMode::Added(x.to_string()))
-            .collect()
+        crate::git::git_ls_tree(&latest_hash)?
     } else {
-        let cmd = Command::new("git")
-            .args(&[
-                "diff",
-                "--name-status",
-                synced_hash.trim(),
-                latest_hash.trim(),
-            ])
-            .output()?;
-        let files = String::from_utf8(cmd.stdout.clone())?;
-        let files = files.lines();
-
-        files
-            .into_iter()
-            .map(parse_line)
-            .map(|x| x)
-            .collect::<Vec<_>>()
+        crate::git::git_diff(&synced_hash, &latest_hash)?
     };
 
     let mut actions = vec![];
