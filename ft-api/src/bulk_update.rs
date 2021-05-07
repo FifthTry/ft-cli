@@ -7,7 +7,7 @@ struct BulkUpdateInput {
     current_hash: String,
     new_hash: String,
     repo: String,
-    files: Vec<File>,
+    files: Vec<crate::Action>,
 }
 
 #[derive(Serialize)]
@@ -31,17 +31,10 @@ pub fn call(
     current_hash: &str,
     new_hash: &str,
     repo: &str,
-    files: Vec<(String, String)>,
+    files: Vec<crate::Action>,
     auth_code: &str,
 ) -> FTResult<()> {
     let url = "http://127.0.0.1:3000/testuser/index/~/bulk-update/?realm_mode=api";
-    let files = files
-        .iter()
-        .map(|(id, content)| File {
-            id: id.to_string(),
-            content: content.to_string(),
-        })
-        .collect();
 
     let update = BulkUpdateInput {
         collection: collection.trim().to_string(),
@@ -57,17 +50,19 @@ pub fn call(
         data: BulkUpdateInput,
     }
 
-    let update = UpdatedWrapper {
-        data: update
-    };
+    let update = UpdatedWrapper { data: update };
 
-    let response: crate::api::ApiResponse<crate::status::Status>  =
+    let response: crate::api::ApiResponse<crate::status::Status> =
         crate::api::post(&url, serde_json::to_value(update)?.to_string())?;
 
     if !response.success {
         return Err(crate::error::Error::ResponseError(
-            response.error.map(|x| x.error.to_string())
-                .unwrap_or("".to_string())).into())
+            response
+                .error
+                .map(|x| x.error.to_string())
+                .unwrap_or("".to_string()),
+        )
+        .into());
     }
 
     Ok(())
