@@ -1,20 +1,21 @@
-use crate::Result;
-
 #[derive(Deserialize)]
 pub struct Status {
     pub last_synced_hash: String,
+    // TODO: use custom deserializer and convert its type to DateTime<Utc>
     pub last_updated_on: i64,
 }
 
-pub fn sync_status(auth_code: &str) -> Result<(String, chrono::DateTime<chrono::Utc>)> {
+pub fn sync_status(
+    collection: &str,
+    auth_code: &str,
+) -> crate::Result<(String, chrono::DateTime<chrono::Utc>)> /* TODO: return Status */ {
     use chrono::TimeZone;
-    let url = format!(
-        "http://127.0.0.1:3000/a/b/~/sync-status/?auth_code={}&realm_mode=api",
-        auth_code
-    );
+    let url = format!("/{}/~/sync-status/", collection);
 
-    let response: crate::api::ApiResponse<Status> = crate::api::get(&url)?;
+    let response: crate::api::ApiResponse<Status> =
+        crate::api::get(&url, maplit::hashmap! {"auth_code" => auth_code})?;
 
+    // TODO: abstract out this pattern into api::get() function
     if !response.success || response.result.is_none() {
         return Err(crate::error::Error::ResponseError(
             response
@@ -25,7 +26,7 @@ pub fn sync_status(auth_code: &str) -> Result<(String, chrono::DateTime<chrono::
         .into());
     }
 
-    let resp = response.result.unwrap();
+    let resp = response.result.unwrap(); // safe because we did error check
 
     Ok((
         resp.last_synced_hash,

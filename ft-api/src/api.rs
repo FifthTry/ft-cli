@@ -64,7 +64,15 @@ fn get_util(url: &str) -> crate::Result<serde_json::Value> {
     }
 }
 
-pub fn get<T: serde::de::DeserializeOwned>(url: &str) -> crate::Result<ApiResponse<T>> {
+// TODO: convert it to a macro so key values can be passed easily
+pub fn get<T: serde::de::DeserializeOwned, K, V>(
+    url: &str,
+    _query: std::collections::HashMap<K, V>,
+) -> crate::Result<ApiResponse<T>>
+where
+    K: Into<String>,
+    V: Into<String>,
+{
     match get_util(url) {
         Ok(response) => serde_json::from_value(response)
             .map_err(|e| crate::error::Error::DeserializeError(e.to_string()).into()),

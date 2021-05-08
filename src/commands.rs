@@ -17,7 +17,8 @@ pub fn status_util(config: crate::Config, config_file_path: &str) -> crate::Resu
         _ => return Ok(()),
     };
 
-    let (synced_hash, updated_on) = ft_api::sync_status(auth_code.as_str())?;
+    let (synced_hash, updated_on) =
+        ft_api::sync_status(config.collection.as_str(), auth_code.as_str())?;
 
     println!("Config: {}", config_file_path);
     println!("Backend: {}", config.backend.to_string());
@@ -47,7 +48,8 @@ fn sync_util(config: crate::Config, _dry_run: bool) -> crate::Result<()> {
         _ => return Ok(()),
     };
 
-    let (synced_hash, _) = ft_api::sync_status::sync_status(auth_code.as_str())?;
+    let (synced_hash, _) =
+        ft_api::sync_status::sync_status(config.collection.as_str(), auth_code.as_str())?;
 
     let output = std::process::Command::new("git")
         .arg("rev-parse")

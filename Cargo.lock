@@ -567,6 +567,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "chrono",
+ "maplit",
  "reqwest",
  "serde",
  "serde_derive",
@@ -584,7 +585,6 @@ dependencies = [
  "ft-api",
  "ftd",
  "gitignore",
- "lazy_static 1.4.0",
  "reqwest",
  "serde",
  "serde_derive",
