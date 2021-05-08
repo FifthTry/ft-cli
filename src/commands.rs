@@ -20,7 +20,7 @@ pub fn status_util(config: crate::config::Config, config_file_path: &str) -> Res
         _ => return Ok(()),
     };
 
-    let (synced_hash, updated_on) = ft_api::status::call(authcode.as_str())?;
+    let (synced_hash, updated_on) = ft_api::sync_status::sync_status(authcode.as_str())?;
 
     println!("Config: {}", config_file_path);
     println!("Backend: {}", config.backend.to_string());
@@ -53,7 +53,7 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> Result<()> {
         _ => return Ok(()),
     };
 
-    let (synced_hash, _) = ft_api::status::call(authcode.as_str())?;
+    let (synced_hash, _) = ft_api::sync_status::sync_status(authcode.as_str())?;
 
     let output = Command::new("git").arg("rev-parse").arg("HEAD").output()?;
     let latest_hash = String::from_utf8(output.stdout)?;
@@ -80,8 +80,7 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> Result<()> {
 
     let mut actions = vec![];
     let read_content = |file_path: &str| -> Result<String> {
-        std::fs::read_to_string(&file_path)
-            .map_err(|e| crate::error::Error::ReadError(e).into())
+        std::fs::read_to_string(&file_path).map_err(|e| crate::error::Error::ReadError(e).into())
     };
 
     for file in files.into_iter() {
@@ -92,7 +91,7 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> Result<()> {
                     if let Some(path) = path.to_str() {
                         let new_path = path.replacen(&data_dir, "", 1).replacen(".ftd", "", 1);
                         println!("path: {}, new_path: {}", path, new_path);
-                        actions.push(ft_api::Action::Added {
+                        actions.push(ft_api::bulk_update::Action::Added {
                             id: new_path,
                             content: read_content(path)?,
                         });
@@ -105,7 +104,7 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> Result<()> {
                     if let Some(path) = path.to_str() {
                         let new_path = path.replacen(&data_dir, "", 1).replacen(".ftd", "", 1);
                         println!("path: {}, new_path: {}", path, new_path);
-                        actions.push(ft_api::Action::Added {
+                        actions.push(ft_api::bulk_update::Action::Added {
                             id: new_path,
                             content: read_content(path)?,
                         });
@@ -117,7 +116,7 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> Result<()> {
                     if let Some(path) = path.to_str() {
                         let new_path = path.replacen(&data_dir, "", 1).replacen(".ftd", "", 1);
                         println!("path: {}, new_path: {}", path, new_path);
-                        actions.push(ft_api::Action::Deleted { id: new_path });
+                        actions.push(ft_api::bulk_update::Action::Deleted { id: new_path });
                     }
                 }
             }
@@ -127,7 +126,7 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> Result<()> {
                     if let Some(path) = path.to_str() {
                         let new_path = path.replacen(&data_dir, "", 1).replacen(".ftd", "", 1);
                         println!("path: {}, new_path: {}", path, new_path);
-                        actions.push(ft_api::Action::Added {
+                        actions.push(ft_api::bulk_update::Action::Added {
                             id: new_path,
                             content: read_content(path)?,
                         });
@@ -140,7 +139,7 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> Result<()> {
                     if let Some(path) = path.to_str() {
                         let new_path = path.replacen(&data_dir, "", 1).replacen(".ftd", "", 1);
                         println!("path: {}, new_path: {}", path, new_path);
-                        actions.push(ft_api::Action::Deleted { id: new_path });
+                        actions.push(ft_api::bulk_update::Action::Deleted { id: new_path });
                     }
                 }
             }
@@ -149,7 +148,7 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> Result<()> {
 
     println!("files {:#?}", actions);
 
-    ft_api::bulk_update::call(
+    ft_api::bulk_update::bulk_update(
         config.collection.as_str(),
         synced_hash.as_str(),
         latest_hash.as_str(),

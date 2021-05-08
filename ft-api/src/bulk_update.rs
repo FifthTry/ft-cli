@@ -1,5 +1,3 @@
-use crate::FTResult;
-
 #[derive(Serialize)]
 struct BulkUpdateInput {
     collection: String,
@@ -7,7 +5,7 @@ struct BulkUpdateInput {
     current_hash: String,
     new_hash: String,
     repo: String,
-    files: Vec<crate::Action>,
+    files: Vec<Action>,
 }
 
 #[derive(Serialize)]
@@ -26,15 +24,15 @@ pub enum BulkUpdateError {
     NoPermission(String),
 }
 
-pub fn call(
+pub fn bulk_update(
     collection: &str,
     current_hash: &str,
     new_hash: &str,
     repo: &str,
-    files: Vec<crate::Action>,
+    files: Vec<Action>,
     auth_code: &str,
-) -> FTResult<()> {
-    let url = "http://127.0.0.1:3000/testuser/index/~/bulk-update/?realm_mode=api";
+) -> crate::Result<()> {
+    let url = "/testuser/index/~/bulk-update/";
 
     let update = BulkUpdateInput {
         collection: collection.trim().to_string(),
@@ -52,7 +50,7 @@ pub fn call(
 
     let update = UpdatedWrapper { data: update };
 
-    let response: crate::api::ApiResponse<crate::status::Status> =
+    let response: crate::api::ApiResponse<crate::sync_status::Status> =
         crate::api::post(&url, serde_json::to_value(update)?.to_string())?;
 
     if !response.success {
@@ -66,4 +64,12 @@ pub fn call(
     }
 
     Ok(())
+}
+
+#[derive(Serialize, Debug)]
+#[serde(tag = "type")]
+pub enum Action {
+    Updated { id: String, content: String },
+    Added { id: String, content: String },
+    Deleted { id: String },
 }

@@ -1,6 +1,4 @@
-use thiserror::Error as Error_;
-
-#[derive(Error_, Debug)]
+#[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("api error: {error:?}")]
     APIError { error: reqwest::Error },

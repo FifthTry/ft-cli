@@ -1,10 +1,11 @@
 #[macro_use]
 extern crate serde_derive;
 
-pub mod types;
 pub mod api;
-pub mod error;
 pub mod bulk_update;
-pub mod status;
-pub type FTResult<T> = anyhow::Result<T>;
-pub use types::*;
+pub mod error;
+pub mod sync_status;
+pub type Result<T> = anyhow::Result<T>;
+
+pub use bulk_update::bulk_update;
+pub use sync_status::sync_status;
