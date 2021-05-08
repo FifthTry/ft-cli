@@ -21,7 +21,7 @@ impl Backend {
     pub fn accept(&self, path: &std::path::Path) -> bool {
         match self {
             Backend::FTD => path.extension() == Some(std::ffi::OsStr::new("ftd")),
-            Backend::Unknown => false
+            Backend::Unknown => false,
         }
     }
 }

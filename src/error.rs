@@ -10,7 +10,7 @@ pub enum Error {
     APIError { error: reqwest::Error },
 
     #[error("cannot open config file: {}", _0)]
-    ReadError ( #[from] std::io::Error ),
+    ReadError(#[from] std::io::Error),
 
     #[error("api status code: {}", _0)]
     APIResponseNotOk(String),
@@ -19,7 +19,7 @@ pub enum Error {
     DeserializeError(String),
 
     #[error("ResponseError: {}", _0)]
-    ResponseError(String)
+    ResponseError(String),
 }
 
 impl From<reqwest::Error> for Error {

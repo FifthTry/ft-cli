@@ -10,7 +10,7 @@ pub enum Error {
     DeserializeError(String),
 
     #[error("ResponseError: {}", _0)]
-    ResponseError(String)
+    ResponseError(String),
 }
 
 impl From<reqwest::Error> for Error {

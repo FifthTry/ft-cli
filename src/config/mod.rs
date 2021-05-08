@@ -32,25 +32,35 @@ impl Config {
                 section::Section::FtSync(sec) => {
                     if ftsync.is_none() {
                         ftsync = Some(sec)
+                    } else {
+                        return Err(crate::Error::ConfigFileParseError {
+                            error: "Duplicate FTSync section".to_string(),
+                        }
+                        .into());
                     }
-                    else {
-                        return Err(crate::Error::ConfigFileParseError {error: "Duplicate FTSync section".to_string()}.into());
-                    }
-                },
-                section::Section::Ignored(sec) => ignored.push(sec)
+                }
+                section::Section::Ignored(sec) => ignored.push(sec),
             }
-        };
+        }
 
         let ftsync = match ftsync {
             Some(f) => f,
-            None =>
-                return Err(
-                    crate::Error::ConfigFileParseError {error: "No FTSync section found".to_string()}.into()
-                )
+            None => {
+                return Err(crate::Error::ConfigFileParseError {
+                    error: "No FTSync section found".to_string(),
+                }
+                .into())
+            }
         };
 
-        let patterns = ignored.into_iter().flat_map(|ig| ig.patterns).collect::<Vec<_>>();
-        let patterns = patterns.into_iter().map(|x| Ignored{pattern: x}).collect();
+        let patterns = ignored
+            .into_iter()
+            .flat_map(|ig| ig.patterns)
+            .collect::<Vec<_>>();
+        let patterns = patterns
+            .into_iter()
+            .map(|x| Ignored { pattern: x })
+            .collect();
 
         Ok(Config {
             ignored: patterns,
@@ -60,7 +70,7 @@ impl Config {
             root: ftsync.root,
             mode: crate::SyncMode::LocalToRemote,
             auth: crate::Auth::AuthCode("ZV6cN8i6B8VUrb5PgPKc".to_string()),
-            dot_ft: false
+            dot_ft: false,
         })
     }
 }
