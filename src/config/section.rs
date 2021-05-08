@@ -11,7 +11,7 @@ impl Section {
             "ignored" => Self::Ignored(Ignored::from_p1(p1)?),
             t => {
                 return Err(ftd::document::ParseError::ValidationError(format!(
-                    "unknown section {}",
+                    "unknown section {}, allowed sections are: 'ft-sync' and 'ignored'",
                     t
                 )))
             }
@@ -34,7 +34,9 @@ impl Ignored {
                     .map(|x| x.to_string())
                     .collect()
             } else {
-                vec![]
+                return Err(ftd::document::ParseError::ValidationError(
+                    "ignore is empty".to_string(),
+                ));
             },
         })
     }

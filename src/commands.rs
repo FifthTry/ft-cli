@@ -1,11 +1,10 @@
 pub fn status(file_name: &str) -> crate::Result<()> {
-    let config = crate::config::Config::from_file(file_name)?;
+    let config = crate::Config::from_file(file_name)?;
     status_util(config, file_name)?;
     Ok(())
 }
 
-pub fn status_util(config: crate::config::Config, config_file_path: &str) -> crate::Result<()> {
-    use crate::types::Auth;
+pub fn status_util(config: crate::Config, config_file_path: &str) -> crate::Result<()> {
     /*
     Config: ../.ft-sync.p1
     Backend: mdBook
@@ -13,12 +12,12 @@ pub fn status_util(config: crate::config::Config, config_file_path: &str) -> cra
     Last Sync On: 2021-04-21 3:05PM (CST).
     */
 
-    let authcode = match config.auth {
-        Auth::AuthCode(s) => s,
+    let auth_code = match config.auth {
+        crate::Auth::AuthCode(s) => s,
         _ => return Ok(()),
     };
 
-    let (synced_hash, updated_on) = ft_api::sync_status::sync_status(authcode.as_str())?;
+    let (synced_hash, updated_on) = ft_api::sync_status(auth_code.as_str())?;
 
     println!("Config: {}", config_file_path);
     println!("Backend: {}", config.backend.to_string());
@@ -37,26 +36,26 @@ pub fn status_util(config: crate::config::Config, config_file_path: &str) -> cra
 }
 
 pub fn sync(file_name: &str, dry_run: bool) -> crate::Result<()> {
-    let config = crate::config::Config::from_file(file_name)?;
+    let config = crate::Config::from_file(file_name)?;
     sync_util(config, dry_run)?;
     Ok(())
 }
 
-fn sync_util(config: crate::config::Config, _dry_run: bool) -> crate::Result<()> {
-    use crate::types::Auth;
-    use std::process::Command;
-
-    let authcode = match &config.auth {
-        Auth::AuthCode(s) => s.to_string(),
+fn sync_util(config: crate::Config, _dry_run: bool) -> crate::Result<()> {
+    let auth_code = match &config.auth {
+        crate::Auth::AuthCode(s) => s.to_string(),
         _ => return Ok(()),
     };
 
-    let (synced_hash, _) = ft_api::sync_status::sync_status(authcode.as_str())?;
+    let (synced_hash, _) = ft_api::sync_status::sync_status(auth_code.as_str())?;
 
-    let output = Command::new("git").arg("rev-parse").arg("HEAD").output()?;
+    let output = std::process::Command::new("git")
+        .arg("rev-parse")
+        .arg("HEAD")
+        .output()?;
     let latest_hash = String::from_utf8(output.stdout)?;
 
-    let root_dir_output = Command::new("git")
+    let root_dir_output = std::process::Command::new("git")
         .arg("rev-parse")
         .arg("--show-toplevel")
         .output()?;
@@ -78,7 +77,7 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> crate::Result<()>
 
     let mut actions = vec![];
     let read_content = |file_path: &str| -> crate::Result<String> {
-        std::fs::read_to_string(&file_path).map_err(|e| crate::error::Error::ReadError(e).into())
+        std::fs::read_to_string(&file_path).map_err(|e| crate::Error::ReadError(e).into())
     };
 
     for file in files.into_iter() {
@@ -124,7 +123,7 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> crate::Result<()>
                     if let Some(path) = path.to_str() {
                         let new_path = path.replacen(&data_dir, "", 1).replacen(".ftd", "", 1);
                         println!("path: {}, new_path: {}", path, new_path);
-                        actions.push(ft_api::bulk_update::Action::Added {
+                        actions.push(ft_api::bulk_update::Action::Updated {
                             id: new_path,
                             content: read_content(path)?,
                         });
@@ -152,7 +151,7 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> crate::Result<()>
         latest_hash.as_str(),
         config.repo.as_str(),
         actions,
-        authcode.as_str(),
+        auth_code.as_str(),
     )?;
 
     Ok(())

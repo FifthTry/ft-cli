@@ -9,15 +9,15 @@ fn parse_line(line: &str) -> self::FileMode {
     let sp = line.split('\t').collect::<Vec<_>>();
     let mode = sp[0].chars().next().unwrap();
     match mode {
-        'A' => crate::git::FileMode::Added(sp[1].to_string()),
-        'M' => crate::git::FileMode::Modified(sp[1].to_string()),
-        'D' => crate::git::FileMode::Deleted(sp[1].to_string()),
-        'R' => crate::git::FileMode::Renamed(sp[1].to_string(), sp[2].to_string()),
+        'A' => FileMode::Added(sp[1].to_string()),
+        'M' => FileMode::Modified(sp[1].to_string()),
+        'D' => FileMode::Deleted(sp[1].to_string()),
+        'R' => FileMode::Renamed(sp[1].to_string(), sp[2].to_string()),
         _ => panic!("file with unknown mode : {}", line),
     }
 }
 
-pub fn ls_tree(hash: &str) -> crate::types::Result<Vec<FileMode>> {
+pub fn ls_tree(hash: &str) -> crate::Result<Vec<FileMode>> {
     let cmd = std::process::Command::new("git")
         .args(&["ls-tree", "-r", "--name-only", hash.trim()])
         .output()?;
@@ -25,11 +25,11 @@ pub fn ls_tree(hash: &str) -> crate::types::Result<Vec<FileMode>> {
     let files = files.lines();
     Ok(files
         .into_iter()
-        .map(|x| self::FileMode::Added(x.to_string()))
+        .map(|x| FileMode::Added(x.to_string()))
         .collect())
 }
 
-pub fn diff(hash1: &str, hash2: &str) -> crate::types::Result<Vec<FileMode>> {
+pub fn diff(hash1: &str, hash2: &str) -> crate::Result<Vec<FileMode>> {
     let cmd = std::process::Command::new("git")
         .args(&["diff", "--name-status", hash1.trim(), hash2.trim()])
         .output()?;

@@ -4,5 +4,6 @@ pub mod error;
 pub mod git;
 pub mod types;
 
+pub use crate::config::Config;
 pub use error::Error;
 pub use types::{Auth, Backend, Result, SyncMode, User};

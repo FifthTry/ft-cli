@@ -1,7 +1,7 @@
 pub mod section;
 
 pub struct Config {
-    pub ignored: Vec<Ignored>,
+    pub ignored: Vec<String>,
     pub repo: String,
     pub collection: String,
     pub backend: crate::Backend,
@@ -9,10 +9,6 @@ pub struct Config {
     pub mode: crate::SyncMode,
     pub auth: crate::Auth,
     pub dot_ft: bool,
-}
-
-pub struct Ignored {
-    pub pattern: String,
 }
 
 impl Config {
@@ -24,17 +20,17 @@ impl Config {
 
     pub fn parse(content: &str) -> crate::Result<Self> {
         let p1 = ftd::p1::parse(content)?;
-        let mut ftsync: Option<section::FtSync> = None;
+        let mut ft_sync: Option<section::FtSync> = None;
         let mut ignored: Vec<section::Ignored> = vec![];
         for section in p1 {
             let s = section::Section::from_p1(&section)?;
             match s {
                 section::Section::FtSync(sec) => {
-                    if ftsync.is_none() {
-                        ftsync = Some(sec)
+                    if ft_sync.is_none() {
+                        ft_sync = Some(sec)
                     } else {
                         return Err(crate::Error::ConfigFileParseError {
-                            error: "Duplicate FTSync section".to_string(),
+                            error: "Duplicate ft-sync section".to_string(),
                         }
                         .into());
                     }
@@ -43,7 +39,7 @@ impl Config {
             }
         }
 
-        let ftsync = match ftsync {
+        let ft_sync = match ft_sync {
             Some(f) => f,
             None => {
                 return Err(crate::Error::ConfigFileParseError {
@@ -53,21 +49,17 @@ impl Config {
             }
         };
 
-        let patterns = ignored
+        let ignored = ignored
             .into_iter()
             .flat_map(|ig| ig.patterns)
             .collect::<Vec<_>>();
-        let patterns = patterns
-            .into_iter()
-            .map(|x| Ignored { pattern: x })
-            .collect();
 
         Ok(Config {
-            ignored: patterns,
-            repo: ftsync.repo,
-            collection: ftsync.collection,
-            backend: ftsync.backend.as_str().into(),
-            root: ftsync.root,
+            ignored,
+            repo: ft_sync.repo,
+            collection: ft_sync.collection,
+            backend: ft_sync.backend.as_str().into(),
+            root: ft_sync.root,
             mode: crate::SyncMode::LocalToRemote,
             auth: crate::Auth::AuthCode("ZV6cN8i6B8VUrb5PgPKc".to_string()),
             dot_ft: false,

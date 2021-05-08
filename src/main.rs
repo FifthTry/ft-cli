@@ -26,7 +26,7 @@ fn main() {
     let config_file = cmd.value_of("config").unwrap();
     println!("Config File: {}", config_file);
 
-    let _config = match cmd.subcommand() {
+    match cmd.subcommand() {
         ("status", _) => {
             match ft_sync::commands::status(config_file) {
                 Ok(()) => {}
