@@ -1,12 +1,12 @@
-use crate::types::FTResult;
+use crate::types::Result;
 
-pub fn status(file_name: &str) -> FTResult<()> {
+pub fn status(file_name: &str) -> Result<()> {
     let config = crate::config::Config::from_file(file_name)?;
     status_util(config, file_name)?;
     Ok(())
 }
 
-pub fn status_util(config: crate::config::Config, config_file_path: &str) -> FTResult<()> {
+pub fn status_util(config: crate::config::Config, config_file_path: &str) -> Result<()> {
     use crate::types::Auth;
     /*
     Config: ../.ft-sync.p1
@@ -38,13 +38,13 @@ pub fn status_util(config: crate::config::Config, config_file_path: &str) -> FTR
     Ok(())
 }
 
-pub fn sync(file_name: &str, dry_run: bool) -> FTResult<()> {
+pub fn sync(file_name: &str, dry_run: bool) -> Result<()> {
     let config = crate::config::Config::from_file(file_name)?;
     sync_util(config, dry_run)?;
     Ok(())
 }
 
-fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
+fn sync_util(config: crate::config::Config, _dry_run: bool) -> Result<()> {
     use crate::types::Auth;
     use std::process::Command;
 
@@ -79,9 +79,9 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
     };
 
     let mut actions = vec![];
-    let read_content = |file_path: &str| -> FTResult<String> {
+    let read_content = |file_path: &str| -> Result<String> {
         std::fs::read_to_string(&file_path)
-            .map_err(|e| crate::error::FTSyncError::ReadError(e).into())
+            .map_err(|e| crate::error::Error::ReadError(e).into())
     };
 
     for file in files.into_iter() {

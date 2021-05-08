@@ -1,16 +1,13 @@
 pub mod section;
 
-use crate::types::*;
-use crate::error::FTSyncError;
-
 pub struct Config {
     pub ignored: Vec<Ignored>,
     pub repo: String,
     pub collection: String,
-    pub backend: Backend,
+    pub backend: crate::Backend,
     pub root: String,
-    pub mode: SyncMode,
-    pub auth: Auth,
+    pub mode: crate::SyncMode,
+    pub auth: crate::Auth,
     pub dot_ft: bool,
 }
 
@@ -19,13 +16,13 @@ pub struct Ignored {
 }
 
 impl Config {
-    pub fn from_file(filename: &str) -> FTResult<Self> {
+    pub fn from_file(filename: &str) -> crate::Result<Self> {
         use std::fs;
         let contents = fs::read_to_string(filename)?;
         Self::parse(contents.as_str())
     }
 
-    pub fn parse(content: &str) -> FTResult<Self> {
+    pub fn parse(content: &str) -> crate::Result<Self> {
         let p1 = ftd::p1::parse(content)?;
         let mut ftsync: Option<section::FtSync> = None;
         let mut ignored: Vec<section::Ignored> = vec![];
@@ -37,7 +34,7 @@ impl Config {
                         ftsync = Some(sec)
                     }
                     else {
-                        return Err(FTSyncError::ConfigFileParseError {error: "Duplicate FTSync section".to_string()}.into());
+                        return Err(crate::Error::ConfigFileParseError {error: "Duplicate FTSync section".to_string()}.into());
                     }
                 },
                 section::Section::Ignored(sec) => ignored.push(sec)
@@ -48,7 +45,7 @@ impl Config {
             Some(f) => f,
             None =>
                 return Err(
-                    FTSyncError::ConfigFileParseError {error: "No FTSync section found".to_string()}.into()
+                    crate::Error::ConfigFileParseError {error: "No FTSync section found".to_string()}.into()
                 )
         };
 
@@ -61,8 +58,8 @@ impl Config {
             collection: ftsync.collection,
             backend: ftsync.backend.as_str().into(),
             root: ftsync.root,
-            mode: SyncMode::LocalToRemote,
-            auth: Auth::AuthCode("ZV6cN8i6B8VUrb5PgPKc".to_string()),
+            mode: crate::SyncMode::LocalToRemote,
+            auth: crate::Auth::AuthCode("ZV6cN8i6B8VUrb5PgPKc".to_string()),
             dot_ft: false
         })
     }

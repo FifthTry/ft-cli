@@ -17,7 +17,7 @@ fn parse_line(line: &str) -> self::FileMode {
     }
 }
 
-pub fn git_ls_tree(hash: &str) -> crate::types::FTResult<Vec<FileMode>> {
+pub fn git_ls_tree(hash: &str) -> crate::types::Result<Vec<FileMode>> {
     let cmd = std::process::Command::new("git")
         .args(&["ls-tree", "-r", "--name-only", hash.trim()])
         .output()?;
@@ -29,7 +29,7 @@ pub fn git_ls_tree(hash: &str) -> crate::types::FTResult<Vec<FileMode>> {
         .collect())
 }
 
-pub fn git_diff(hash1: &str, hash2: &str) -> crate::types::FTResult<Vec<FileMode>> {
+pub fn git_diff(hash1: &str, hash2: &str) -> crate::types::Result<Vec<FileMode>> {
     let cmd = std::process::Command::new("git")
         .args(&["diff", "--name-status", hash1.trim(), hash2.trim()])
         .output()?;

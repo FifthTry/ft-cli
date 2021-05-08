@@ -1,6 +1,4 @@
-use std::fmt;
-
-pub type FTResult<T> = anyhow::Result<T>;
+pub type Result<T> = anyhow::Result<T>;
 
 pub enum Auth {
     SignedIn(User),
@@ -43,8 +41,8 @@ impl From<&std::string::String> for Backend {
     }
 }
 
-impl fmt::Display for Backend {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl std::fmt::Display for Backend {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Backend::FTD => write!(f, "FTD"),
             Backend::Unknown => write!(f, "Unknown"),
