@@ -1,12 +1,10 @@
-use crate::types::Result;
-
-pub fn status(file_name: &str) -> Result<()> {
+pub fn status(file_name: &str) -> crate::Result<()> {
     let config = crate::config::Config::from_file(file_name)?;
     status_util(config, file_name)?;
     Ok(())
 }
 
-pub fn status_util(config: crate::config::Config, config_file_path: &str) -> Result<()> {
+pub fn status_util(config: crate::config::Config, config_file_path: &str) -> crate::Result<()> {
     use crate::types::Auth;
     /*
     Config: ../.ft-sync.p1
@@ -38,13 +36,13 @@ pub fn status_util(config: crate::config::Config, config_file_path: &str) -> Res
     Ok(())
 }
 
-pub fn sync(file_name: &str, dry_run: bool) -> Result<()> {
+pub fn sync(file_name: &str, dry_run: bool) -> crate::Result<()> {
     let config = crate::config::Config::from_file(file_name)?;
     sync_util(config, dry_run)?;
     Ok(())
 }
 
-fn sync_util(config: crate::config::Config, _dry_run: bool) -> Result<()> {
+fn sync_util(config: crate::config::Config, _dry_run: bool) -> crate::Result<()> {
     use crate::types::Auth;
     use std::process::Command;
 
@@ -73,13 +71,13 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> Result<()> {
     };
 
     let files = if synced_hash.is_empty() {
-        crate::git::git_ls_tree(&latest_hash)?
+        crate::git::ls_tree(&latest_hash)?
     } else {
-        crate::git::git_diff(&synced_hash, &latest_hash)?
+        crate::git::diff(&synced_hash, &latest_hash)?
     };
 
     let mut actions = vec![];
-    let read_content = |file_path: &str| -> Result<String> {
+    let read_content = |file_path: &str| -> crate::Result<String> {
         std::fs::read_to_string(&file_path).map_err(|e| crate::error::Error::ReadError(e).into())
     };
 

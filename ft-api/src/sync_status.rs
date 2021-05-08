@@ -17,7 +17,10 @@ pub fn sync_status(auth_code: &str) -> Result<(String, chrono::DateTime<chrono::
 
     if !response.success || response.result.is_none() {
         return Err(crate::error::Error::ResponseError(
-            response.error.map(|x| x.error).unwrap_or("".to_string()),
+            response
+                .error
+                .map(|x| x.error)
+                .unwrap_or_else(|| "".to_string()),
         )
         .into());
     }

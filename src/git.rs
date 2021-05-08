@@ -6,7 +6,7 @@ pub enum FileMode {
 }
 
 fn parse_line(line: &str) -> self::FileMode {
-    let sp = line.split("\t").collect::<Vec<_>>();
+    let sp = line.split('\t').collect::<Vec<_>>();
     let mode = sp[0].chars().next().unwrap();
     match mode {
         'A' => crate::git::FileMode::Added(sp[1].to_string()),
@@ -17,11 +17,11 @@ fn parse_line(line: &str) -> self::FileMode {
     }
 }
 
-pub fn git_ls_tree(hash: &str) -> crate::types::Result<Vec<FileMode>> {
+pub fn ls_tree(hash: &str) -> crate::types::Result<Vec<FileMode>> {
     let cmd = std::process::Command::new("git")
         .args(&["ls-tree", "-r", "--name-only", hash.trim()])
         .output()?;
-    let files = String::from_utf8(cmd.stdout.clone())?;
+    let files = String::from_utf8(cmd.stdout)?;
     let files = files.lines();
     Ok(files
         .into_iter()
@@ -29,16 +29,12 @@ pub fn git_ls_tree(hash: &str) -> crate::types::Result<Vec<FileMode>> {
         .collect())
 }
 
-pub fn git_diff(hash1: &str, hash2: &str) -> crate::types::Result<Vec<FileMode>> {
+pub fn diff(hash1: &str, hash2: &str) -> crate::types::Result<Vec<FileMode>> {
     let cmd = std::process::Command::new("git")
         .args(&["diff", "--name-status", hash1.trim(), hash2.trim()])
         .output()?;
-    let files = String::from_utf8(cmd.stdout.clone())?;
+    let files = String::from_utf8(cmd.stdout)?;
     let files = files.lines();
 
-    Ok(files
-        .into_iter()
-        .map(parse_line)
-        .map(|x| x)
-        .collect::<Vec<_>>())
+    Ok(files.into_iter().map(parse_line).collect::<Vec<_>>())
 }

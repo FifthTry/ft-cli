@@ -57,8 +57,8 @@ pub fn bulk_update(
         return Err(crate::error::Error::ResponseError(
             response
                 .error
-                .map(|x| x.error.to_string())
-                .unwrap_or("".to_string()),
+                .map(|x| x.error)
+                .unwrap_or_else(|| "".to_string()),
         )
         .into());
     }

@@ -12,6 +12,7 @@ pub struct User {
     pub name: String,
 }
 
+#[allow(clippy::upper_case_acronyms)]
 pub enum Backend {
     Unknown,
     FTD,
