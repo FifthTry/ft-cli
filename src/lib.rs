@@ -4,5 +4,5 @@ pub mod error;
 pub mod git;
 pub mod types;
 
-pub use types::{User, Auth, Backend, Result, SyncMode};
 pub use error::Error;
+pub use types::{Auth, Backend, Result, SyncMode, User};
