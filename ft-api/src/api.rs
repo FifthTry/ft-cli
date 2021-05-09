@@ -101,7 +101,7 @@ where
         });
     }
 
-    resp.json().map_err(|e| PageError::DeserializeError(e))
+    resp.json().map_err(PageError::DeserializeError)
 }
 
 fn post_util<B: Into<reqwest::blocking::Body>>(
