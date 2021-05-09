@@ -12,6 +12,15 @@ fn main() {
                 .help("path to the ft-sync config file")
                 .takes_value(true),
         )
+        .arg(
+            clap::Arg::with_name("test")
+                .short("t")
+                .long("test")
+                .required(false)
+                .value_name("TEST")
+                .help("if to run in test mode")
+                .takes_value(false),
+        )
         .subcommands(vec![
             clap::SubCommand::with_name("status").about("show the sync status"),
             clap::SubCommand::with_name("sync").about("sync files").arg(

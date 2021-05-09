@@ -11,3 +11,5 @@ local.sh
 .idea
 .DS_Store
 .cargo
+
+*.url

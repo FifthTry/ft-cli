@@ -11,6 +11,10 @@ pub struct ApiError {
     pub error: String,
 }
 
+pub fn is_test() -> bool {
+    std::env::args().any(|e| e == "--test")
+}
+
 #[derive(Deserialize, Debug)]
 pub enum Error {
     InvalidAuthCode,
@@ -74,15 +78,37 @@ pub enum PageError {
 pub type PageResult<T> = Result<T, PageError>;
 
 // TODO: convert it to a macro so key values can be passed easily
-pub fn page<T, K, V>(url: &str, query: std::collections::HashMap<K, V>) -> PageResult<T>
+pub fn page<T, K, V>(
+    url: &str,
+    query: std::collections::HashMap<K, V>,
+    tid: Option<String>,
+) -> PageResult<T>
 where
     T: serde::de::DeserializeOwned,
     K: Into<String>,
     V: Into<String>,
 {
+    let url = to_url_with_query(url, query);
+
+    if is_test() {
+        let tid = match tid {
+            Some(v) => v,
+            None => panic!("tid is none in test mode"),
+        };
+
+        // write to ./tid.url and return content of tid.json
+        std::fs::write(format!("{}.url", tid.as_str()), url).expect("failed to write to .url file");
+        return Ok(serde_json::from_str(
+            std::fs::read_to_string(format!("{}.json", tid.as_str()))
+                .expect("failed to read .json file")
+                .as_str(),
+        )
+        .expect("failed to parse json"));
+    }
+
     let client = reqwest::blocking::Client::new();
     let resp = match client
-        .get(to_url_with_query(url, query))
+        .get(url)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .header("User-Agent", "rust")

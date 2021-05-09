@@ -12,8 +12,11 @@ pub fn sync_status(
     use chrono::TimeZone;
     let url = format!("/{}/~/sync-status/", collection);
 
-    let resp: crate::PageResult<Status> =
-        crate::api::page(&url, maplit::hashmap! {"auth_code" => auth_code});
+    let resp: crate::PageResult<Status> = crate::api::page(
+        &url,
+        maplit::hashmap! {"auth_code" => auth_code},
+        Some("status".to_string()),
+    );
 
     let resp = resp?;
 
