@@ -48,21 +48,11 @@ fn sync_util(config: crate::Config, _dry_run: bool) -> crate::Result<()> {
         _ => return Ok(()),
     };
 
+    let latest_hash = crate::git::head()?;
+    let root_dir = crate::git::root_dir()?;
+
     let (synced_hash, _) =
         ft_api::sync_status::sync_status(config.collection.as_str(), auth_code.as_str())?;
-
-    let output = std::process::Command::new("git")
-        .arg("rev-parse")
-        .arg("HEAD")
-        .output()?;
-    let latest_hash = String::from_utf8(output.stdout)?;
-
-    let root_dir_output = std::process::Command::new("git")
-        .arg("rev-parse")
-        .arg("--show-toplevel")
-        .output()?;
-    let root_dir = String::from_utf8(root_dir_output.stdout)?;
-    let root_dir = root_dir.trim();
 
     let data_dir = std::path::Path::new(&root_dir).join(&config.root);
 
@@ -85,7 +75,7 @@ fn sync_util(config: crate::Config, _dry_run: bool) -> crate::Result<()> {
     for file in files.into_iter() {
         match file {
             crate::git::FileMode::Added(path) => {
-                let path = std::path::Path::new(root_dir).join(path);
+                let path = std::path::Path::new(&root_dir).join(path);
                 if config.backend.accept(&path) {
                     if let Some(path) = path.to_str() {
                         let new_path = path.replacen(&data_dir, "", 1).replacen(".ftd", "", 1);
@@ -98,7 +88,7 @@ fn sync_util(config: crate::Config, _dry_run: bool) -> crate::Result<()> {
                 }
             }
             crate::git::FileMode::Renamed(p1, p2) => {
-                let path = std::path::Path::new(root_dir).join(p2);
+                let path = std::path::Path::new(&root_dir).join(p2);
                 if config.backend.accept(&path) {
                     if let Some(path) = path.to_str() {
                         let new_path = path.replacen(&data_dir, "", 1).replacen(".ftd", "", 1);
@@ -110,7 +100,7 @@ fn sync_util(config: crate::Config, _dry_run: bool) -> crate::Result<()> {
                     }
                 }
 
-                let path = std::path::Path::new(root_dir).join(p1);
+                let path = std::path::Path::new(&root_dir).join(p1);
                 if config.backend.accept(&path) {
                     if let Some(path) = path.to_str() {
                         let new_path = path.replacen(&data_dir, "", 1).replacen(".ftd", "", 1);
@@ -120,7 +110,7 @@ fn sync_util(config: crate::Config, _dry_run: bool) -> crate::Result<()> {
                 }
             }
             crate::git::FileMode::Modified(path) => {
-                let path = std::path::Path::new(root_dir).join(path);
+                let path = std::path::Path::new(&root_dir).join(path);
                 if config.backend.accept(&path) {
                     if let Some(path) = path.to_str() {
                         let new_path = path.replacen(&data_dir, "", 1).replacen(".ftd", "", 1);
@@ -133,7 +123,7 @@ fn sync_util(config: crate::Config, _dry_run: bool) -> crate::Result<()> {
                 }
             }
             crate::git::FileMode::Deleted(path) => {
-                let path = std::path::Path::new(root_dir).join(path);
+                let path = std::path::Path::new(&root_dir).join(path);
                 if config.backend.accept(&path) {
                     if let Some(path) = path.to_str() {
                         let new_path = path.replacen(&data_dir, "", 1).replacen(".ftd", "", 1);
