@@ -24,3 +24,6 @@ ft-api = { path = "ft-api" }
 [dependencies.chrono]
 features = ["serde"]
 version = "0.4"
+
+[dev-dependencies]
+rusty-hook = "0.11.2"
