@@ -2,6 +2,7 @@
 pub struct ApiResponse<T> {
     pub success: bool,
     pub result: Option<T>,
+    // TODO: change to `pub error: std::collections::HashMap<String, String>,`
     pub error: Option<ApiError>,
 }
 
@@ -39,45 +40,68 @@ impl ToString for Error {
     }
 }
 
-fn to_url(url: &str) -> String {
-    // TODO: read domain from config
+fn to_url_with_query<K, V>(url: &str, _query: std::collections::HashMap<K, V>) -> String
+where
+    K: Into<String>,
+    V: Into<String>,
+{
+    // TODO: read domain from config/env
     format!("http://127.0.0.1:3000{}?realm_mode=api", url)
 }
 
-fn get_util(url: &str) -> crate::Result<serde_json::Value> {
+fn to_url(url: &str) -> String {
+    // TODO: read domain from config/env
+    format!("http://127.0.0.1:3000{}?realm_mode=api", url)
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum PageError {
+    #[error("HttpError: {}", _0)]
+    HttpError(reqwest::Error),
+    #[error("UnexpectedResponse: {code:?} {body:?}")]
+    UnexpectedResponse {
+        body: String,
+        code: reqwest::StatusCode,
+    },
+    #[error("PageNotFound: {}", _0)]
+    PageNotFound(String),
+    #[error("DeserializeError: {:?}", _0)]
+    DeserializeError(reqwest::Error),
+    #[error("InputError: {:?}", _0)]
+    InputError(std::collections::HashMap<String, String>), // How to make realm return this?
+}
+
+pub type PageResult<T> = Result<T, PageError>;
+
+// TODO: convert it to a macro so key values can be passed easily
+pub fn page<T, K, V>(url: &str, query: std::collections::HashMap<K, V>) -> PageResult<T>
+where
+    T: serde::de::DeserializeOwned,
+    K: Into<String>,
+    V: Into<String>,
+{
     let client = reqwest::blocking::Client::new();
-    match client
-        .get(to_url(url))
+    let resp = match client
+        .get(to_url_with_query(url, query))
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .header("User-Agent", "rust")
         .send()
     {
-        Ok(response) => {
-            if response.status() != reqwest::StatusCode::OK {
-                Err(crate::error::Error::APIResponseNotOk("api response not OK".to_string()).into())
-            } else {
-                response.json().map_err(|e| e.into())
-            }
-        }
-        Err(e) => Err(crate::error::Error::APIError { error: e }.into()),
-    }
-}
+        Ok(response) => response,
+        Err(e) => return Err(PageError::HttpError(e)),
+    };
 
-// TODO: convert it to a macro so key values can be passed easily
-pub fn get<T: serde::de::DeserializeOwned, K, V>(
-    url: &str,
-    _query: std::collections::HashMap<K, V>,
-) -> crate::Result<ApiResponse<T>>
-where
-    K: Into<String>,
-    V: Into<String>,
-{
-    match get_util(url) {
-        Ok(response) => serde_json::from_value(response)
-            .map_err(|e| crate::error::Error::DeserializeError(e.to_string()).into()),
-        Err(e) => Err(e),
+    if resp.status() != reqwest::StatusCode::OK {
+        return Err(PageError::UnexpectedResponse {
+            code: resp.status(),
+            body: resp
+                .text()
+                .unwrap_or_else(|_| "failed to read body".to_string()),
+        });
     }
+
+    resp.json().map_err(|e| PageError::DeserializeError(e))
 }
 
 fn post_util<B: Into<reqwest::blocking::Body>>(
@@ -107,10 +131,11 @@ fn post_util<B: Into<reqwest::blocking::Body>>(
     }
 }
 
-pub fn post<T: serde::de::DeserializeOwned, B: Into<reqwest::blocking::Body>>(
-    url: &str,
-    body: B,
-) -> crate::Result<ApiResponse<T>> {
+pub fn post<T, B>(url: &str, body: B) -> crate::Result<ApiResponse<T>>
+where
+    T: serde::de::DeserializeOwned,
+    B: Into<reqwest::blocking::Body>,
+{
     match post_util(url, body) {
         Ok(response) => serde_json::from_value(response)
             .map_err(|e| crate::error::Error::DeserializeError(e.to_string()).into()),

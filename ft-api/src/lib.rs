@@ -8,5 +8,6 @@ pub mod sync_status;
 
 pub type Result<T> = anyhow::Result<T>;
 
+pub use api::{PageError, PageResult};
 pub use bulk_update::bulk_update;
 pub use sync_status::sync_status;
