@@ -6,44 +6,40 @@ pub enum FileMode {
 }
 
 fn parse_line(line: &str) -> self::FileMode {
-    let sp = line.split("\t").collect::<Vec<_>>();
+    let sp = line.split('\t').collect::<Vec<_>>();
     let mode = sp[0].chars().next().unwrap();
     match mode {
-        'A' => crate::git::FileMode::Added(sp[1].to_string()),
-        'M' => crate::git::FileMode::Modified(sp[1].to_string()),
-        'D' => crate::git::FileMode::Deleted(sp[1].to_string()),
-        'R' => crate::git::FileMode::Renamed(sp[1].to_string(), sp[2].to_string()),
+        'A' => FileMode::Added(sp[1].to_string()),
+        'M' => FileMode::Modified(sp[1].to_string()),
+        'D' => FileMode::Deleted(sp[1].to_string()),
+        'R' => FileMode::Renamed(sp[1].to_string(), sp[2].to_string()),
         _ => panic!("file with unknown mode : {}", line),
     }
 }
 
-pub fn git_ls_tree(hash: &str) -> crate::types::FTResult<Vec<FileMode>> {
+pub fn ls_tree(hash: &str) -> crate::Result<Vec<FileMode>> {
     let cmd = std::process::Command::new("git")
         .args(&["ls-tree", "-r", "--name-only", hash.trim()])
         .output()?;
-    let files = String::from_utf8(cmd.stdout.clone())?;
+    let files = String::from_utf8(cmd.stdout)?;
     let files = files.lines();
     Ok(files
         .into_iter()
-        .map(|x| self::FileMode::Added(x.to_string()))
+        .map(|x| FileMode::Added(x.to_string()))
         .collect())
 }
 
-pub fn git_diff(hash1: &str, hash2: &str) -> crate::types::FTResult<Vec<FileMode>> {
+pub fn diff(hash1: &str, hash2: &str) -> crate::Result<Vec<FileMode>> {
     let cmd = std::process::Command::new("git")
         .args(&["diff", "--name-status", hash1.trim(), hash2.trim()])
         .output()?;
-    let files = String::from_utf8(cmd.stdout.clone())?;
+    let files = String::from_utf8(cmd.stdout)?;
     let files = files.lines();
 
-    Ok(files
-        .into_iter()
-        .map(parse_line)
-        .map(|x| x)
-        .collect::<Vec<_>>())
+    Ok(files.into_iter().map(parse_line).collect::<Vec<_>>())
 }
 
-pub fn head() -> crate::types::FTResult<String> {
+pub fn head() -> crate::types::Result<String> {
     let output = std::process::Command::new("git")
         .arg("rev-parse")
         .arg("HEAD")
@@ -51,8 +47,8 @@ pub fn head() -> crate::types::FTResult<String> {
     Ok(String::from_utf8(output.stdout)?.trim().to_string())
 }
 
-pub fn root_dir() -> crate::types::FTResult<String> {
-    let output = std::process::new("git")
+pub fn root_dir() -> crate::types::Result<String> {
+    let output = std::process::Command::new("git")
         .arg("rev-parse")
         .arg("--show-toplevel")
         .output()?;

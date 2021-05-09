@@ -1,6 +1,4 @@
-use thiserror::Error as Error_;
-
-#[derive(Error_, Debug)]
+#[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("api error: {error:?}")]
     APIError { error: reqwest::Error },
@@ -12,7 +10,7 @@ pub enum Error {
     DeserializeError(String),
 
     #[error("ResponseError: {}", _0)]
-    ResponseError(String)
+    ResponseError(String),
 }
 
 impl From<reqwest::Error> for Error {

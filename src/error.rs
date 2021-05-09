@@ -1,7 +1,5 @@
-use thiserror::Error;
-
-#[derive(Error, Debug)]
-pub enum FTSyncError {
+#[derive(thiserror::Error, Debug)]
+pub enum Error {
     #[error("cannot parse config file {error:?}")]
     ConfigFileFTDError { error: ftd::document::ParseError },
 
@@ -12,7 +10,7 @@ pub enum FTSyncError {
     APIError { error: reqwest::Error },
 
     #[error("cannot open config file: {}", _0)]
-    ReadError ( #[from] std::io::Error ),
+    ReadError(#[from] std::io::Error),
 
     #[error("api status code: {}", _0)]
     APIResponseNotOk(String),
@@ -21,17 +19,17 @@ pub enum FTSyncError {
     DeserializeError(String),
 
     #[error("ResponseError: {}", _0)]
-    ResponseError(String)
+    ResponseError(String),
 }
 
-impl From<reqwest::Error> for FTSyncError {
+impl From<reqwest::Error> for Error {
     fn from(e: reqwest::Error) -> Self {
-        FTSyncError::APIError { error: e }
+        Error::APIError { error: e }
     }
 }
 
-impl From<ftd::document::ParseError> for FTSyncError {
+impl From<ftd::document::ParseError> for Error {
     fn from(e: ftd::document::ParseError) -> Self {
-        FTSyncError::ConfigFileFTDError { error: e }
+        Error::ConfigFileFTDError { error: e }
     }
 }

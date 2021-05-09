@@ -1,6 +1,4 @@
-use std::fmt;
-
-pub type FTResult<T> = anyhow::Result<T>;
+pub type Result<T> = anyhow::Result<T>;
 
 pub enum Auth {
     SignedIn(User),
@@ -14,6 +12,7 @@ pub struct User {
     pub name: String,
 }
 
+#[allow(clippy::upper_case_acronyms)]
 pub enum Backend {
     Unknown,
     FTD,
@@ -23,7 +22,7 @@ impl Backend {
     pub fn accept(&self, path: &std::path::Path) -> bool {
         match self {
             Backend::FTD => path.extension() == Some(std::ffi::OsStr::new("ftd")),
-            Backend::Unknown => false
+            Backend::Unknown => false,
         }
     }
 }
@@ -43,8 +42,8 @@ impl From<&std::string::String> for Backend {
     }
 }
 
-impl fmt::Display for Backend {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl std::fmt::Display for Backend {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Backend::FTD => write!(f, "FTD"),
             Backend::Unknown => write!(f, "Unknown"),

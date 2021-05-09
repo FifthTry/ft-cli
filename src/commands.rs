@@ -1,13 +1,10 @@
-use crate::types::FTResult;
-
-pub fn status(file_name: &str) -> FTResult<()> {
-    let config = crate::config::Config::from_file(file_name)?;
+pub fn status(file_name: &str) -> crate::Result<()> {
+    let config = crate::Config::from_file(file_name)?;
     status_util(config, file_name)?;
     Ok(())
 }
 
-pub fn status_util(config: crate::config::Config, config_file_path: &str) -> FTResult<()> {
-    use crate::types::Auth;
+pub fn status_util(config: crate::Config, config_file_path: &str) -> crate::Result<()> {
     /*
     Config: ../.ft-sync.p1
     Backend: mdBook
@@ -15,12 +12,13 @@ pub fn status_util(config: crate::config::Config, config_file_path: &str) -> FTR
     Last Sync On: 2021-04-21 3:05PM (CST).
     */
 
-    let authcode = match config.auth {
-        Auth::AuthCode(s) => s,
+    let auth_code = match config.auth {
+        crate::Auth::AuthCode(s) => s,
         _ => return Ok(()),
     };
 
-    let (synced_hash, updated_on) = ft_api::status::call(authcode.as_str())?;
+    let (synced_hash, updated_on) =
+        ft_api::sync_status(config.collection.as_str(), auth_code.as_str())?;
 
     println!("Config: {}", config_file_path);
     println!("Backend: {}", config.backend.to_string());
@@ -38,24 +36,23 @@ pub fn status_util(config: crate::config::Config, config_file_path: &str) -> FTR
     Ok(())
 }
 
-pub fn sync(file_name: &str, dry_run: bool) -> FTResult<()> {
-    let config = crate::config::Config::from_file(file_name)?;
+pub fn sync(file_name: &str, dry_run: bool) -> crate::Result<()> {
+    let config = crate::Config::from_file(file_name)?;
     sync_util(config, dry_run)?;
     Ok(())
 }
 
-fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
-    use crate::types::Auth;
-    use std::process::Command;
-
-    let authcode = match &config.auth {
-        Auth::AuthCode(s) => s.to_string(),
+fn sync_util(config: crate::Config, _dry_run: bool) -> crate::Result<()> {
+    let auth_code = match &config.auth {
+        crate::Auth::AuthCode(s) => s.to_string(),
         _ => return Ok(()),
     };
 
-    let (synced_hash, _) = ft_api::status::call(authcode.as_str())?;
     let latest_hash = crate::git::head()?;
     let root_dir = crate::git::root_dir()?;
+
+    let (synced_hash, _) =
+        ft_api::sync_status::sync_status(config.collection.as_str(), auth_code.as_str())?;
 
     let data_dir = std::path::Path::new(&root_dir).join(&config.root);
 
@@ -65,26 +62,25 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
     };
 
     let files = if synced_hash.is_empty() {
-        crate::git::git_ls_tree(&latest_hash)?
+        crate::git::ls_tree(&latest_hash)?
     } else {
-        crate::git::git_diff(&synced_hash, &latest_hash)?
+        crate::git::diff(&synced_hash, &latest_hash)?
     };
 
     let mut actions = vec![];
-    let read_content = |file_path: &str| -> FTResult<String> {
-        std::fs::read_to_string(&file_path)
-            .map_err(|e| crate::error::FTSyncError::ReadError(e).into())
+    let read_content = |file_path: &str| -> crate::Result<String> {
+        std::fs::read_to_string(&file_path).map_err(|e| crate::Error::ReadError(e).into())
     };
 
     for file in files.into_iter() {
         match file {
             crate::git::FileMode::Added(path) => {
-                let path = std::path::Path::new(root_dir).join(path);
+                let path = std::path::Path::new(&root_dir).join(path);
                 if config.backend.accept(&path) {
                     if let Some(path) = path.to_str() {
                         let new_path = path.replacen(&data_dir, "", 1).replacen(".ftd", "", 1);
                         println!("path: {}, new_path: {}", path, new_path);
-                        actions.push(ft_api::Action::Added {
+                        actions.push(ft_api::bulk_update::Action::Added {
                             id: new_path,
                             content: read_content(path)?,
                         });
@@ -92,34 +88,34 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
                 }
             }
             crate::git::FileMode::Renamed(p1, p2) => {
-                let path = std::path::Path::new(root_dir).join(p2);
+                let path = std::path::Path::new(&root_dir).join(p2);
                 if config.backend.accept(&path) {
                     if let Some(path) = path.to_str() {
                         let new_path = path.replacen(&data_dir, "", 1).replacen(".ftd", "", 1);
                         println!("path: {}, new_path: {}", path, new_path);
-                        actions.push(ft_api::Action::Added {
+                        actions.push(ft_api::bulk_update::Action::Added {
                             id: new_path,
                             content: read_content(path)?,
                         });
                     }
                 }
 
-                let path = std::path::Path::new(root_dir).join(p1);
+                let path = std::path::Path::new(&root_dir).join(p1);
                 if config.backend.accept(&path) {
                     if let Some(path) = path.to_str() {
                         let new_path = path.replacen(&data_dir, "", 1).replacen(".ftd", "", 1);
                         println!("path: {}, new_path: {}", path, new_path);
-                        actions.push(ft_api::Action::Deleted { id: new_path });
+                        actions.push(ft_api::bulk_update::Action::Deleted { id: new_path });
                     }
                 }
             }
             crate::git::FileMode::Modified(path) => {
-                let path = std::path::Path::new(root_dir).join(path);
+                let path = std::path::Path::new(&root_dir).join(path);
                 if config.backend.accept(&path) {
                     if let Some(path) = path.to_str() {
                         let new_path = path.replacen(&data_dir, "", 1).replacen(".ftd", "", 1);
                         println!("path: {}, new_path: {}", path, new_path);
-                        actions.push(ft_api::Action::Added {
+                        actions.push(ft_api::bulk_update::Action::Updated {
                             id: new_path,
                             content: read_content(path)?,
                         });
@@ -127,12 +123,12 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
                 }
             }
             crate::git::FileMode::Deleted(path) => {
-                let path = std::path::Path::new(root_dir).join(path);
+                let path = std::path::Path::new(&root_dir).join(path);
                 if config.backend.accept(&path) {
                     if let Some(path) = path.to_str() {
                         let new_path = path.replacen(&data_dir, "", 1).replacen(".ftd", "", 1);
                         println!("path: {}, new_path: {}", path, new_path);
-                        actions.push(ft_api::Action::Deleted { id: new_path });
+                        actions.push(ft_api::bulk_update::Action::Deleted { id: new_path });
                     }
                 }
             }
@@ -141,13 +137,13 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
 
     println!("files {:#?}", actions);
 
-    ft_api::bulk_update::call(
+    ft_api::bulk_update::bulk_update(
         config.collection.as_str(),
         synced_hash.as_str(),
         latest_hash.as_str(),
         config.repo.as_str(),
         actions,
-        authcode.as_str(),
+        auth_code.as_str(),
     )?;
 
     Ok(())
