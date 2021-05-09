@@ -42,3 +42,19 @@ pub fn git_diff(hash1: &str, hash2: &str) -> crate::types::FTResult<Vec<FileMode
         .map(|x| x)
         .collect::<Vec<_>>())
 }
+
+pub fn head() -> crate::types::FTResult<String> {
+    let output = std::process::Command::new("git")
+        .arg("rev-parse")
+        .arg("HEAD")
+        .output()?;
+    Ok(String::from_utf8(output.stdout)?.trim().to_string())
+}
+
+pub fn root_dir() -> crate::types::FTResult<String> {
+    let output = std::process::new("git")
+        .arg("rev-parse")
+        .arg("--show-toplevel")
+        .output()?;
+    Ok(String::from_utf8(output.stdout)?.trim().to_string())
+}

@@ -54,16 +54,8 @@ fn sync_util(config: crate::config::Config, _dry_run: bool) -> FTResult<()> {
     };
 
     let (synced_hash, _) = ft_api::status::call(authcode.as_str())?;
-
-    let output = Command::new("git").arg("rev-parse").arg("HEAD").output()?;
-    let latest_hash = String::from_utf8(output.stdout)?;
-
-    let root_dir_output = Command::new("git")
-        .arg("rev-parse")
-        .arg("--show-toplevel")
-        .output()?;
-    let root_dir = String::from_utf8(root_dir_output.stdout)?;
-    let root_dir = root_dir.trim();
+    let latest_hash = crate::git::head()?;
+    let root_dir = crate::git::root_dir()?;
 
     let data_dir = std::path::Path::new(&root_dir).join(&config.root);
 
