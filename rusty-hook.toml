@@ -1,2 +1,2 @@
 [hooks]
-pre-push = "cargo clippy --all && cargo fmt -- --check"
+pre-commit = "cargo clippy --all && cargo fmt -- --check"
