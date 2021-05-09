@@ -5,6 +5,7 @@ pub mod api;
 pub mod bulk_update;
 pub mod error;
 pub mod sync_status;
+
 pub type Result<T> = anyhow::Result<T>;
 
 pub use bulk_update::bulk_update;

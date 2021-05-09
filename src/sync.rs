@@ -1,48 +1,4 @@
-pub fn status(file_name: &str) -> crate::Result<()> {
-    let config = crate::Config::from_file(file_name)?;
-    status_util(config, file_name)?;
-    Ok(())
-}
-
-pub fn status_util(config: crate::Config, config_file_path: &str) -> crate::Result<()> {
-    /*
-    Config: ../.ft-sync.p1
-    Backend: mdBook
-    Root: docs
-    Last Sync On: 2021-04-21 3:05PM (CST).
-    */
-
-    let auth_code = match config.auth {
-        crate::Auth::AuthCode(s) => s,
-        _ => return Ok(()),
-    };
-
-    let (synced_hash, updated_on) =
-        ft_api::sync_status(config.collection.as_str(), auth_code.as_str())?;
-
-    println!("Config: {}", config_file_path);
-    println!("Backend: {}", config.backend.to_string());
-    println!("Root: {}", config.root);
-    println!(
-        "Last Synced Hash: {}",
-        if synced_hash.is_empty() {
-            "Never Synced"
-        } else {
-            synced_hash.as_str()
-        }
-    );
-    println!("Last Sync On: {}", updated_on.to_rfc3339());
-
-    Ok(())
-}
-
-pub fn sync(file_name: &str, dry_run: bool) -> crate::Result<()> {
-    let config = crate::Config::from_file(file_name)?;
-    sync_util(config, dry_run)?;
-    Ok(())
-}
-
-fn sync_util(config: crate::Config, _dry_run: bool) -> crate::Result<()> {
+pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
     let auth_code = match &config.auth {
         crate::Auth::AuthCode(s) => s.to_string(),
         _ => return Ok(()),

@@ -25,10 +25,11 @@ fn main() {
 
     let config_file = cmd.value_of("config").unwrap();
     println!("Config File: {}", config_file);
+    let config = ft_sync::Config::from_file(config_file).expect("failed to read config");
 
     match cmd.subcommand() {
         ("status", _) => {
-            match ft_sync::commands::status(config_file) {
+            match ft_sync::status(&config, config_file) {
                 Ok(()) => {}
                 Err(e) => println!("{:?}", e.to_string()),
             }
@@ -36,7 +37,7 @@ fn main() {
         }
         ("sync", _args) => {
             println!("syncing");
-            match ft_sync::commands::sync(config_file, false) {
+            match ft_sync::sync(&config, false) {
                 Ok(()) => {}
                 Err(e) => println!("{:?}", e.to_string()),
             }
