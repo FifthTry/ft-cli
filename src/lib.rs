@@ -5,7 +5,7 @@ pub mod status;
 pub mod sync;
 pub mod types;
 
-pub use crate::config::Config2;
+pub use crate::config::Config;
 pub use error::Error;
 pub use status::status;
 pub use sync::sync;
