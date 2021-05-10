@@ -6,11 +6,13 @@ on:
       - main
     paths:
      - '**.rs'
+     - '**.yml'
   pull_request:
     branches:
       - main
     paths:
      - '**.rs'
+     - '**.yml'
 jobs:
   everything:
     name: Rust Checks
