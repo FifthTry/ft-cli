@@ -1,27 +1,28 @@
 #[derive(Deserialize)]
 pub struct Status {
     pub last_synced_hash: String,
-    // TODO: use custom deserializer and convert its type to DateTime<Utc>
-    pub last_updated_on: i64,
+    #[serde(deserialize_with = "deserialize_datetime")]
+    pub last_updated_on: chrono::DateTime<chrono::Utc>,
 }
 
-pub fn sync_status(
-    collection: &str,
-    auth_code: &str,
-) -> crate::PageResult<(String, chrono::DateTime<chrono::Utc>)> /* TODO: return Status */ {
+fn deserialize_datetime<'de, D>(deserializer: D) -> Result<chrono::DateTime<chrono::Utc>, D::Error>
+where
+    D: serde::de::Deserializer<'de>,
+{
     use chrono::TimeZone;
-    let url = format!("/{}/~/sync-status/", collection);
 
-    let resp: crate::PageResult<Status> = crate::api::page(
-        &url,
+    // use our visitor to deserialize an `ActualValue`
+    let v: i64 = serde::de::Deserialize::deserialize(deserializer)?;
+
+    Ok(chrono::Utc.timestamp_millis(v))
+}
+
+// TODO: define Error here and return actual errors that sync status can throw
+
+pub fn sync_status(collection: &str, auth_code: &str) -> crate::PageResult<Status> {
+    crate::api::page(
+        &format!("/{}/~/sync-status/", collection),
         maplit::hashmap! {"auth_code" => auth_code},
         Some("status".to_string()),
-    );
-
-    let resp = resp?;
-
-    Ok((
-        resp.last_synced_hash,
-        chrono::Utc.timestamp_millis(resp.last_updated_on),
-    ))
+    )
 }

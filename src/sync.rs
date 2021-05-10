@@ -7,8 +7,7 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
     let latest_hash = crate::git::head()?;
     let root_dir = crate::git::root_dir()?;
 
-    let (synced_hash, _) =
-        ft_api::sync_status::sync_status(config.collection.as_str(), auth_code.as_str())?;
+    let status = ft_api::sync_status::sync_status(config.collection.as_str(), auth_code.as_str())?;
 
     let data_dir = std::path::Path::new(&root_dir).join(&config.root);
 
@@ -17,10 +16,10 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
         None => "/".to_string(),
     };
 
-    let files = if synced_hash.is_empty() {
+    let files = if status.last_synced_hash.is_empty() {
         crate::git::ls_tree(&latest_hash)?
     } else {
-        crate::git::diff(&synced_hash, &latest_hash)?
+        crate::git::diff(&status.last_synced_hash, &latest_hash)?
     };
 
     let mut actions = vec![];
@@ -95,7 +94,7 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
 
     ft_api::bulk_update::bulk_update(
         config.collection.as_str(),
-        synced_hash.as_str(),
+        status.last_synced_hash.as_str(),
         latest_hash.as_str(),
         config.repo.as_str(),
         actions,

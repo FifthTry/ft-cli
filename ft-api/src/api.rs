@@ -50,6 +50,7 @@ where
     V: Into<String>,
 {
     // TODO: read domain from config/env
+    // TODO: ensure the keys are traversed in sorted order
     format!("http://127.0.0.1:3000{}?realm_mode=api", url)
 }
 
@@ -64,15 +65,16 @@ pub enum PageError {
     HttpError(reqwest::Error),
     #[error("UnexpectedResponse: {code:?} {body:?}")]
     UnexpectedResponse {
+        // non 200
         body: String,
         code: reqwest::StatusCode,
     },
     #[error("PageNotFound: {}", _0)]
     PageNotFound(String),
-    #[error("DeserializeError: {:?}", _0)]
-    DeserializeError(reqwest::Error),
     #[error("InputError: {:?}", _0)]
     InputError(std::collections::HashMap<String, String>), // How to make realm return this?
+    #[error("DeserializeError: {:?}", _0)]
+    DeserializeError(reqwest::Error),
 }
 
 pub type PageResult<T> = Result<T, PageError>;
@@ -119,6 +121,7 @@ where
     };
 
     if resp.status() != reqwest::StatusCode::OK {
+        // TODO: handle 404 and input errors
         return Err(PageError::UnexpectedResponse {
             code: resp.status(),
             body: resp
@@ -130,41 +133,53 @@ where
     resp.json().map_err(PageError::DeserializeError)
 }
 
-fn post_util<B: Into<reqwest::blocking::Body>>(
-    url: &str,
-    body: B,
-) -> crate::Result<serde_json::Value> {
+pub fn action<T, B>(url: &str, body: B, tid: Option<String>) -> crate::Result<ApiResponse<T>>
+where
+    T: serde::de::DeserializeOwned,
+    B: serde::Serialize,
+{
+    let url = to_url(url);
+
+    if is_test() {
+        let tid = match tid {
+            Some(v) => v,
+            None => panic!("tid is none in test mode"),
+        };
+
+        // write to ./tid.url and return content of tid.json
+        std::fs::write(format!("{}.url", tid.as_str()), url).expect("failed to write to .url file");
+        std::fs::write(
+            format!("{}.out.json", tid.as_str()),
+            sorted_json::to_json(&serde_json::to_value(body).expect("failed to serialise"))
+                .as_str(),
+        )
+        .expect("failed to write to .out.json file");
+        return Ok(serde_json::from_str(
+            std::fs::read_to_string(format!("{}.json", tid.as_str()))
+                .expect("failed to read .json file")
+                .as_str(),
+        )
+        .expect("failed to parse json"));
+    }
+
     let client = reqwest::blocking::Client::new();
-    match client
-        .post(to_url(url))
-        .body(body)
+    let resp = match client
+        .post(to_url(url.as_str()))
+        .body(reqwest::blocking::Body::from(serde_json::to_vec(&body)?))
         .header("content-type", "application/json")
         .header("Accept", "application/json")
         .header("user-agent", "rust")
         .send()
     {
-        Ok(response) => {
-            if response.status() != reqwest::StatusCode::OK {
-                Err(
-                    crate::error::Error::APIResponseNotOk("post api response not OK".to_string())
-                        .into(),
-                )
-            } else {
-                response.json().map_err(|e| e.into())
-            }
-        }
-        Err(e) => Err(crate::error::Error::APIError { error: e }.into()),
-    }
-}
+        Ok(response) => response,
+        Err(e) => return Err(crate::error::Error::APIError { error: e }.into()),
+    };
 
-pub fn post<T, B>(url: &str, body: B) -> crate::Result<ApiResponse<T>>
-where
-    T: serde::de::DeserializeOwned,
-    B: Into<reqwest::blocking::Body>,
-{
-    match post_util(url, body) {
-        Ok(response) => serde_json::from_value(response)
-            .map_err(|e| crate::error::Error::DeserializeError(e.to_string()).into()),
-        Err(e) => Err(e),
-    }
+    if resp.status() != reqwest::StatusCode::OK {
+        return Err(
+            crate::error::Error::APIResponseNotOk("post api response not OK".to_string()).into(),
+        );
+    };
+
+    resp.json().map_err(Into::into)
 }

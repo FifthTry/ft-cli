@@ -11,22 +11,22 @@ pub fn status(config: &crate::Config, config_file: &str) -> crate::Result<()> {
         _ => return Ok(()),
     };
 
-    let (synced_hash, updated_on) =
-        ft_api::sync_status(config.collection.as_str(), auth_code.as_str())?;
+    let status = ft_api::sync_status(config.collection.as_str(), auth_code.as_str())?;
 
     println!("Config: {}", config_file);
     println!("Backend: {}", config.backend.to_string());
     println!("Root: {}", config.root);
     println!(
         "Last Synced Hash: {}",
-        if synced_hash.is_empty() {
+        if status.last_synced_hash.is_empty() {
             "Never Synced"
         } else {
-            synced_hash.as_str()
+            status.last_synced_hash.as_str()
         }
     );
 
-    let local: chrono::DateTime<chrono::Local> = chrono::DateTime::from(updated_on);
+    // TODO: in test mode print time in IST
+    let local: chrono::DateTime<chrono::Local> = chrono::DateTime::from(status.last_updated_on);
     println!("Last Sync On: {:?}", local);
 
     Ok(())
