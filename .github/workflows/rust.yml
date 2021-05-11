@@ -44,11 +44,8 @@ jobs:
         with:
           command: clippy
           args: --all -- -D warnings
-      - uses: actions-rs/install@v0.1
-        name: installing fbt
+      - name: Check if test passes
+        uses: actions-rs/cargo@v1
         with:
-          crate: fbt
-          version: latest
-          use-tool-cache: true
-      - name: Running fbt
-        run: fbt
+          command: test
+          args: --all

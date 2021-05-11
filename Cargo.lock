@@ -207,6 +207,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "chrono-tz"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2554a3155fec064362507487171dcc4edc3df60cb10f3a1fb10ed8094822b120"
+dependencies = [
+ "chrono",
+ "parse-zoneinfo",
+]
+
+[[package]]
 name = "ci_info"
 version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -244,6 +254,17 @@ name = "colored"
 version = "1.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f4ffc801dacf156c5854b9df4f425a626539c3a6ef7893cc0c5084a23f0b6c59"
+dependencies = [
+ "atty",
+ "lazy_static 1.4.0",
+ "winapi 0.3.9",
+]
+
+[[package]]
+name = "colored"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b3616f750b84d8f0de8a58bda93e08e2a81ad3f523089b05f1dffecab48c6cbd"
 dependencies = [
  "atty",
  "lazy_static 1.4.0",
@@ -544,6 +565,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e88a8acf291dafb59c2d96e8f59828f3838bb1a70398823ade51a84de6a6deed"
 
 [[package]]
+name = "fbt-lib"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2294190769826539c22f54bae645bf6f54ff78bc3fe68dc2cbe4e5e15f272cc9"
+dependencies = [
+ "colored 2.0.0",
+ "ftd",
+ "rand",
+ "walkdir 2.3.2",
+]
+
+[[package]]
 name = "flate2"
 version = "1.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -613,7 +646,9 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "chrono",
+ "chrono-tz",
  "clap",
+ "fbt-lib",
  "ft-api",
  "ftd",
  "gitignore",
@@ -1201,7 +1236,7 @@ checksum = "210cdc77e558c9fd8885112e18d2f6a16a3ed5b9180a6100cf6a524c0cb6394a"
 dependencies = [
  "antidote",
  "chrono",
- "colored",
+ "colored 1.9.3",
  "diesel",
  "failure",
  "lazy_static 1.4.0",
@@ -1363,6 +1398,15 @@ dependencies = [
  "redox_syscall 0.2.7",
  "smallvec",
  "winapi 0.3.9",
+]
+
+[[package]]
+name = "parse-zoneinfo"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c705f256449c60da65e11ff6626e0c16a0a0b96aaa348de61376b249bc340f41"
+dependencies = [
+ "regex",
 ]
 
 [[package]]
