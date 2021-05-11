@@ -10,16 +10,17 @@ pub struct Config {
     pub mode: crate::SyncMode,
     pub auth: crate::Auth,
     pub dot_ft: bool,
+    pub path: std::path::PathBuf,
 }
 
 impl Config {
-    pub fn from_file(filename: &str) -> crate::Result<Self> {
+    pub fn from_file(file_path: &str) -> crate::Result<Self> {
         use std::fs;
-        let contents = fs::read_to_string(filename)?;
-        Self::parse(contents.as_str())
+        let contents = fs::read_to_string(file_path)?;
+        Self::parse(contents.as_str(), file_path)
     }
 
-    pub fn parse(content: &str) -> crate::Result<Self> {
+    pub fn parse(content: &str, file_path: &str) -> crate::Result<Self> {
         let p1 = ftd::p1::parse(content)?;
         let mut ft_sync: Option<section::FtSync> = None;
         let mut ignored: Vec<section::Ignored> = vec![];
@@ -64,6 +65,18 @@ impl Config {
             mode: crate::SyncMode::LocalToRemote,
             auth: crate::Auth::AuthCode(crate::config::env::auth_code()),
             dot_ft: false,
+            path: std::path::PathBuf::from(file_path),
         })
+    }
+
+    pub fn parent_dir(&self) -> std::path::PathBuf {
+        let cwd = std::env::current_dir().unwrap();
+        let config_file = self.path.as_path();
+        config_file.parent().unwrap().join(cwd.as_path())
+    }
+
+    pub fn root_abs_path(&self) -> std::path::PathBuf {
+        self.parent_dir()
+            .join(std::path::Path::new(self.root.as_str()))
     }
 }
