@@ -1,9 +1,11 @@
-#[derive(Deserialize)]
+use std::collections::HashMap;
+
+#[derive(Deserialize, Debug)]
 pub struct ApiResponse<T> {
     pub success: bool,
     pub result: Option<T>,
     // TODO: change to `pub error: std::collections::HashMap<String, String>,`
-    pub error: Option<ApiError>,
+    pub error: HashMap<String, String>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -44,14 +46,23 @@ impl ToString for Error {
     }
 }
 
-fn to_url_with_query<K, V>(url: &str, _query: std::collections::HashMap<K, V>) -> String
+fn to_url_with_query<K, V>(
+    url_: &str,
+    query: std::collections::HashMap<K, V>,
+) -> PageResult<url::Url>
 where
-    K: Into<String>,
-    V: Into<String>,
+    K: Into<String> + AsRef<str>,
+    V: Into<String> + AsRef<str>,
 {
+    use std::iter::FromIterator;
     // TODO: read domain from config/env
     // TODO: ensure the keys are traversed in sorted order
-    format!("http://127.0.0.1:3000{}?realm_mode=api", url)
+    let params: Vec<(_, _)> = Vec::from_iter(query.iter());
+    url::Url::parse_with_params(
+        &format!("http://127.0.0.1:3000{}?realm_mode=api", url_),
+        &params,
+    )
+    .map_err(PageError::UrlParseError)
 }
 
 fn to_url(url: &str) -> String {
@@ -75,6 +86,16 @@ pub enum PageError {
     InputError(std::collections::HashMap<String, String>), // How to make realm return this?
     #[error("DeserializeError: {:?}", _0)]
     DeserializeError(reqwest::Error),
+    #[error("UrlParseError: {:?}", _0)]
+    UrlParseError(url::ParseError),
+    #[error("SerdeDeserializeError: {:?}", _0)]
+    SerdeDeserializeError(serde_json::Error),
+}
+
+impl From<url::ParseError> for PageError {
+    fn from(e: url::ParseError) -> Self {
+        Self::UrlParseError(e)
+    }
 }
 
 pub type PageResult<T> = Result<T, PageError>;
@@ -87,10 +108,10 @@ pub fn page<T, K, V>(
 ) -> PageResult<T>
 where
     T: serde::de::DeserializeOwned,
-    K: Into<String>,
-    V: Into<String>,
+    K: Into<String> + AsRef<str>,
+    V: Into<String> + AsRef<str>,
 {
-    let url = to_url_with_query(url, query);
+    let url = to_url_with_query(url, query)?;
 
     if is_test() {
         let tid = match tid {
@@ -99,7 +120,8 @@ where
         };
 
         // write to ./tid.url and return content of tid.json
-        std::fs::write(format!("{}.url", tid.as_str()), url).expect("failed to write to .url file");
+        std::fs::write(format!("{}.url", tid.as_str()), url.as_str())
+            .expect("failed to write to .url file");
         return Ok(serde_json::from_str(
             std::fs::read_to_string(format!("{}.json", tid.as_str()))
                 .expect("failed to read .json file")
@@ -130,7 +152,40 @@ where
         });
     }
 
-    resp.json().map_err(PageError::DeserializeError)
+    let status = resp.status();
+
+    let resp_value: Result<ApiResponse<serde_json::Value>, reqwest::Error> = resp.json();
+    match resp_value {
+        Ok(r) => {
+            if !r.success {
+                return Err(PageError::UnexpectedResponse {
+                    code: status,
+                    body: r
+                        .error
+                        .into_iter()
+                        .map(|(k, v)| k + ": " + &v)
+                        .collect::<Vec<_>>()
+                        .join("\n"),
+                });
+            } else {
+                match r.result {
+                    Some(v) => serde_json::from_value(v).map_err(PageError::SerdeDeserializeError),
+                    None => {
+                        return Err(PageError::UnexpectedResponse {
+                            code: status,
+                            body: "Response is not present".to_string(),
+                        })
+                    }
+                }
+            }
+        }
+        Err(err) => {
+            return Err(PageError::UnexpectedResponse {
+                code: status,
+                body: err.to_string(),
+            })
+        }
+    }
 }
 
 pub fn action<T, B>(url: &str, body: B, tid: Option<String>) -> crate::Result<ApiResponse<T>>

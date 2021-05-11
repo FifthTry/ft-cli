@@ -54,13 +54,7 @@ pub fn bulk_update(
         crate::api::action(&url, serde_json::to_value(update)?.to_string(), None)?;
 
     if !response.success {
-        return Err(crate::error::Error::ResponseError(
-            response
-                .error
-                .map(|x| x.error)
-                .unwrap_or_else(|| "".to_string()),
-        )
-        .into());
+        return Err(crate::error::Error::ResponseError("".to_string()).into());
     }
 
     Ok(())
