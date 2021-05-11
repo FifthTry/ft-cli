@@ -1,3 +1,4 @@
+pub mod env;
 pub mod section;
 
 pub struct Config {
@@ -61,7 +62,7 @@ impl Config {
             backend: ft_sync.backend.as_str().into(),
             root: ft_sync.root,
             mode: crate::SyncMode::LocalToRemote,
-            auth: crate::Auth::AuthCode("z26rn6YE44m3lkiHt0Ad".to_string()),
+            auth: crate::Auth::AuthCode(crate::config::env::auth_code()),
             dot_ft: false,
         })
     }
