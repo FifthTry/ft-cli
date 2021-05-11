@@ -5,7 +5,7 @@ pub struct ApiResponse<T> {
     pub success: bool,
     pub result: Option<T>,
     // TODO: change to `pub error: std::collections::HashMap<String, String>,`
-    pub error: HashMap<String, String>,
+    pub error: Option<HashMap<String, String>>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -160,12 +160,12 @@ where
             if !r.success {
                 return Err(PageError::UnexpectedResponse {
                     code: status,
-                    body: r
-                        .error
-                        .into_iter()
-                        .map(|(k, v)| k + ": " + &v)
-                        .collect::<Vec<_>>()
-                        .join("\n"),
+                    body: r.error.map_or("".to_string(), |x| {
+                        x.into_iter()
+                            .map(|(k, v)| k + ": " + &v)
+                            .collect::<Vec<_>>()
+                            .join("\n")
+                    }),
                 });
             } else {
                 match r.result {
@@ -191,7 +191,7 @@ where
 pub fn action<T, B>(url: &str, body: B, tid: Option<String>) -> crate::Result<ApiResponse<T>>
 where
     T: serde::de::DeserializeOwned,
-    B: serde::Serialize,
+    B: Into<reqwest::blocking::Body> + serde::Serialize,
 {
     let url = to_url(url);
 
@@ -219,8 +219,8 @@ where
 
     let client = reqwest::blocking::Client::new();
     let resp = match client
-        .post(to_url(url.as_str()))
-        .body(reqwest::blocking::Body::from(serde_json::to_vec(&body)?))
+        .post(url.as_str())
+        .body(body)
         .header("content-type", "application/json")
         .header("Accept", "application/json")
         .header("user-agent", "rust")
