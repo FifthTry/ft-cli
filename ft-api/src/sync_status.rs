@@ -17,7 +17,7 @@ where
     Ok(chrono::Utc.timestamp_millis(v))
 }
 
-// TODO: define Error here and return actual errors that sync status can throw
+// TODO: define Error here and return actual errors that sync status can throw.
 
 pub fn sync_status(collection: &str, auth_code: &str) -> crate::PageResult<Status> {
     crate::api::page(

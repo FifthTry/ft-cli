@@ -6,11 +6,15 @@ on:
       - main
     paths:
      - '**.rs'
+     - '**.yml'
+     - 'rust-toolchain'
   pull_request:
     branches:
       - main
     paths:
      - '**.rs'
+     - '**.yml'
+     - 'rust-toolchain'
 jobs:
   everything:
     name: Rust Checks
@@ -27,6 +31,7 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
+            ~/.cargo/bin
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Check if sources are properly formatted
@@ -39,3 +44,8 @@ jobs:
         with:
           command: clippy
           args: --all -- -D warnings
+      - name: Check if test passes
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --all
