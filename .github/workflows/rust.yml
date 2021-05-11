@@ -7,12 +7,14 @@ on:
     paths:
      - '**.rs'
      - '**.yml'
+     - 'rust-toolchain'
   pull_request:
     branches:
       - main
     paths:
      - '**.rs'
      - '**.yml'
+     - 'rust-toolchain'
 jobs:
   everything:
     name: Rust Checks
