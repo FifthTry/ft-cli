@@ -7,8 +7,6 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
     let latest_hash = crate::git::head()?;
     let git_root = crate::git::root_dir()?;
 
-    dbg!(&git_root);
-
     let root_dir = config.root_abs_path();
 
     if !root_dir.starts_with(&git_root) {
@@ -21,25 +19,12 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
 
     let root_dir = root_dir.to_str().unwrap();
 
-    dbg!(&root_dir);
-
     let status = ft_api::sync_status::sync_status(config.collection.as_str(), auth_code.as_str())?;
 
     let files = if status.last_synced_hash.is_empty() {
-        crate::git::ls_tree(
-            &latest_hash,
-            &git_root,
-            &root_dir,
-            &config.backend.pattern(),
-        )?
+        crate::git::ls_tree(&latest_hash, &git_root, &root_dir)?
     } else {
-        crate::git::diff(
-            &status.last_synced_hash,
-            &latest_hash,
-            &git_root,
-            &root_dir,
-            &config.backend.pattern(),
-        )?
+        crate::git::diff(&status.last_synced_hash, &latest_hash, &git_root, &root_dir)?
     };
 
     let mut actions = vec![];
@@ -56,32 +41,38 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
             .to_str()
             .unwrap()
             .to_string();
-        t
+        config.collection.to_string() + "/" + t.as_str()
     };
 
     for file in files.into_iter() {
         match file {
             crate::git::FileMode::Added(path) => {
-                let docid = to_docid(&path);
-                println!("path: {}, {}", path, docid);
-                actions.push(ft_api::bulk_update::Action::Added {
-                    id: docid,
-                    content: read_content(&path)?,
-                });
+                if config.backend.accept(std::path::Path::new(&path)) {
+                    let docid = to_docid(&path);
+                    println!("path: {}, {}", path, docid);
+                    actions.push(ft_api::bulk_update::Action::Added {
+                        id: docid,
+                        content: read_content(&path)?,
+                    });
+                }
             }
+
             crate::git::FileMode::Modified(path) => {
-                let docid = to_docid(&path);
-                println!("path: {}, {}", path, docid);
-                actions.push(ft_api::bulk_update::Action::Updated {
-                    id: docid,
-                    content: read_content(&path)?,
-                });
+                if config.backend.accept(std::path::Path::new(&path)) {
+                    let docid = to_docid(&path);
+                    println!("path: {}, {}", path, docid);
+                    actions.push(ft_api::bulk_update::Action::Updated {
+                        id: docid,
+                        content: read_content(&path)?,
+                    });
+                }
             }
             crate::git::FileMode::Deleted(path) => {
-                let docid = to_docid(&path);
-                // let new_path = path.replacen(".ftd", "", 1);
-                println!("path: {}, {}", path, docid);
-                actions.push(ft_api::bulk_update::Action::Deleted { id: docid });
+                if config.backend.accept(std::path::Path::new(&path)) {
+                    let docid = to_docid(&path);
+                    println!("path: {}, {}", path, docid);
+                    actions.push(ft_api::bulk_update::Action::Deleted { id: docid });
+                }
             }
         }
     }

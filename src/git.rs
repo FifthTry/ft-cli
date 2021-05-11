@@ -4,18 +4,11 @@ pub enum FileMode {
     Modified(String),
 }
 
-pub fn ls_tree(
-    hash: &str,
-    git_root: &str,
-    root_dir: &str,
-    pattern: &Option<String>,
-) -> crate::Result<Vec<FileMode>> {
-    let args = match pattern {
-        Some(p) => vec!["ls-tree", "-r", "--name-only", hash.trim(), p.as_str()],
-        None => vec!["ls-tree", "-r", "--name-only", hash.trim()],
-    };
+pub fn ls_tree(hash: &str, git_root: &str, root_dir: &str) -> crate::Result<Vec<FileMode>> {
+    let cmd = std::process::Command::new("git")
+        .args(&["ls-tree", "-r", "--name-only", hash.trim()])
+        .output()?;
 
-    let cmd = std::process::Command::new("git").args(&args).output()?;
     let files = String::from_utf8(cmd.stdout)?;
     let files = files.lines();
     Ok(files
@@ -36,27 +29,16 @@ pub fn diff(
     hash2: &str,
     git_root: &str,
     root_dir: &str,
-    pattern: &Option<String>,
 ) -> crate::Result<Vec<FileMode>> {
-    let args = match pattern {
-        Some(p) => vec![
+    let cmd = std::process::Command::new("git")
+        .args(&[
             "diff",
             "--name-status",
             "--no-renames",
             hash1.trim(),
             hash2.trim(),
-            p.as_str(),
-        ],
-        None => vec![
-            "diff",
-            "--name-status",
-            "--no-renames",
-            hash1.trim(),
-            hash2.trim(),
-        ],
-    };
-
-    let cmd = std::process::Command::new("git").args(&args).output()?;
+        ])
+        .output()?;
     let files = String::from_utf8(cmd.stdout)?;
     let files = files.lines();
 
