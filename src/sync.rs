@@ -88,14 +88,14 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
 
     println!("files {:#?}", actions);
 
-    // ft_api::bulk_update::bulk_update(
-    //     config.collection.as_str(),
-    //     status.last_synced_hash.as_str(),
-    //     latest_hash.as_str(),
-    //     config.repo.as_str(),
-    //     actions,
-    //     auth_code.as_str(),
-    // )?;
+    ft_api::bulk_update::bulk_update(
+        config.collection.as_str(),
+        status.last_synced_hash.as_str(),
+        latest_hash.as_str(),
+        config.repo.as_str(),
+        actions,
+        auth_code.as_str(),
+    )?;
 
     Ok(())
 }
