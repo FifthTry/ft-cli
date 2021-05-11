@@ -160,22 +160,21 @@ where
             if !r.success {
                 return Err(PageError::UnexpectedResponse {
                     code: status,
-                    body: r.error.map_or("".to_string(), |x| {
+                    body: r.error.map_or("Something went wrong".to_string(), |x| {
                         x.into_iter()
                             .map(|(k, v)| k + ": " + &v)
                             .collect::<Vec<_>>()
                             .join("\n")
                     }),
                 });
-            } else {
-                match r.result {
-                    Some(v) => serde_json::from_value(v).map_err(PageError::SerdeDeserializeError),
-                    None => {
-                        return Err(PageError::UnexpectedResponse {
-                            code: status,
-                            body: "Response is not present".to_string(),
-                        })
-                    }
+            }
+            match r.result {
+                Some(v) => serde_json::from_value(v).map_err(PageError::SerdeDeserializeError),
+                None => {
+                    return Err(PageError::UnexpectedResponse {
+                        code: status,
+                        body: "Response is not present".to_string(),
+                    })
                 }
             }
         }
@@ -236,5 +235,29 @@ where
         );
     };
 
-    resp.json().map_err(Into::into)
+    let resp_value: Result<ApiResponse<serde_json::Value>, reqwest::Error> = resp.json();
+
+    match resp_value {
+        Ok(v) => {
+            if !v.success {
+                return Err(crate::error::Error::ResponseError(v.error.map_or(
+                    "Something went wrong".to_string(),
+                    |x| {
+                        x.into_iter()
+                            .map(|(k, v)| k + ": " + &v)
+                            .collect::<Vec<_>>()
+                            .join("\n")
+                    },
+                ))
+                .into());
+            }
+
+            match v.result {
+                Some(v) => serde_json::from_value(v)
+                    .map_err(|e| crate::error::Error::DeserializeError(e.to_string()).into()),
+                None => return Err(crate::error::Error::APIResponseNotOk("".to_string()).into()),
+            }
+        }
+        Err(err) => return Err(crate::error::Error::ResponseError(err.to_string()).into()),
+    }
 }
