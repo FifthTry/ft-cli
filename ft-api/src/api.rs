@@ -1,49 +1,13 @@
-use std::collections::HashMap;
-
 #[derive(Deserialize, Debug)]
 pub struct ApiResponse<T> {
     pub success: bool,
     pub result: Option<T>,
     // TODO: change to `pub error: std::collections::HashMap<String, String>,`
-    pub error: Option<HashMap<String, String>>,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct ApiError {
-    pub error: String,
+    pub error: Option<std::collections::HashMap<String, String>>,
 }
 
 pub fn is_test() -> bool {
     std::env::args().any(|e| e == "--test")
-}
-
-#[derive(Deserialize, Debug)]
-pub enum Error {
-    InvalidAuthCode,
-    RepoNotFound,
-    CollectionNotFound,
-    InvalidID,
-    HashNotMatching,
-    InvalidFileName(String),
-    BadFTD(String),
-    NoPermission(String),
-    DBError,
-}
-
-impl ToString for Error {
-    fn to_string(&self) -> String {
-        match self {
-            Error::InvalidAuthCode => "InvalidAuthCode".to_string(),
-            Error::RepoNotFound => "RepoNotFound".to_string(),
-            Error::CollectionNotFound => "CollectionNotFound".to_string(),
-            Error::InvalidID => "InvalidID".to_string(),
-            Error::HashNotMatching => "HashNotMatching".to_string(),
-            Error::InvalidFileName(name) => format!("InvalidFileName: {}", name),
-            Error::BadFTD(s) => format!("BadFTD: {}", s),
-            Error::NoPermission(p) => format!("NoPermission: {}", p),
-            Error::DBError => "DBError".to_string(),
-        }
-    }
 }
 
 fn to_url_with_query<K, V>(
@@ -187,7 +151,7 @@ where
     }
 }
 
-pub fn action<T, B>(url: &str, body: B, tid: Option<String>) -> crate::Result<ApiResponse<T>>
+pub fn action<T, B>(url: &str, body: B, tid: Option<String>) -> crate::Result<T>
 where
     T: serde::de::DeserializeOwned,
     B: Into<reqwest::blocking::Body> + serde::Serialize,

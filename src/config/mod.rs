@@ -61,7 +61,7 @@ impl Config {
             backend: ft_sync.backend.as_str().into(),
             root: ft_sync.root,
             mode: crate::SyncMode::LocalToRemote,
-            auth: crate::Auth::AuthCode("ZV6cN8i6B8VUrb5PgPKc".to_string()),
+            auth: crate::Auth::AuthCode("z26rn6YE44m3lkiHt0Ad".to_string()),
             dot_ft: false,
         })
     }

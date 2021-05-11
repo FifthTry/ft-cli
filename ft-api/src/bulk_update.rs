@@ -50,12 +50,8 @@ pub fn bulk_update(
 
     let update = UpdatedWrapper { data: update };
 
-    let response: crate::api::ApiResponse<crate::sync_status::Status> =
+    let _response: crate::sync_status::Status =
         crate::api::action(&url, serde_json::to_value(update)?.to_string(), None)?;
-
-    if !response.success {
-        return Err(crate::error::Error::ResponseError("".to_string()).into());
-    }
 
     Ok(())
 }
