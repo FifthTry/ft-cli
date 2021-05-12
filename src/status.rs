@@ -25,9 +25,18 @@ pub fn status(config: &crate::Config, config_file: &str) -> crate::Result<()> {
         }
     );
 
-    // TODO: in test mode print time in IST
-    let local: chrono::DateTime<chrono::Local> = chrono::DateTime::from(status.last_updated_on);
-    println!("Last Sync On: {:?}", local);
+    if crate::is_test() {
+        // we fix the timezone to IST in test mode so on github etc we get consistent output
+        // let local: chrono::DateTime<chrono_tz::Asia::Kolkata> =
+        //     chrono::DateTime::from(status.last_updated_on);
+        let last_updated_on_in_ist = status
+            .last_updated_on
+            .with_timezone(&chrono_tz::Asia::Kolkata);
+        println!("Last Sync On: {:?}", last_updated_on_in_ist);
+    } else {
+        let local: chrono::DateTime<chrono::Local> = chrono::DateTime::from(status.last_updated_on);
+        println!("Last Sync On: {:?}", local);
+    }
 
     Ok(())
 }
