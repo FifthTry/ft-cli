@@ -18,10 +18,9 @@ where
     K: Into<String> + AsRef<str>,
     V: Into<String> + AsRef<str>,
 {
-    use std::iter::FromIterator;
     // TODO: read domain from config/env
     // TODO: ensure the keys are traversed in sorted order
-    let params: Vec<(_, _)> = Vec::from_iter(query.iter());
+    let params: Vec<(_, _)> = query.iter().collect();
     url::Url::parse_with_params(
         &format!("http://127.0.0.1:3000{}?realm_mode=api", url_),
         &params,
@@ -134,20 +133,16 @@ where
             }
             match r.result {
                 Some(v) => serde_json::from_value(v).map_err(PageError::SerdeDeserializeError),
-                None => {
-                    return Err(PageError::UnexpectedResponse {
-                        code: status,
-                        body: "Response is not present".to_string(),
-                    })
-                }
+                None => Err(PageError::UnexpectedResponse {
+                    code: status,
+                    body: "Response is not present".to_string(),
+                }),
             }
         }
-        Err(err) => {
-            return Err(PageError::UnexpectedResponse {
-                code: status,
-                body: err.to_string(),
-            })
-        }
+        Err(err) => Err(PageError::UnexpectedResponse {
+            code: status,
+            body: err.to_string(),
+        }),
     }
 }
 
@@ -219,9 +214,9 @@ where
             match v.result {
                 Some(v) => serde_json::from_value(v)
                     .map_err(|e| crate::error::Error::DeserializeError(e.to_string()).into()),
-                None => return Err(crate::error::Error::APIResponseNotOk("".to_string()).into()),
+                None => Err(crate::error::Error::APIResponseNotOk("".to_string()).into()),
             }
         }
-        Err(err) => return Err(crate::error::Error::ResponseError(err.to_string()).into()),
+        Err(err) => Err(crate::error::Error::ResponseError(err.to_string()).into()),
     }
 }
