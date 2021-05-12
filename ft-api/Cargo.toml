@@ -14,3 +14,4 @@ thiserror = "1"
 chrono = { version = "0.4", features = ["serde"] }
 maplit = "1"
 sorted-json = "0.1.0"
+url = "2.2.2"

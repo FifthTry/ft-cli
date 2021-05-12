@@ -5,86 +5,73 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
     };
 
     let latest_hash = crate::git::head()?;
-    let root_dir = crate::git::root_dir()?;
+    let git_root = crate::git::root_dir()?;
+
+    let root_dir = config.root_abs_path();
+
+    if !root_dir.starts_with(&git_root) {
+        panic!(
+            "The root directory: {:?} is not inside git dir: {}",
+            root_dir.as_os_str(),
+            &git_root
+        )
+    }
+
+    let root_dir = root_dir.to_str().unwrap();
 
     let status = ft_api::sync_status::sync_status(config.collection.as_str(), auth_code.as_str())?;
 
-    let data_dir = std::path::Path::new(&root_dir).join(&config.root);
-
-    let data_dir = match data_dir.to_str() {
-        Some(s) => s.to_string() + "/",
-        None => "/".to_string(),
-    };
-
     let files = if status.last_synced_hash.is_empty() {
-        crate::git::ls_tree(&latest_hash)?
+        crate::git::ls_tree(&latest_hash, &git_root, &root_dir)?
     } else {
-        crate::git::diff(&status.last_synced_hash, &latest_hash)?
+        crate::git::diff(&status.last_synced_hash, &latest_hash, &git_root, &root_dir)?
     };
 
     let mut actions = vec![];
     let read_content = |file_path: &str| -> crate::Result<String> {
-        std::fs::read_to_string(&file_path).map_err(|e| crate::Error::ReadError(e).into())
+        std::fs::read_to_string(&file_path)
+            .map_err(|e| crate::Error::ReadError(e, file_path.to_string()).into())
+    };
+
+    let to_docid = |path: &str| -> String {
+        let t = std::path::Path::new(&path)
+            .strip_prefix(root_dir)
+            .unwrap()
+            .with_extension("")
+            .to_str()
+            .unwrap()
+            .to_string();
+        config.collection.to_string() + "/" + t.as_str()
     };
 
     for file in files.into_iter() {
         match file {
             crate::git::FileMode::Added(path) => {
-                let path = std::path::Path::new(&root_dir).join(path);
-                if config.backend.accept(&path) {
-                    if let Some(path) = path.to_str() {
-                        let new_path = path.replacen(&data_dir, "", 1).replacen(".ftd", "", 1);
-                        println!("path: {}, new_path: {}", path, new_path);
-                        actions.push(ft_api::bulk_update::Action::Added {
-                            id: new_path,
-                            content: read_content(path)?,
-                        });
-                    }
+                if config.backend.accept(std::path::Path::new(&path)) {
+                    let docid = to_docid(&path);
+                    println!("path: {}, {}", path, docid);
+                    actions.push(ft_api::bulk_update::Action::Added {
+                        id: docid,
+                        content: read_content(&path)?,
+                    });
                 }
             }
-            crate::git::FileMode::Renamed(p1, p2) => {
-                let path = std::path::Path::new(&root_dir).join(p2);
-                if config.backend.accept(&path) {
-                    if let Some(path) = path.to_str() {
-                        let new_path = path.replacen(&data_dir, "", 1).replacen(".ftd", "", 1);
-                        println!("path: {}, new_path: {}", path, new_path);
-                        actions.push(ft_api::bulk_update::Action::Added {
-                            id: new_path,
-                            content: read_content(path)?,
-                        });
-                    }
-                }
 
-                let path = std::path::Path::new(&root_dir).join(p1);
-                if config.backend.accept(&path) {
-                    if let Some(path) = path.to_str() {
-                        let new_path = path.replacen(&data_dir, "", 1).replacen(".ftd", "", 1);
-                        println!("path: {}, new_path: {}", path, new_path);
-                        actions.push(ft_api::bulk_update::Action::Deleted { id: new_path });
-                    }
-                }
-            }
             crate::git::FileMode::Modified(path) => {
-                let path = std::path::Path::new(&root_dir).join(path);
-                if config.backend.accept(&path) {
-                    if let Some(path) = path.to_str() {
-                        let new_path = path.replacen(&data_dir, "", 1).replacen(".ftd", "", 1);
-                        println!("path: {}, new_path: {}", path, new_path);
-                        actions.push(ft_api::bulk_update::Action::Updated {
-                            id: new_path,
-                            content: read_content(path)?,
-                        });
-                    }
+                if config.backend.accept(std::path::Path::new(&path)) {
+                    let docid = to_docid(&path);
+                    println!("path: {}, {}", path, docid);
+                    actions.push(ft_api::bulk_update::Action::Updated {
+                        id: docid,
+                        content: read_content(&path)?,
+                    });
                 }
             }
             crate::git::FileMode::Deleted(path) => {
-                let path = std::path::Path::new(&root_dir).join(path);
-                if config.backend.accept(&path) {
-                    if let Some(path) = path.to_str() {
-                        let new_path = path.replacen(&data_dir, "", 1).replacen(".ftd", "", 1);
-                        println!("path: {}, new_path: {}", path, new_path);
-                        actions.push(ft_api::bulk_update::Action::Deleted { id: new_path });
-                    }
+                if config.backend.accept(std::path::Path::new(&path)) {
+                    let docid = to_docid(&path);
+                    println!("path: {}, {}", path, docid);
+                    actions.push(ft_api::bulk_update::Action::Deleted { id: docid });
                 }
             }
         }

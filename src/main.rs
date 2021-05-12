@@ -40,7 +40,7 @@ fn main() {
         ("status", _) => {
             match ft_sync::status(&config, config_file) {
                 Ok(()) => {}
-                Err(e) => println!("{:?}", e.to_string()),
+                Err(e) => println!("{}", e.to_string()),
             }
             println!("Command: status()");
         }
@@ -48,7 +48,7 @@ fn main() {
             println!("syncing");
             match ft_sync::sync(&config, false) {
                 Ok(()) => {}
-                Err(e) => println!("{:?}", e.to_string()),
+                Err(e) => println!("{}", e.to_string()),
             }
         }
         (_, _) => todo!("impossible!"),

@@ -25,6 +25,13 @@ impl Backend {
             Backend::Unknown => false,
         }
     }
+
+    pub fn pattern(&self) -> Option<String> {
+        match self {
+            Backend::FTD => Some("**/*.ftd".to_string()),
+            Backend::Unknown => None,
+        }
+    }
 }
 
 impl From<&str> for Backend {

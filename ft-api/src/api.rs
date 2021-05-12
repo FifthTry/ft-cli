@@ -1,57 +1,31 @@
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct ApiResponse<T> {
     pub success: bool,
     pub result: Option<T>,
     // TODO: change to `pub error: std::collections::HashMap<String, String>,`
-    pub error: Option<ApiError>,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct ApiError {
-    pub error: String,
+    pub error: Option<std::collections::HashMap<String, String>>,
 }
 
 pub fn is_test() -> bool {
     std::env::args().any(|e| e == "--test")
 }
 
-#[derive(Deserialize, Debug)]
-pub enum Error {
-    InvalidAuthCode,
-    RepoNotFound,
-    CollectionNotFound,
-    InvalidID,
-    HashNotMatching,
-    InvalidFileName(String),
-    BadFTD(String),
-    NoPermission(String),
-    DBError,
-}
-
-impl ToString for Error {
-    fn to_string(&self) -> String {
-        match self {
-            Error::InvalidAuthCode => "InvalidAuthCode".to_string(),
-            Error::RepoNotFound => "RepoNotFound".to_string(),
-            Error::CollectionNotFound => "CollectionNotFound".to_string(),
-            Error::InvalidID => "InvalidID".to_string(),
-            Error::HashNotMatching => "HashNotMatching".to_string(),
-            Error::InvalidFileName(name) => format!("InvalidFileName: {}", name),
-            Error::BadFTD(s) => format!("BadFTD: {}", s),
-            Error::NoPermission(p) => format!("NoPermission: {}", p),
-            Error::DBError => "DBError".to_string(),
-        }
-    }
-}
-
-fn to_url_with_query<K, V>(url: &str, _query: std::collections::HashMap<K, V>) -> String
+fn to_url_with_query<K, V>(
+    url_: &str,
+    query: std::collections::HashMap<K, V>,
+) -> PageResult<url::Url>
 where
-    K: Into<String>,
-    V: Into<String>,
+    K: Into<String> + AsRef<str>,
+    V: Into<String> + AsRef<str>,
 {
     // TODO: read domain from config/env
     // TODO: ensure the keys are traversed in sorted order
-    format!("http://127.0.0.1:3000{}?realm_mode=api", url)
+    let params: Vec<(_, _)> = query.iter().collect();
+    url::Url::parse_with_params(
+        &format!("http://127.0.0.1:3000{}?realm_mode=api", url_),
+        &params,
+    )
+    .map_err(PageError::UrlParseError)
 }
 
 fn to_url(url: &str) -> String {
@@ -75,6 +49,16 @@ pub enum PageError {
     InputError(std::collections::HashMap<String, String>), // How to make realm return this?
     #[error("DeserializeError: {:?}", _0)]
     DeserializeError(reqwest::Error),
+    #[error("UrlParseError: {:?}", _0)]
+    UrlParseError(url::ParseError),
+    #[error("SerdeDeserializeError: {:?}", _0)]
+    SerdeDeserializeError(serde_json::Error),
+}
+
+impl From<url::ParseError> for PageError {
+    fn from(e: url::ParseError) -> Self {
+        Self::UrlParseError(e)
+    }
 }
 
 pub type PageResult<T> = Result<T, PageError>;
@@ -87,10 +71,10 @@ pub fn page<T, K, V>(
 ) -> PageResult<T>
 where
     T: serde::de::DeserializeOwned,
-    K: Into<String>,
-    V: Into<String>,
+    K: Into<String> + AsRef<str>,
+    V: Into<String> + AsRef<str>,
 {
-    let url = to_url_with_query(url, query);
+    let url = to_url_with_query(url, query)?;
 
     if is_test() {
         let tid = match tid {
@@ -99,7 +83,8 @@ where
         };
 
         // write to ./tid.url and return content of tid.json
-        std::fs::write(format!("{}.url", tid.as_str()), url).expect("failed to write to .url file");
+        std::fs::write(format!("{}.url", tid.as_str()), url.as_str())
+            .expect("failed to write to .url file");
         return Ok(serde_json::from_str(
             std::fs::read_to_string(format!("{}.json", tid.as_str()))
                 .expect("failed to read .json file")
@@ -130,10 +115,38 @@ where
         });
     }
 
-    resp.json().map_err(PageError::DeserializeError)
+    let status = resp.status();
+
+    let resp_value: Result<ApiResponse<serde_json::Value>, reqwest::Error> = resp.json();
+    match resp_value {
+        Ok(r) => {
+            if !r.success {
+                return Err(PageError::UnexpectedResponse {
+                    code: status,
+                    body: r.error.map_or("Something went wrong".to_string(), |x| {
+                        x.into_iter()
+                            .map(|(k, v)| k + ": " + &v)
+                            .collect::<Vec<_>>()
+                            .join("\n")
+                    }),
+                });
+            }
+            match r.result {
+                Some(v) => serde_json::from_value(v).map_err(PageError::SerdeDeserializeError),
+                None => Err(PageError::UnexpectedResponse {
+                    code: status,
+                    body: "Response is not present".to_string(),
+                }),
+            }
+        }
+        Err(err) => Err(PageError::UnexpectedResponse {
+            code: status,
+            body: err.to_string(),
+        }),
+    }
 }
 
-pub fn action<T, B>(url: &str, body: B, tid: Option<String>) -> crate::Result<ApiResponse<T>>
+pub fn action<T, B>(url: &str, body: B, tid: Option<String>) -> crate::Result<T>
 where
     T: serde::de::DeserializeOwned,
     B: serde::Serialize,
@@ -164,8 +177,8 @@ where
 
     let client = reqwest::blocking::Client::new();
     let resp = match client
-        .post(to_url(url.as_str()))
-        .body(reqwest::blocking::Body::from(serde_json::to_vec(&body)?))
+        .post(url.as_str())
+        .body(serde_json::to_string(&body)?)
         .header("content-type", "application/json")
         .header("Accept", "application/json")
         .header("user-agent", "rust")
@@ -181,5 +194,29 @@ where
         );
     };
 
-    resp.json().map_err(Into::into)
+    let resp_value: Result<ApiResponse<serde_json::Value>, reqwest::Error> = resp.json();
+
+    match resp_value {
+        Ok(v) => {
+            if !v.success {
+                return Err(crate::error::Error::ResponseError(v.error.map_or(
+                    "Something went wrong".to_string(),
+                    |x| {
+                        x.into_iter()
+                            .map(|(k, v)| k + ": " + &v)
+                            .collect::<Vec<_>>()
+                            .join("\n")
+                    },
+                ))
+                .into());
+            }
+
+            match v.result {
+                Some(v) => serde_json::from_value(v)
+                    .map_err(|e| crate::error::Error::DeserializeError(e.to_string()).into()),
+                None => Err(crate::error::Error::APIResponseNotOk("".to_string()).into()),
+            }
+        }
+        Err(err) => Err(crate::error::Error::ResponseError(err.to_string()).into()),
+    }
 }

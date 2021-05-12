@@ -14,16 +14,6 @@ struct File {
     content: String,
 }
 
-#[derive(Deserialize)]
-pub enum BulkUpdateError {
-    InvalidAuthCode,
-    RepoNotFound,
-    CollectionNotFound,
-    InvalidFileName(String),
-    BadFTD(String),
-    NoPermission(String),
-}
-
 pub fn bulk_update(
     collection: &str,
     current_hash: &str,
@@ -48,21 +38,11 @@ pub fn bulk_update(
         data: BulkUpdateInput,
     }
 
-    let update = UpdatedWrapper { data: update };
-
-    let response: crate::api::ApiResponse<crate::sync_status::Status> =
-        crate::api::action(&url, serde_json::to_value(update)?.to_string(), None)?;
-
-    if !response.success {
-        return Err(crate::error::Error::ResponseError(
-            response
-                .error
-                .map(|x| x.error)
-                .unwrap_or_else(|| "".to_string()),
-        )
-        .into());
-    }
-
+    crate::api::action::<crate::sync_status::Status, _>(
+        &url,
+        UpdatedWrapper { data: update },
+        None,
+    )?;
     Ok(())
 }
 

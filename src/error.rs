@@ -9,8 +9,8 @@ pub enum Error {
     #[error("api error: {error:?}")]
     APIError { error: reqwest::Error },
 
-    #[error("cannot open config file: {}", _0)]
-    ReadError(#[from] std::io::Error),
+    #[error("cannot read file: {}, {}", _0, _1)]
+    ReadError(std::io::Error, String),
 
     #[error("api status code: {}", _0)]
     APIResponseNotOk(String),

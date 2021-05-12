@@ -1,4 +1,4 @@
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct Status {
     pub last_synced_hash: String,
     #[serde(deserialize_with = "deserialize_datetime")]
