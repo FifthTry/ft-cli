@@ -1,2 +1,6 @@
 -- fbt:
 build: cargo build
+
+-- env:
+
+FT_AUTH_CODE=123
