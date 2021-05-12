@@ -3,6 +3,7 @@ extern crate serde_derive;
 
 pub mod api;
 pub mod bulk_update;
+mod env;
 pub mod error;
 pub mod sync_status;
 

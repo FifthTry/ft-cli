@@ -22,7 +22,7 @@ where
     // TODO: ensure the keys are traversed in sorted order
     let params: Vec<(_, _)> = query.iter().collect();
     url::Url::parse_with_params(
-        &format!("http://127.0.0.1:3000{}?realm_mode=api", url_),
+        &format!("{}{}?realm_mode=api", crate::env::host(), url_),
         &params,
     )
     .map_err(PageError::UrlParseError)
@@ -30,7 +30,7 @@ where
 
 fn to_url(url: &str) -> String {
     // TODO: read domain from config/env
-    format!("http://127.0.0.1:3000{}?realm_mode=api", url)
+    format!("{}{}?realm_mode=api", crate::env::host(), url)
 }
 
 #[derive(Debug, thiserror::Error)]
