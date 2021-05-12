@@ -38,10 +38,11 @@ pub fn bulk_update(
         data: BulkUpdateInput,
     }
 
-    let update = UpdatedWrapper { data: update };
-
-    crate::api::action(&url, serde_json::to_value(update)?.to_string(), None)?;
-
+    crate::api::action::<crate::sync_status::Status, _>(
+        &url,
+        UpdatedWrapper { data: update },
+        None,
+    )?;
     Ok(())
 }
 

@@ -149,7 +149,7 @@ where
 pub fn action<T, B>(url: &str, body: B, tid: Option<String>) -> crate::Result<T>
 where
     T: serde::de::DeserializeOwned,
-    B: Into<reqwest::blocking::Body> + serde::Serialize,
+    B: serde::Serialize,
 {
     let url = to_url(url);
 
@@ -178,7 +178,7 @@ where
     let client = reqwest::blocking::Client::new();
     let resp = match client
         .post(url.as_str())
-        .body(body)
+        .body(serde_json::to_string(&body)?)
         .header("content-type", "application/json")
         .header("Accept", "application/json")
         .header("user-agent", "rust")
