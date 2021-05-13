@@ -3,7 +3,7 @@ name = "ft-sync"
 version = "0.1.0"
 authors = ["Deepak Angrula <deepak@fifthtry.com>"]
 edition = "2018"
-
+description = ""
 
 [workspace]
 members = ["ft-api"]
@@ -28,4 +28,4 @@ version = "0.4"
 
 [dev-dependencies]
 rusty-hook = "0.11.2"
-fbt-lib = "0.1.4"
+fbt-lib = "0.1.5"
