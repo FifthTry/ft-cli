@@ -20,6 +20,7 @@ fn main() {
                 .required(false)
                 .value_name("TEST")
                 .help("if to run in test mode")
+                .hidden(true)
                 .takes_value(false),
         )
         .subcommand(clap::SubCommand::with_name("status").about("show the sync status"))
