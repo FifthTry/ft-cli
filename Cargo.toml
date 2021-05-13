@@ -6,7 +6,7 @@ edition = "2018"
 description = ""
 
 [workspace]
-members = ["ft-api"]
+members = ["ft-api", "realm-client"]
 
 
 [dependencies]

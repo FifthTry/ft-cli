@@ -1,4 +1,4 @@
-#[derive(Serialize)]
+#[derive(serde_derive::Serialize)]
 struct BulkUpdateInput {
     collection: String,
     auth_code: String,
@@ -8,7 +8,7 @@ struct BulkUpdateInput {
     files: Vec<Action>,
 }
 
-#[derive(Serialize)]
+#[derive(serde_derive::Serialize)]
 struct File {
     id: String,
     content: String,
@@ -21,7 +21,7 @@ pub fn bulk_update(
     repo: &str,
     files: Vec<Action>,
     auth_code: &str,
-) -> crate::Result<()> {
+) -> realm_client::Result<()> {
     let url = "/testuser/index/~/bulk-update/";
 
     let update = BulkUpdateInput {
@@ -33,12 +33,12 @@ pub fn bulk_update(
         files,
     };
 
-    #[derive(Serialize)]
+    #[derive(serde_derive::Serialize)]
     struct UpdatedWrapper {
         data: BulkUpdateInput,
     }
 
-    crate::api::action::<crate::sync_status::Status, _>(
+    realm_client::action::<crate::sync_status::Status, _>(
         &url,
         UpdatedWrapper { data: update },
         None,
@@ -46,7 +46,7 @@ pub fn bulk_update(
     Ok(())
 }
 
-#[derive(Serialize, Debug)]
+#[derive(serde_derive::Serialize, Debug)]
 #[serde(tag = "type")]
 pub enum Action {
     Updated { id: String, content: String },

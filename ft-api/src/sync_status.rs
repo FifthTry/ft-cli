@@ -1,4 +1,4 @@
-#[derive(Deserialize, Debug)]
+#[derive(serde_derive::Deserialize, Debug)]
 pub struct Status {
     pub last_synced_hash: String,
     #[serde(deserialize_with = "deserialize_datetime")]
@@ -19,8 +19,8 @@ where
 
 // TODO: define Error here and return actual errors that sync status can throw.
 
-pub fn sync_status(collection: &str, auth_code: &str) -> crate::PageResult<Status> {
-    crate::api::page(
+pub fn sync_status(collection: &str, auth_code: &str) -> realm_client::PageResult<Status> {
+    realm_client::page(
         &format!("/{}/~/sync-status/", collection),
         maplit::hashmap! {"auth_code" => auth_code},
         Some("status".to_string()),

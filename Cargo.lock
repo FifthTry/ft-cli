@@ -651,6 +651,7 @@ dependencies = [
  "anyhow",
  "chrono",
  "maplit",
+ "realm-client",
  "reqwest",
  "serde",
  "serde_derive",
@@ -1647,6 +1648,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3190ef7066a446f2e7f42e239d161e905420ccab01eb967c9eb27d21b2322a73"
 dependencies = [
  "rand_core",
+]
+
+[[package]]
+name = "realm-client"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "reqwest",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "sorted-json",
+ "thiserror",
+ "url",
 ]
 
 [[package]]
