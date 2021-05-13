@@ -1,7 +1,7 @@
 mod action;
 mod page;
 
-pub use action::{action, Error, Result};
+pub use action::{action, ActionError, Result};
 pub use page::{page, PageError, PageResult};
 
 pub fn is_test() -> bool {

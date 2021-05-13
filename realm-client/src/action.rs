@@ -4,7 +4,7 @@ fn to_url(url: &str) -> String {
 }
 
 #[derive(thiserror::Error, Debug)]
-pub enum Error {
+pub enum ActionError {
     #[error("api error: {error:?}")]
     APIError { error: reqwest::Error },
 
@@ -21,13 +21,13 @@ pub enum Error {
     PageError(crate::PageError),
 }
 
-impl From<reqwest::Error> for Error {
+impl From<reqwest::Error> for ActionError {
     fn from(e: reqwest::Error) -> Self {
         Self::APIError { error: e }
     }
 }
 
-impl From<crate::PageError> for Error {
+impl From<crate::PageError> for ActionError {
     fn from(e: crate::PageError) -> Self {
         Self::PageError(e)
     }
@@ -74,11 +74,11 @@ where
         .send()
     {
         Ok(response) => response,
-        Err(e) => return Err(Error::APIError { error: e }.into()),
+        Err(e) => return Err(ActionError::APIError { error: e }.into()),
     };
 
     if resp.status() != reqwest::StatusCode::OK {
-        return Err(Error::APIResponseNotOk("post api response not OK".to_string()).into());
+        return Err(ActionError::APIResponseNotOk("post api response not OK".to_string()).into());
     };
 
     let resp_value: std::result::Result<crate::ApiResponse<serde_json::Value>, reqwest::Error> =
@@ -87,7 +87,7 @@ where
     match resp_value {
         Ok(v) => {
             if !v.success {
-                return Err(Error::ResponseError(v.error.map_or(
+                return Err(ActionError::ResponseError(v.error.map_or(
                     "Something went wrong".to_string(),
                     |x| {
                         x.into_iter()
@@ -101,10 +101,10 @@ where
 
             match v.result {
                 Some(v) => serde_json::from_value(v)
-                    .map_err(|e| Error::DeserializeError(e.to_string()).into()),
-                None => Err(Error::APIResponseNotOk("".to_string()).into()),
+                    .map_err(|e| ActionError::DeserializeError(e.to_string()).into()),
+                None => Err(ActionError::APIResponseNotOk("".to_string()).into()),
             }
         }
-        Err(err) => Err(Error::ResponseError(err.to_string()).into()),
+        Err(err) => Err(ActionError::ResponseError(err.to_string()).into()),
     }
 }
