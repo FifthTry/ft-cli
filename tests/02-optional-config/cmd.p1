@@ -1,11 +1,10 @@
 -- fbt:
-cmd: $FBT_CWD/target/debug/ft-sync --test --config=ft-sync.p1 status
+cmd: $FBT_CWD/target/debug/ft-sync --test --config=ft-sync-la-la-la.p1 status
 
 
 -- stdout:
 
-Config File: ft-sync.p1
-Config: ft-sync.p1
+Config: ft-sync-la-la-la.p1
 Backend: FTD
 Root: docs
 Last Synced Hash: hello
