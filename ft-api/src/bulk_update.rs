@@ -41,7 +41,7 @@ pub fn bulk_update(
     realm_client::action::<crate::sync_status::Status, _>(
         &url,
         UpdatedWrapper { data: update },
-        None,
+        Some("bulk_update".to_string()),
     )?;
     Ok(())
 }

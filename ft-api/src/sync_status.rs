@@ -23,6 +23,6 @@ pub fn sync_status(collection: &str, auth_code: &str) -> realm_client::Result<St
     realm_client::page(
         &format!("/{}/~/sync-status/", collection),
         maplit::hashmap! {"auth_code" => auth_code},
-        Some("status".to_string()),
+        Some("sync_status".to_string()),
     )
 }
