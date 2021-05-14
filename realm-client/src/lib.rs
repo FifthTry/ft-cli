@@ -1,8 +1,10 @@
 mod action;
+mod client;
 mod page;
 mod types;
 
 pub use action::action;
+pub(crate) use client::{client, handle, prefix};
 pub use page::page;
 pub use types::{Error, Result};
 

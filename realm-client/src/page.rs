@@ -6,11 +6,10 @@ where
     K: Into<String> + AsRef<str>,
     V: Into<String> + AsRef<str>,
 {
-    // TODO: read domain from config/env
     // TODO: ensure the keys are traversed in sorted order
     let params: Vec<(_, _)> = query.iter().collect();
     url::Url::parse_with_params(
-        &format!("http://127.0.0.1:3000{}?realm_mode=api", url_),
+        &format!("{}{}?realm_mode=api", crate::prefix(), url_),
         &params,
     )
     .map_err(crate::Error::UrlParseError)
@@ -46,17 +45,5 @@ where
         .expect("failed to parse json"));
     }
 
-    let client = reqwest::blocking::Client::new();
-    let resp = match client
-        .get(url)
-        .header("Accept", "application/json")
-        .header("Content-Type", "application/json")
-        .header("User-Agent", "rust")
-        .send()
-    {
-        Ok(response) => response,
-        Err(e) => return Err(crate::Error::HttpError(e)),
-    };
-
-    crate::action::handle_response(resp)
+    crate::handle(crate::client(url.as_str(), reqwest::Method::GET))
 }
