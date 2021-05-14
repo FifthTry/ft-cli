@@ -7,24 +7,25 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
     let latest_hash = crate::git::head()?;
     let git_root = crate::git::root_dir()?;
 
-    let root_dir = config.root_abs_path();
+    let root_dir = {
+        let root_dir = config.root_abs_path();
+        if !root_dir.starts_with(&git_root) {
+            panic!(
+                "The root directory: {:?} is not inside git dir: {}",
+                root_dir.as_os_str(),
+                &git_root
+            )
+        }
 
-    if !root_dir.starts_with(&git_root) {
-        panic!(
-            "The root directory: {:?} is not inside git dir: {}",
-            root_dir.as_os_str(),
-            &git_root
-        )
-    }
+        root_dir.to_string_lossy().to_string()
+    };
 
-    let root_dir = root_dir.to_str().unwrap();
-
-    let status = ft_api::sync_status::sync_status(config.collection.as_str(), auth_code.as_str())?;
+    let status = ft_api::sync_status(config.collection.as_str(), auth_code.as_str())?;
 
     let files = if status.last_synced_hash.is_empty() {
         crate::git::ls_tree(&latest_hash, &git_root, &root_dir)?
     } else {
-        crate::git::diff(&status.last_synced_hash, &latest_hash, &git_root, &root_dir)?
+        crate::git::changed_files(&status.last_synced_hash, &latest_hash, &git_root, &root_dir)?
     };
 
     let mut actions = vec![];
@@ -35,7 +36,7 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
 
     let to_docid = |path: &str| -> String {
         let t = std::path::Path::new(&path)
-            .strip_prefix(root_dir)
+            .strip_prefix(root_dir.as_str())
             .unwrap()
             .with_extension("")
             .to_str()
@@ -79,7 +80,7 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
 
     println!("files {:#?}", actions);
 
-    ft_api::bulk_update::bulk_update(
+    ft_api::bulk_update(
         config.collection.as_str(),
         status.last_synced_hash.as_str(),
         latest_hash.as_str(),

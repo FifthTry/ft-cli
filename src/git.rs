@@ -24,7 +24,7 @@ pub fn ls_tree(hash: &str, git_root: &str, root_dir: &str) -> crate::Result<Vec<
         .collect())
 }
 
-pub fn diff(
+pub fn changed_files(
     hash1: &str,
     hash2: &str,
     git_root: &str,
@@ -32,7 +32,7 @@ pub fn diff(
 ) -> crate::Result<Vec<FileMode>> {
     let cmd = std::process::Command::new("git")
         .args(&[
-            "diff",
+            "changed_files",
             "--name-status",
             "--no-renames",
             hash1.trim(),
