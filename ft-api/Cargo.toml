@@ -5,14 +5,9 @@ authors = ["Abrar <abrar.nitk@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-anyhow = "1.0"
-reqwest = { version = "0.11", features = ["blocking", "json"] }
 serde_json = "1.0"
 serde = "1.0"
 serde_derive = "1.0"
-thiserror = "1"
 chrono = { version = "0.4", features = ["serde"] }
 maplit = "1"
-sorted-json = "0.1.0"
-url = "2.2.2"
 realm-client = { path = "../realm-client" }

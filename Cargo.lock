@@ -648,17 +648,12 @@ checksum = "c1fd087255f739f4f1aeea69f11b72f8080e9c2e7645cd06955dad4a178a49e3"
 name = "ft-api"
 version = "0.1.0"
 dependencies = [
- "anyhow",
  "chrono",
  "maplit",
  "realm-client",
- "reqwest",
  "serde",
  "serde_derive",
  "serde_json",
- "sorted-json",
- "thiserror",
- "url",
 ]
 
 [[package]]
@@ -672,12 +667,10 @@ dependencies = [
  "fbt-lib",
  "ft-api",
  "ftd",
- "gitignore",
  "realm-client",
  "reqwest",
  "rusty-hook",
  "serde",
- "serde_derive",
  "serde_json",
  "thiserror",
 ]
@@ -797,21 +790,6 @@ name = "gimli"
 version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f6503fe142514ca4799d4c26297c4248239fe8838d827db6bd6065c6ed29a6ce"
-
-[[package]]
-name = "gitignore"
-version = "1.0.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "78aa90e4620c1498ac434c06ba6e521b525794bbdacf085d490cc794b4a2f9a4"
-dependencies = [
- "glob",
-]
-
-[[package]]
-name = "glob"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b919933a397b79c37e33b77bb2aa3dc8eb6e165ad809e58ff75bc7db2e34574"
 
 [[package]]
 name = "h2"

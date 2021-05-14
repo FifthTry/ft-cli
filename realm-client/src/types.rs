@@ -7,7 +7,6 @@ pub(crate) struct ApiResponse<T: serde::de::DeserializeOwned>(
 struct A<T> {
     pub success: bool,
     pub result: Option<T>,
-    // TODO: change to `pub error: std::collections::HashMap<String, String>,`
     pub error: Option<std::collections::HashMap<String, String>>,
 }
 
@@ -82,33 +81,3 @@ impl From<url::ParseError> for Error {
         Self::UrlParseError(e)
     }
 }
-
-// #[derive(thiserror::Error, Debug)]
-// pub enum ActionError {
-//     #[error("api error: {error:?}")]
-//     APIError { error: reqwest::Error },
-//
-//     #[error("api status code: {}", _0)]
-//     APIResponseNotOk(String),
-//
-//     #[error("DeserializeError: {}", _0)]
-//     DeserializeError(String),
-//
-//     #[error("ResponseError: {}", _0)]
-//     ResponseError(String),
-//
-//     #[error("PageError: {:?}", _0)]
-//     PageError(crate::Error),
-// }
-//
-// impl From<reqwest::Error> for ActionError {
-//     fn from(e: reqwest::Error) -> Self {
-//         Self::APIError { error: e }
-//     }
-// }
-//
-// impl From<crate::Error> for ActionError {
-//     fn from(e: crate::Error) -> Self {
-//         Self::PageError(e)
-//     }
-// }
