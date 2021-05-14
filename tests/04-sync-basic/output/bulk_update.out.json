@@ -1,0 +1,13 @@
+{
+  "body": {
+    "data": {
+      "auth_code": "123",
+      "collection": "testuser/index",
+      "current_hash": "hello",
+      "files": [],
+      "new_hash": "123123123",
+      "repo": "amitu/fifthtry"
+    }
+  },
+  "url": "https://www.fifthtry.com/testuser/index/~/bulk-update/?realm_mode=api"
+}

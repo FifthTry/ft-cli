@@ -7,8 +7,11 @@ pub(crate) fn client(url: &str, method: reqwest::Method) -> reqwest::blocking::R
 }
 
 pub(crate) fn url(u: &str) -> String {
-    let prefix = crate::env::host();
-    format!("{}{}?realm_mode=api", prefix, u)
+    let host = match std::env::var("REALM_HOST") {
+        Ok(host) => host,
+        Err(_) => "https://www.fifthtry.com".to_string(),
+    };
+    format!("{}{}?realm_mode=api", host, u)
 }
 
 pub(crate) fn handle<T>(req: reqwest::blocking::RequestBuilder) -> crate::Result<T>
