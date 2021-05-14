@@ -1,6 +1,5 @@
 mod action;
 mod client;
-mod env;
 mod page;
 mod types;
 
