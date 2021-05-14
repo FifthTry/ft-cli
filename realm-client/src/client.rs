@@ -6,9 +6,10 @@ pub(crate) fn client(url: &str, method: reqwest::Method) -> reqwest::blocking::R
         .header("User-Agent", "rust")
 }
 
-pub(crate) fn prefix() -> String {
+pub(crate) fn url(u: &str) -> String {
     // TODO: read domain from config/env
-    "http://127.0.0.1:3000".to_string()
+    let prefix = "http://127.0.0.1:3000".to_string();
+    format!("{}{}?realm_mode=api", prefix, u)
 }
 
 pub(crate) fn handle<T>(req: reqwest::blocking::RequestBuilder) -> crate::Result<T>

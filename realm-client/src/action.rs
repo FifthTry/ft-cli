@@ -1,13 +1,9 @@
-fn to_url(url: &str) -> String {
-    format!("{}{}?realm_mode=api", crate::prefix(), url)
-}
-
 pub fn action<T, B>(url: &str, body: B, tid: Option<String>) -> crate::Result<T>
 where
     T: serde::de::DeserializeOwned,
     B: serde::Serialize,
 {
-    let url = to_url(url);
+    let url = crate::url(url);
 
     if crate::is_test() {
         let tid = match tid {

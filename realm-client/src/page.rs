@@ -1,5 +1,5 @@
 fn to_url_with_query<K, V>(
-    url_: &str,
+    u: &str,
     query: std::collections::HashMap<K, V>,
 ) -> crate::Result<url::Url>
 where
@@ -8,11 +8,8 @@ where
 {
     // TODO: ensure the keys are traversed in sorted order
     let params: Vec<(_, _)> = query.iter().collect();
-    url::Url::parse_with_params(
-        &format!("{}{}?realm_mode=api", crate::prefix(), url_),
-        &params,
-    )
-    .map_err(crate::Error::UrlParseError)
+    url::Url::parse_with_params(crate::url(u).as_str(), &params)
+        .map_err(crate::Error::UrlParseError)
 }
 
 // TODO: convert it to a macro so key values can be passed easily

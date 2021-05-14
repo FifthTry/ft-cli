@@ -4,7 +4,7 @@ mod page;
 mod types;
 
 pub use action::action;
-pub(crate) use client::{client, handle, prefix};
+pub(crate) use client::{client, handle, url};
 pub use page::page;
 pub use types::{Error, Result};
 
