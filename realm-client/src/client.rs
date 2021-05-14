@@ -23,7 +23,7 @@ where
 
     if resp.status() != reqwest::StatusCode::OK {
         return Err(crate::Error::UnexpectedResponse {
-            code: resp.status(),
+            code: resp.status().as_u16(),
             body: resp
                 .text()
                 .unwrap_or_else(|_| "failed to read body".to_string()),

@@ -38,27 +38,39 @@ where
     }
 }
 
-#[derive(Debug, thiserror::Error)]
+pub fn never_expected<'de, D, T>(_deserializer: D) -> std::result::Result<T, D::Error>
+where
+    D: serde::de::Deserializer<'de>,
+{
+    unreachable!("must never happen")
+}
+
+#[derive(Debug, thiserror::Error, serde_derive::Deserialize)]
 pub enum Error {
+    #[serde(deserialize_with = "never_expected")]
     #[error("HttpError: {}", _0)]
     HttpError(reqwest::Error),
     #[error("UnexpectedResponse: {code:?} {body:?}")]
     UnexpectedResponse {
         // non 200
         body: String,
-        code: reqwest::StatusCode,
+        code: u16,
     },
     // SpecificError(T),
     #[error("PageNotFound: {}", _0)]
     PageNotFound(String),
     #[error("FieldError: {:?}", _0)]
     FieldError(std::collections::HashMap<String, String>), // How to make realm return this?
+    #[serde(deserialize_with = "never_expected")]
     #[error("DeserializeError: {:?}", _0)]
     DeserializeError(reqwest::Error),
+    #[serde(deserialize_with = "never_expected")]
     #[error("SerializeError: {:?}", _0)]
     SerializeError(serde_json::Error),
+    #[serde(deserialize_with = "never_expected")]
     #[error("UrlParseError: {:?}", _0)]
     UrlParseError(url::ParseError),
+    #[serde(deserialize_with = "never_expected")]
     #[error("SerdeDeserializeError: {:?}", _0)]
     SerdeDeserializeError(serde_json::Error),
 }

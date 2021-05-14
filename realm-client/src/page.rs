@@ -13,7 +13,6 @@ where
         .map_err(crate::Error::UrlParseError)
 }
 
-// TODO: convert it to a macro so key values can be passed easily
 pub fn page<T, K, V>(
     url: &str,
     query: std::collections::HashMap<K, V>,
@@ -27,20 +26,7 @@ where
     let url = to_url_with_query(url, query)?;
 
     if crate::is_test() {
-        let tid = match tid {
-            Some(v) => v,
-            None => panic!("tid is none in test mode"),
-        };
-
-        // write to ./tid.url and return content of tid.json
-        std::fs::write(format!("{}.url", tid.as_str()), url.as_str())
-            .expect("failed to write to .url file");
-        return Ok(serde_json::from_str(
-            std::fs::read_to_string(format!("{}.json", tid.as_str()))
-                .expect("failed to read .json file")
-                .as_str(),
-        )
-        .expect("failed to parse json"));
+        return crate::mock(tid, serde_json::json! ({"url": url.as_str()}));
     }
 
     crate::handle(crate::client(url.as_str(), reqwest::Method::GET))
