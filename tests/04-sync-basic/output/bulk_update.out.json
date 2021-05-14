@@ -5,9 +5,9 @@
       "collection": "testuser/index",
       "current_hash": "hello",
       "files": [],
-      "new_hash": "7531c9b917673d095298981d3cdaae1284719c4e",
+      "new_hash": "123123123",
       "repo": "amitu/fifthtry"
     }
   },
-  "url": "http://127.0.0.1:3000/testuser/index/~/bulk-update/?realm_mode=api"
+  "url": "https://www.fifthtry.com/testuser/index/~/bulk-update/?realm_mode=api"
 }
