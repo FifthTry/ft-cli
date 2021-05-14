@@ -19,7 +19,7 @@ where
 
 // TODO: define ActionError here and return actual errors that sync status can throw.
 
-pub fn sync_status(collection: &str, auth_code: &str) -> realm_client::PageResult<Status> {
+pub fn sync_status(collection: &str, auth_code: &str) -> realm_client::Result<Status> {
     realm_client::page(
         &format!("/{}/~/sync-status/", collection),
         maplit::hashmap! {"auth_code" => auth_code},
