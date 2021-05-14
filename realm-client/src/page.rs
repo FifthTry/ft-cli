@@ -3,11 +3,12 @@ fn to_url_with_query<K, V>(
     query: std::collections::HashMap<K, V>,
 ) -> crate::Result<url::Url>
 where
-    K: Into<String> + AsRef<str>,
+    K: Into<String> + AsRef<str> + Ord,
     V: Into<String> + AsRef<str>,
 {
-    // TODO: ensure the keys are traversed in sorted order
-    let params: Vec<(_, _)> = query.iter().collect();
+    let mut params: Vec<(_, _)> = query.iter().collect();
+    params.sort_by(|(a, _), (b, _)| a.cmp(b));
+
     url::Url::parse_with_params(crate::url(u).as_str(), &params)
         .map_err(crate::Error::UrlParseError)
 }
@@ -20,7 +21,7 @@ pub fn page<T, K, V>(
 ) -> crate::Result<T>
 where
     T: serde::de::DeserializeOwned,
-    K: Into<String> + AsRef<str>,
+    K: Into<String> + AsRef<str> + Ord,
     V: Into<String> + AsRef<str>,
 {
     let url = to_url_with_query(url, query)?;
