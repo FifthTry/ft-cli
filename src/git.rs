@@ -32,7 +32,7 @@ pub fn changed_files(
 ) -> crate::Result<Vec<FileMode>> {
     let cmd = std::process::Command::new("git")
         .args(&[
-            "changed_files",
+            "diff",
             "--name-status",
             "--no-renames",
             hash1.trim(),
