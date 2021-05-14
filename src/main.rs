@@ -7,8 +7,9 @@ fn main() {
             clap::Arg::with_name("config")
                 .short("c")
                 .long("config")
-                .required(true)
+                .required(false)
                 .value_name("FILE")
+                .default_value("ft-sync.p1")
                 .help("path to the ft-sync config file")
                 .takes_value(true),
         )
@@ -19,21 +20,21 @@ fn main() {
                 .required(false)
                 .value_name("TEST")
                 .help("if to run in test mode")
+                .hidden(true)
                 .takes_value(false),
         )
-        .subcommands(vec![
-            clap::SubCommand::with_name("status").about("show the sync status"),
+        .subcommand(clap::SubCommand::with_name("status").about("show the sync status"))
+        .subcommand(
             clap::SubCommand::with_name("sync").about("sync files").arg(
                 clap::Arg::with_name("dry_run")
                     .help("run in dry run mode")
                     .short("n")
                     .long("dry-run"),
             ),
-        ])
+        )
         .get_matches();
 
     let config_file = cmd.value_of("config").unwrap();
-    println!("Config File: {}", config_file);
     let config = ft_sync::Config::from_file(config_file).expect("failed to read config");
 
     match cmd.subcommand() {

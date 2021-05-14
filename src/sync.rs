@@ -88,5 +88,7 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
         auth_code.as_str(),
     )?;
 
+    println!("Synced successfully");
+
     Ok(())
 }

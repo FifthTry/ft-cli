@@ -12,5 +12,4 @@ local.sh
 .DS_Store
 .cargo
 
-*.url
-*.out.json
+/status.url
