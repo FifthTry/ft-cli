@@ -24,7 +24,8 @@ where
 
     // write to ./tid.url and return content of tid.json
 
-    let out = format!("{}.out.json", tid.as_str());
+    std::fs::create_dir_all("out").unwrap();
+    let out = format!("out/{}.out.json", tid.as_str());
     std::fs::write(
         out.as_str(),
         sorted_json::to_json(&serde_json::to_value(input).unwrap()),
