@@ -7,8 +7,7 @@ pub(crate) fn client(url: &str, method: reqwest::Method) -> reqwest::blocking::R
 }
 
 pub(crate) fn url(u: &str) -> String {
-    // TODO: read domain from config/env
-    let prefix = "http://127.0.0.1:3000".to_string();
+    let prefix = crate::env::host();
     format!("{}{}?realm_mode=api", prefix, u)
 }
 

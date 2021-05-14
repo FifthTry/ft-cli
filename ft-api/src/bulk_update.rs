@@ -22,7 +22,7 @@ pub fn bulk_update(
     files: Vec<Action>,
     auth_code: &str,
 ) -> realm_client::Result<()> {
-    let url = "/testuser/index/~/bulk-update/";
+    let url = format!("/{}/~/bulk-update/", collection);
 
     let update = BulkUpdateInput {
         collection: collection.trim().to_string(),
