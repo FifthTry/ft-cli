@@ -1,0 +1,13 @@
+-- fbt:
+cmd: $FBT_CWD/target/debug/ft-sync --test sync
+skip: test not yet passing, have to mock git related functions
+
+In this test we are testing if a file is each added, deleted and updated if they
+are being sent to server.
+
+-- stdout:
+
+syncing
+actions []
+Synced successfully
+

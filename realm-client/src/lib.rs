@@ -23,15 +23,19 @@ where
     };
 
     // write to ./tid.url and return content of tid.json
+
+    let out = format!("{}.out.json", tid.as_str());
     std::fs::write(
-        format!("{}.out.json", tid.as_str()),
+        out.as_str(),
         sorted_json::to_json(&serde_json::to_value(input).unwrap()),
     )
-    .expect("failed to write to .out.json file");
+    .unwrap_or_else(|e| panic!("failed to write to: {}, err={:?}", out, e));
+
+    let input = format!("{}.in.json", tid.as_str());
 
     serde_json::from_str(
-        std::fs::read_to_string(format!("{}.in.json", tid.as_str()))
-            .expect("failed to read .json file")
+        std::fs::read_to_string(input.as_str())
+            .unwrap_or_else(|e| panic!("failed to read from: {}, err={:?}", input, e))
             .as_str(),
     )
     .expect("failed to parse json")
