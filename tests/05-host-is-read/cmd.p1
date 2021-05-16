@@ -3,7 +3,7 @@ cmd: $FBT_CWD/target/debug/ft-sync --test status
 
 -- env:
 
-FT_HOST=http://127.0.0.1:3000
+REALM_HOST=http://127.0.0.1:3000
 
 
 -- stdout:
