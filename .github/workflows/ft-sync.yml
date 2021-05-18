@@ -10,8 +10,10 @@ jobs:
     name: ft-sync
     runs-on: macos-10.15
     steps:
+      - uses: actions/checkout@v2
       - name: Running ft-sync status
 #      - uses: actions/checkout@v1
         run: |
+          ls -la
           chmod +x ./ft-sync
           ./ft-sync status
