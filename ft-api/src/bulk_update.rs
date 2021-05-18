@@ -21,6 +21,8 @@ pub fn bulk_update(
     repo: &str,
     files: Vec<Action>,
     auth_code: &str,
+    platform: String,
+    client_version: String,
 ) -> realm_client::Result<()> {
     let url = format!("/{}/~/bulk-update/", collection);
 
@@ -36,11 +38,17 @@ pub fn bulk_update(
     #[derive(serde_derive::Serialize)]
     struct UpdatedWrapper {
         data: BulkUpdateInput,
+        platform: String,
+        client_version: String,
     }
 
     realm_client::action::<crate::sync_status::Status, _>(
         &url,
-        UpdatedWrapper { data: update },
+        UpdatedWrapper {
+            data: update,
+            platform,
+            client_version,
+        },
         Some("bulk_update".to_string()),
     )?;
     Ok(())

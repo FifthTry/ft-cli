@@ -97,6 +97,8 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
         config.repo.as_str(),
         actions,
         auth_code.as_str(),
+        crate::utils::platform()?,
+        crate::utils::client_version(),
     )?;
 
     println!("Synced successfully");
