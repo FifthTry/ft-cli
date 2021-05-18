@@ -10,7 +10,7 @@ jobs:
     name: ft-sync
     runs-on: macos-10.15
     env:
-      FT_AUTH_CODE: ${{ envs.FT_AUTH_CODE }}
+      FT_AUTH_CODE: ${{ secrets.FT_AUTH_CODE }}
     steps:
       - uses: actions/checkout@v2
       - name: Running ft-sync status
