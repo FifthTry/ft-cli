@@ -50,4 +50,15 @@ print('The sum is '.format(num1, num2, sum))
 
 - testuser/index/hello-world
   Hello World
-
+- testuser/index/hello-world1
+  Hello World1
+- testuser/index/hello-world2
+  Hello World2
+- testuser/index/hello-world3
+  Hello World3
+- testuser/index/hello-world4
+  Hello World4
+- testuser/index/hello-world5
+  Hello World5
+- testuser/index/hello-world7
+  Hello World7
