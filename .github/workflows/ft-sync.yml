@@ -9,8 +9,6 @@ jobs:
   everything:
     name: ft-sync
     runs-on: macos-10.15
-    env:
-      FT_AUTH_CODE: R4UoWc2esXAHBB8MVPyD
     steps:
       - uses: actions/checkout@v2
       - name: Running ft-sync status
