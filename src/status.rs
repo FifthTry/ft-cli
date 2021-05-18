@@ -11,7 +11,12 @@ pub fn status(config: &crate::Config, config_file: &str) -> crate::Result<()> {
         _ => return Ok(()),
     };
 
-    let status = ft_api::sync_status(config.collection.as_str(), auth_code.as_str())?;
+    let status = ft_api::sync_status(
+        config.collection.as_str(),
+        auth_code.as_str(),
+        &crate::utils::platform()?,
+        &crate::utils::client_version(),
+    )?;
 
     println!("Config: {}", config_file);
     println!("Backend: {}", config.backend.to_string());

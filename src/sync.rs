@@ -20,7 +20,12 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
         root_dir.to_string_lossy().to_string()
     };
 
-    let status = ft_api::sync_status(config.collection.as_str(), auth_code.as_str())?;
+    let status = ft_api::sync_status(
+        config.collection.as_str(),
+        auth_code.as_str(),
+        &crate::utils::platform()?,
+        &crate::utils::client_version(),
+    )?;
 
     let actions = {
         let read_content = |file_path: &str| -> crate::Result<String> {
