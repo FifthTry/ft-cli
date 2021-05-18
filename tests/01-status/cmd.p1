@@ -4,9 +4,6 @@ cmd: $FBT_CWD/target/debug/ft-sync --test status
 
 -- stdout:
 
-Config: ft-sync.p1
-Backend: FTD
 Root: docs
-Last Synced Hash: hello
-Last Sync On: 1970-01-01T05:30:00IST
-Command: status()
+Last git synced hash: hello
+Last synced on: 1970-01-01T05:30:00IST
