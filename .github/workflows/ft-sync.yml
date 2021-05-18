@@ -1,0 +1,18 @@
+on:
+  push:
+    branches:
+      - main
+      - release-fixes
+    paths:
+      - "**.ftd"
+jobs:
+  everything:
+    name: ft-sync
+    runs-on: macos-10.15
+    steps:
+      - name: ft-sync status
+      - uses: actions/checkout@v1
+      - name: Running ft-sync status
+        run: |
+          chmod +x ./ft-sync
+          ./ft-sync status
