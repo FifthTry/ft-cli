@@ -41,7 +41,12 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
                 .to_str()
                 .unwrap()
                 .to_string();
-            config.collection.to_string() + "/" + t.as_str()
+            println!("{}", t);
+            if t == "index" {
+                config.collection.to_string()
+            } else {
+                config.collection.to_string() + "/" + t.as_str()
+            }
         };
 
         let mut actions = vec![];
