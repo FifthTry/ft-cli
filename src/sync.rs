@@ -41,7 +41,6 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
                 .to_str()
                 .unwrap()
                 .to_string();
-            println!("{}", t);
             if t == "index" {
                 config.collection.to_string()
             } else {
@@ -62,7 +61,7 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
                 crate::git::FileMode::Added(path) => {
                     if config.backend.accept(std::path::Path::new(&path)) {
                         let docid = to_docid(&path);
-                        println!("path: {}, {}", path, docid);
+                        println!("Added new: {}", path);
                         actions.push(ft_api::bulk_update::Action::Added {
                             id: docid,
                             content: read_content(&path)?,
@@ -73,7 +72,7 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
                 crate::git::FileMode::Modified(path) => {
                     if config.backend.accept(std::path::Path::new(&path)) {
                         let docid = to_docid(&path);
-                        println!("path: {}, {}", path, docid);
+                        println!("Updated: {}", path);
                         actions.push(ft_api::bulk_update::Action::Updated {
                             id: docid,
                             content: read_content(&path)?,
@@ -83,7 +82,7 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
                 crate::git::FileMode::Deleted(path) => {
                     if config.backend.accept(std::path::Path::new(&path)) {
                         let docid = to_docid(&path);
-                        println!("path: {}, {}", path, docid);
+                        println!("Deleted: {}", path);
                         actions.push(ft_api::bulk_update::Action::Deleted { id: docid });
                     }
                 }
@@ -93,7 +92,7 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
         actions
     };
 
-    println!("actions {:#?}", actions);
+    let st = std::time::Instant::now();
 
     ft_api::bulk_update(
         config.collection.as_str(),
@@ -106,7 +105,7 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
         crate::utils::client_version(),
     )?;
 
-    println!("Synced successfully");
+    println!("Synced successfully: {:?}", st.elapsed());
 
     Ok(())
 }
