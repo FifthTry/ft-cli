@@ -13,3 +13,4 @@ local.sh
 .cargo
 
 /status.url
+/out/

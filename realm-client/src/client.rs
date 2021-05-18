@@ -7,7 +7,7 @@ pub(crate) fn client(url: &str, method: reqwest::Method) -> reqwest::blocking::R
 }
 
 pub(crate) fn url(u: &str) -> String {
-    let host = match std::env::var("FT_HOST") {
+    let host = match std::env::var("REALM_HOST") {
         Ok(host) => host,
         Err(_) => "https://www.fifthtry.com".to_string(),
     };

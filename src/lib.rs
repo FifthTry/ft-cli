@@ -4,6 +4,7 @@ pub mod git;
 pub mod status;
 pub mod sync;
 pub mod types;
+mod utils;
 
 pub use crate::config::Config;
 pub use error::Error;
