@@ -1,4 +1,4 @@
-pub fn status(config: &crate::Config, config_file: &str) -> crate::Result<()> {
+pub fn status(config: &crate::Config, _config_file: &str) -> crate::Result<()> {
     /*
     Config: ../.ft-sync.p1
     Backend: mdBook
@@ -18,13 +18,13 @@ pub fn status(config: &crate::Config, config_file: &str) -> crate::Result<()> {
         &crate::utils::client_version(),
     )?;
 
-    println!("Config: {}", config_file);
-    println!("Backend: {}", config.backend.to_string());
+    // println!("Config: {}", config_file);
+    // println!("Backend: {}", config.backend.to_string());
     println!("Root: {}", config.root);
     println!(
-        "Last Synced Hash: {}",
+        "Last git synced hash: {}",
         if status.last_synced_hash.is_empty() {
-            "Never Synced"
+            "Never synced"
         } else {
             status.last_synced_hash.as_str()
         }
@@ -37,10 +37,10 @@ pub fn status(config: &crate::Config, config_file: &str) -> crate::Result<()> {
         let last_updated_on_in_ist = status
             .last_updated_on
             .with_timezone(&chrono_tz::Asia::Kolkata);
-        println!("Last Sync On: {:?}", last_updated_on_in_ist);
+        println!("Last synced on: {:?}", last_updated_on_in_ist);
     } else {
         let local: chrono::DateTime<chrono::Local> = chrono::DateTime::from(status.last_updated_on);
-        println!("Last Sync On: {:?}", local);
+        println!("Last synced on: {:?}", local);
     }
 
     Ok(())

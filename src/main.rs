@@ -38,13 +38,10 @@ fn main() {
     let config = ft_sync::Config::from_file(config_file).expect("failed to read config");
 
     match cmd.subcommand() {
-        ("status", _) => {
-            match ft_sync::status(&config, config_file) {
-                Ok(()) => {}
-                Err(e) => println!("{}", e.to_string()),
-            }
-            println!("Command: status()");
-        }
+        ("status", _) => match ft_sync::status(&config, config_file) {
+            Ok(()) => {}
+            Err(e) => println!("{}", e.to_string()),
+        },
         ("sync", _args) => {
             println!("syncing");
             match ft_sync::sync(&config, false) {
