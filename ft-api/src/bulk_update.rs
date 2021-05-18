@@ -14,6 +14,7 @@ struct File {
     content: String,
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn bulk_update(
     collection: &str,
     current_hash: &str,
