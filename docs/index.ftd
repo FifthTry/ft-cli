@@ -1,1 +1,53 @@
--- h1: Index File
+-- meta:
+git-repo: a/b
+
+--- reader:
+who: everyone
+
+
+
+-- h0: testuser
+
+
+
+-- markdown:
+
+This is your main project. You can make it private on clicking on the button above.
+
+You can edit things by double clicking.
+
+Update the table of content by editing the 'toc' section
+
+
+
+-- youtube: Sample youtube video
+src: jcn0R-UfA_k
+
+
+
+-- image: Sample Image
+src: https://upload.wikimedia.org/wikipedia/en/e/ef/RD-S_sample_graph.png
+
+
+
+-- code: Sample Code
+lang: py
+
+# This program adds two numbers
+
+num1 = 1.5
+num2 = 6.3
+
+# Add two numbers
+sum = num1 + num2
+
+# Display the sum
+print('The sum is '.format(num1, num2, sum))
+
+
+
+-- toc:
+
+- testuser/index/hello-world
+  Hello World
+
