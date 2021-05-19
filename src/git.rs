@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub enum FileMode {
     Deleted(String),
     Added(String),
