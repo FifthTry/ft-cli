@@ -18,6 +18,20 @@ fn to_docid(path: &str, collection: &str, root_dir: &str) -> String {
     }
 }
 
+fn to_raw_docid(path: &str, collection: &str, root_dir: &str) -> String {
+    let t = std::path::Path::new(&path)
+        .strip_prefix(root_dir)
+        .unwrap()
+        .to_string_lossy()
+        .to_string();
+
+    if t == "index" {
+        collection.to_string()
+    } else {
+        collection.to_string() + "/" + t.as_str()
+    }
+}
+
 pub fn read_ftd_files(
     config: &crate::Config,
     root_dir: &str,
@@ -79,14 +93,16 @@ fn read_raw_files(
             })
             .collect::<Vec<_>>()
             .join("\n");
-        println!("{}", content);
-        format!("-- h0: {}\n\n-- raw: \n\n {}", title, content)
+
+        let t = format!("-- h0: {}\n\n-- raw: \n\n {}", title, content);
+        println!("{}", t);
+        t
     };
 
     for file in files {
         match file {
             crate::git::FileMode::Added(path) => {
-                let docid = self::to_docid(&path, &config.collection, &root_dir);
+                let docid = self::to_raw_docid(&path, &config.collection, &root_dir);
                 println!("Added new: {}", path);
                 let content = self::read_content(&path)?;
                 actions.push(ft_api::bulk_update::Action::Added {
@@ -95,7 +111,7 @@ fn read_raw_files(
                 });
             }
             crate::git::FileMode::Modified(path) => {
-                let docid = self::to_docid(&path, &config.collection, &root_dir);
+                let docid = self::to_raw_docid(&path, &config.collection, &root_dir);
                 println!("Added new: {}", path);
                 let content = self::read_content(&path)?;
                 actions.push(ft_api::bulk_update::Action::Updated {
@@ -105,7 +121,7 @@ fn read_raw_files(
             }
             crate::git::FileMode::Deleted(path) => {
                 if config.backend.accept(std::path::Path::new(&path)) {
-                    let docid = self::to_docid(&path, &config.collection, &root_dir);
+                    let docid = self::to_raw_docid(&path, &config.collection, &root_dir);
                     println!("Deleted: {}", path);
                     actions.push(ft_api::bulk_update::Action::Deleted { id: docid });
                 }
