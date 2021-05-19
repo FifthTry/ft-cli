@@ -1,0 +1,14 @@
+-- fbt:
+cmd: $FBT_CWD/target/debug/ft-sync --test status
+skip: not yet testable
+
+-- env:
+
+REALM_HOST=http://127.0.0.1:3000
+
+
+-- stdout:
+
+Root: docs
+Last git synced hash: hello
+Last synced on: 1970-01-01T05:30:00IST
