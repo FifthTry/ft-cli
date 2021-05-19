@@ -2,8 +2,8 @@
 mode: local-to-remote
 backend: ftd
 root: tests/docs
-repo: https://github.com/AbrarNitk/ft-sync-demo
-collection: wilderbit/ft-sync-demo
+repo: a/b
+collection: testuser/index
 
 
 -- ignored:
