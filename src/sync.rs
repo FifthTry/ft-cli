@@ -166,6 +166,8 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
         crate::git::changed_files(&status.last_synced_hash, &latest_hash, &git_root, &root_dir)?
     };
 
+    self::traverse_tree(&std::path::PathBuf::from(&root_dir));
+
     let actions = {
         match config.backend {
             crate::Backend::FTD => self::read_ftd_files(&config, root_dir.as_str(), files)?,
@@ -189,5 +191,16 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
 
     println!("Synced successfully: {}", crate::utils::elapsed(st));
 
+    Ok(())
+}
+
+fn traverse_tree(root_dir: &std::path::PathBuf) -> crate::Result<()> {
+    for entry in std::fs::read_dir(root_dir)? {
+        let p = entry.unwrap().path();
+        if p.is_dir() {
+            println!("{}", p.to_string_lossy().to_string());
+            traverse_tree(&p);
+        }
+    }
     Ok(())
 }
