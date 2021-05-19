@@ -1,7 +1,7 @@
 -- ft-sync:
 mode: local-to-remote
 backend: ftd
-root: docs
+root: tests/docs
 repo: https://github.com/AbrarNitk/ft-sync-demo
 collection: wilderbit/ft-sync-demo
 
