@@ -2,7 +2,6 @@ on:
   push:
     branches:
       - main
-      - release-fixes
     paths:
       - "**.ftd"
 jobs:
@@ -14,9 +13,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Running ft-sync status
-#      - uses: actions/checkout@v1
         run: |
-          ls -la
-          echo $FT_AUTH_CODE
+          chmod +x ./ft-sync
+          ./ft-sync status
+      - name: Running ft-sync sync
+        run: |
+          chmod +x ./ft-sync
+          ./ft-sync sync
+      - name: Running ft-sync status
+        run: |
           chmod +x ./ft-sync
           ./ft-sync status
