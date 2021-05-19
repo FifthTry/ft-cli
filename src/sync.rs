@@ -60,6 +60,61 @@ pub fn read_ftd_files(
     Ok(actions)
 }
 
+fn read_raw_files(
+    config: &crate::Config,
+    root_dir: &str,
+    files: Vec<crate::git::FileMode>,
+) -> crate::Result<Vec<ft_api::bulk_update::Action>> {
+    let mut actions = vec![];
+
+    let to_raw = |title: &str, content: &str| {
+        let content = content
+            .lines()
+            .map(|x| {
+                if x.starts_with("--") || x.starts_with("---") {
+                    "\\".to_string() + x
+                } else {
+                    x.to_string()
+                }
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+        println!("{}", content);
+        format!("-- h0: {}\n\n-- raw: \n\n {}", title, content)
+    };
+
+    for file in files {
+        match file {
+            crate::git::FileMode::Added(path) => {
+                let docid = self::to_docid(&path, &config.collection, &root_dir);
+                println!("Added new: {}", path);
+                let content = self::read_content(&path)?;
+                actions.push(ft_api::bulk_update::Action::Added {
+                    content: to_raw(&docid, &content),
+                    id: docid,
+                });
+            }
+            crate::git::FileMode::Modified(path) => {
+                let docid = self::to_docid(&path, &config.collection, &root_dir);
+                println!("Added new: {}", path);
+                let content = self::read_content(&path)?;
+                actions.push(ft_api::bulk_update::Action::Updated {
+                    content: to_raw(&docid, &content),
+                    id: docid,
+                });
+            }
+            crate::git::FileMode::Deleted(path) => {
+                if config.backend.accept(std::path::Path::new(&path)) {
+                    let docid = self::to_docid(&path, &config.collection, &root_dir);
+                    println!("Deleted: {}", path);
+                    actions.push(ft_api::bulk_update::Action::Deleted { id: docid });
+                }
+            }
+        }
+    }
+    Ok(actions)
+}
+
 pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
     let auth_code = match &config.auth {
         crate::Auth::AuthCode(s) => s.to_string(),
@@ -98,7 +153,7 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
     let actions = {
         match config.backend {
             crate::Backend::FTD => self::read_ftd_files(&config, root_dir.as_str(), files)?,
-            crate::Backend::RAW => vec![],
+            crate::Backend::RAW => self::read_raw_files(&config, root_dir.as_str(), files)?,
             _ => panic!(),
         }
     };
