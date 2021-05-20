@@ -19,7 +19,7 @@ pub fn ls_tree(hash: &str, git_root: &str, root_dir: &str) -> crate::Result<Vec<
         .filter_map(|x| {
             let path = git_root.to_string() + "/" + x;
             if path.starts_with(root_dir) {
-                Some(crate::FileMode::Added(git_root.to_string() + "/" + x))
+                Some(crate::FileMode::Created(git_root.to_string() + "/" + x))
             } else {
                 None
             }
@@ -62,7 +62,7 @@ pub fn changed_files(
             let path = git_root.to_string() + "/" + sp[1];
             if path.starts_with(root_dir) {
                 Some(match mode {
-                    'A' => crate::FileMode::Added(path),
+                    'A' => crate::FileMode::Created(path),
                     'M' => crate::FileMode::Modified(path),
                     'D' => crate::FileMode::Deleted(path),
                     _ => panic!("file with unknown mode : {}", line),

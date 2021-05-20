@@ -10,6 +10,11 @@
           "content": "-- raw:\n\n\n# hello world\n\n\n\n\n",
           "id": "testuser/index/foo.md",
           "type": "Updated"
+        },
+        {
+          "content": "-- raw:\n\n\nbar bar bar\n\n\n\n\n",
+          "id": "testuser/index/bar.txt",
+          "type": "Added"
         }
       ],
       "new_hash": "123123123",

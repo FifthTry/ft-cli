@@ -10,24 +10,24 @@ pub fn handle(
     let id = file.id(root_dir, collection);
 
     Ok(match file {
-        crate::types::FileMode::Added(ref path) => {
-            println!("Added new: {}", path);
+        crate::types::FileMode::Created(_) => {
+            println!("Created: {}", id.as_str());
             vec![ft_api::bulk_update::Action::Added {
                 id,
                 content: file.content()?,
             }]
         }
 
-        crate::types::FileMode::Modified(ref path) => {
-            println!("Updated: {}", path);
+        crate::types::FileMode::Modified(_) => {
+            println!("Updated: {}", id.as_str());
             vec![ft_api::bulk_update::Action::Updated {
                 id,
                 content: file.content()?,
             }]
         }
 
-        crate::types::FileMode::Deleted(ref path) => {
-            println!("Deleted: {}", path);
+        crate::types::FileMode::Deleted(_) => {
+            println!("Deleted: {}", id.as_str());
             vec![ft_api::bulk_update::Action::Deleted { id }]
         }
     })

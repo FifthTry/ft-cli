@@ -46,7 +46,7 @@ pub enum SyncMode {
 
 pub enum FileMode {
     Deleted(String),
-    Added(String),
+    Created(String),
     Modified(String),
 }
 
@@ -96,7 +96,7 @@ impl FileMode {
 
     pub fn path(&self) -> std::path::PathBuf {
         std::path::PathBuf::from(match self {
-            FileMode::Added(v) => v,
+            FileMode::Created(v) => v,
             FileMode::Deleted(v) => v,
             FileMode::Modified(v) => v,
         })
