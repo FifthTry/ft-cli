@@ -1,5 +1,6 @@
 pub mod config;
 pub mod error;
+mod ftd;
 pub mod git;
 pub mod status;
 pub mod sync;
@@ -10,7 +11,7 @@ pub use crate::config::Config;
 pub use error::Error;
 pub use status::status;
 pub use sync::sync;
-pub use types::{Auth, Backend, Result, SyncMode, User};
+pub use types::{Auth, Backend, FileMode, Result, SyncMode, User};
 
 #[cfg(test)]
 mod tests {

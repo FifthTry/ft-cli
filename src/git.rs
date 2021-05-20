@@ -1,10 +1,4 @@
-pub enum FileMode {
-    Deleted(String),
-    Added(String),
-    Modified(String),
-}
-
-pub fn ls_tree(hash: &str, git_root: &str, root_dir: &str) -> crate::Result<Vec<FileMode>> {
+pub fn ls_tree(hash: &str, git_root: &str, root_dir: &str) -> crate::Result<Vec<crate::FileMode>> {
     let files: String = if crate::is_test() {
         realm_client::mock(
             Some("ls_tree".to_string()),
@@ -25,7 +19,7 @@ pub fn ls_tree(hash: &str, git_root: &str, root_dir: &str) -> crate::Result<Vec<
         .filter_map(|x| {
             let path = git_root.to_string() + "/" + x;
             if path.starts_with(root_dir) {
-                Some(FileMode::Added(git_root.to_string() + "/" + x))
+                Some(crate::FileMode::Added(git_root.to_string() + "/" + x))
             } else {
                 None
             }
@@ -38,7 +32,7 @@ pub fn changed_files(
     hash2: &str,
     git_root: &str,
     root_dir: &str,
-) -> crate::Result<Vec<FileMode>> {
+) -> crate::Result<Vec<crate::FileMode>> {
     let files: String = if crate::is_test() {
         realm_client::mock(
             Some("changed_files".to_string()),
@@ -68,9 +62,9 @@ pub fn changed_files(
             let path = git_root.to_string() + "/" + sp[1];
             if path.starts_with(root_dir) {
                 Some(match mode {
-                    'A' => FileMode::Added(path),
-                    'M' => FileMode::Modified(path),
-                    'D' => FileMode::Deleted(path),
+                    'A' => crate::FileMode::Added(path),
+                    'M' => crate::FileMode::Modified(path),
+                    'D' => crate::FileMode::Deleted(path),
                     _ => panic!("file with unknown mode : {}", line),
                 })
             } else {

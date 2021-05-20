@@ -16,7 +16,8 @@ pub struct Config {
 impl Config {
     pub fn from_file(file_path: &str) -> crate::Result<Self> {
         use std::fs;
-        let contents = fs::read_to_string(file_path)?;
+        let contents = fs::read_to_string(file_path)
+            .map_err(|v| crate::Error::ReadError(v, file_path.to_string()))?;
         Self::parse(contents.as_str(), file_path)
     }
 
@@ -60,7 +61,7 @@ impl Config {
             ignored,
             repo: ft_sync.repo,
             collection: ft_sync.collection,
-            backend: ft_sync.backend.as_str().into(),
+            backend: ft_sync.backend,
             root: ft_sync.root,
             mode: crate::SyncMode::LocalToRemote,
             auth: crate::Auth::AuthCode(crate::config::env::auth_code()),
