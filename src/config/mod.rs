@@ -34,8 +34,7 @@ impl Config {
                     } else {
                         return Err(crate::Error::ConfigFileParseError {
                             error: "Duplicate ft-sync section".to_string(),
-                        }
-                        .into());
+                        });
                     }
                 }
                 section::Section::Ignored(sec) => ignored.push(sec),
@@ -47,8 +46,7 @@ impl Config {
             None => {
                 return Err(crate::Error::ConfigFileParseError {
                     error: "No FTSync section found".to_string(),
-                }
-                .into())
+                })
             }
         };
 
