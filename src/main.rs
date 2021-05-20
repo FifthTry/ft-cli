@@ -42,13 +42,10 @@ fn main() {
             Ok(()) => {}
             Err(e) => println!("{}", e.to_string()),
         },
-        ("sync", _args) => {
-            println!("syncing");
-            match ft_sync::sync(&config, false) {
-                Ok(()) => {}
-                Err(e) => println!("{}", e.to_string()),
-            }
-        }
+        ("sync", _args) => match ft_sync::sync(&config, false) {
+            Ok(()) => {}
+            Err(e) => println!("{}", e.to_string()),
+        },
         (_, _) => todo!("impossible!"),
     };
 }

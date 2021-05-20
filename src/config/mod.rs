@@ -2,6 +2,7 @@ pub mod env;
 pub mod section;
 
 pub struct Config {
+    // https://www.fifthtry.com/fifthtry/ft-sync/config/
     pub ignored: Vec<String>,
     pub repo: String,
     pub collection: String,

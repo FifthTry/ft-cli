@@ -1,7 +1,8 @@
-pub mod config;
+mod config;
 pub mod error;
 mod ftd;
 pub mod git;
+mod raw;
 pub mod status;
 pub mod sync;
 pub mod types;

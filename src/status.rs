@@ -1,11 +1,4 @@
 pub fn status(config: &crate::Config, _config_file: &str) -> crate::Result<()> {
-    /*
-    Config: ../.ft-sync.p1
-    Backend: mdBook
-    Root: docs
-    Last Sync On: 2021-04-21 3:05PM (CST).
-    */
-
     let auth_code = match config.auth {
         crate::Auth::AuthCode(ref s) => s,
         _ => return Ok(()),

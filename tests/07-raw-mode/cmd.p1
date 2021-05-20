@@ -1,0 +1,7 @@
+-- fbt:
+cmd: $FBT_CWD/target/debug/ft-sync --test sync
+
+-- stdout:
+
+Updated: <cwd>/docs/foo.md
+Synced successfully.

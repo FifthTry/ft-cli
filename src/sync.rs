@@ -41,6 +41,9 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
                 crate::Backend::FTD => {
                     crate::ftd::handle(file, root_dir.as_str(), config.collection.as_str())?
                 }
+                crate::Backend::Raw => {
+                    crate::raw::handle(file, root_dir.as_str(), config.collection.as_str())?
+                }
             });
         }
 

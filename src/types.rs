@@ -16,12 +16,14 @@ pub struct User {
 #[allow(clippy::upper_case_acronyms)]
 pub enum Backend {
     FTD,
+    Raw,
 }
 
 impl Backend {
     pub fn from(s: &str) -> Option<Backend> {
         match s {
             "ftd" => Some(Backend::FTD),
+            "raw" => Some(Backend::Raw),
             _ => None,
         }
     }
@@ -31,6 +33,7 @@ impl std::fmt::Display for Backend {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Backend::FTD => write!(f, "ftd"),
+            Backend::Raw => write!(f, "raw"),
         }
     }
 }
@@ -65,9 +68,30 @@ impl FileMode {
         }
     }
 
+    pub fn id_with_extension(&self, root_dir: &str, collection: &str) -> String {
+        let t = self
+            .path()
+            .strip_prefix(root_dir)
+            .unwrap()
+            .to_string_lossy()
+            .to_string();
+
+        if t == "index" {
+            collection.to_string()
+        } else {
+            collection.to_string() + "/" + t.as_str()
+        }
+    }
+
     pub fn content(&self) -> crate::Result<String> {
         std::fs::read_to_string(self.path())
             .map_err(|e| crate::Error::ReadError(e, self.path_str()))
+    }
+
+    pub fn raw_content(&self) -> crate::Result<String> {
+        Ok(ftd::p1::to_string(&[
+            ftd::p1::Section::with_name("raw").and_body(self.content()?.as_str())
+        ]))
     }
 
     pub fn path(&self) -> std::path::PathBuf {
