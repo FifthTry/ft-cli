@@ -5,6 +5,7 @@ pub mod git;
 mod raw;
 pub mod status;
 pub mod sync;
+pub mod traverse;
 pub mod types;
 mod utils;
 

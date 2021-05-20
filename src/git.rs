@@ -86,18 +86,3 @@ pub fn head() -> crate::Result<String> {
         .output()?;
     Ok(String::from_utf8(output.stdout)?.trim().to_string())
 }
-
-// pub fn root_dir() -> crate::Result<String> {
-//     if crate::is_test() {
-//         return Ok(std::env::current_dir()
-//             .unwrap()
-//             .to_string_lossy()
-//             .to_string());
-//     }
-//
-//     let output = std::process::Command::new("git")
-//         .arg("rev-parse")
-//         .arg("--show-toplevel")
-//         .output()?;
-//     Ok(String::from_utf8(output.stdout)?.trim().to_string())
-// }

@@ -31,7 +31,3 @@ pub fn handle(
         }
     })
 }
-
-// fn all_parents(dir: &str) -> crate::Result<Vec<ft_api::bulk_update::Action>>{
-//
-// }
