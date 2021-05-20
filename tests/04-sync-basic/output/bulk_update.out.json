@@ -1,13 +1,21 @@
 {
   "body": {
+    "client_version": "test-version",
     "data": {
       "auth_code": "123",
       "collection": "testuser/index",
       "current_hash": "hello",
-      "files": [],
+      "files": [
+        {
+          "content": "-- h1: Hello",
+          "id": "testuser/index/foo",
+          "type": "Updated"
+        }
+      ],
       "new_hash": "123123123",
       "repo": "amitu/fifthtry"
-    }
+    },
+    "platform": "test-platform"
   },
   "url": "https://www.fifthtry.com/testuser/index/~/bulk-update/?realm_mode=api"
 }

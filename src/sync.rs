@@ -105,7 +105,11 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
         crate::utils::client_version(),
     )?;
 
-    println!("Synced successfully: {}", crate::utils::elapsed(st));
+    if crate::is_test() {
+        println!("Synced successfully.");
+    } else {
+        println!("Synced successfully: {}.", crate::utils::elapsed(st));
+    }
 
     Ok(())
 }
