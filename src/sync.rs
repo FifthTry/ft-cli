@@ -202,7 +202,7 @@ struct Node {
     pub children: Vec<Node>,
 }
 
-fn root_tree(root_dir: &std::path::PathBuf) -> crate::Result<Node> {
+fn root_tree(root_dir: &std::path::Path) -> crate::Result<Node> {
     let root = Node {
         is_dir: true,
         path: root_dir.to_string_lossy().to_string(),
@@ -211,7 +211,7 @@ fn root_tree(root_dir: &std::path::PathBuf) -> crate::Result<Node> {
     Ok(root)
 }
 
-fn traverse_tree(root_dir: &std::path::PathBuf) -> crate::Result<Vec<Node>> {
+fn traverse_tree(root_dir: &std::path::Path) -> crate::Result<Vec<Node>> {
     let mut children = vec![];
 
     for entry in std::fs::read_dir(root_dir)? {
