@@ -18,7 +18,7 @@ fn to_docid(path: &str, collection: &str, root_dir: &str) -> String {
     }
 }
 
-fn to_raw_docid(path: &str, collection: &str, root_dir: &str) -> String {
+fn to_docid_with_extension(path: &str, collection: &str, root_dir: &str) -> String {
     let t = std::path::Path::new(&path)
         .strip_prefix(root_dir)
         .unwrap()
@@ -95,14 +95,14 @@ fn read_raw_files(
             .join("\n");
 
         let t = format!("-- h0: {}\n\n-- raw: \n\n {}", title, content);
-        println!("{}", t);
+        // println!("{}", t);
         t
     };
 
     for file in files {
         match file {
             crate::git::FileMode::Added(path) => {
-                let docid = self::to_raw_docid(&path, &config.collection, &root_dir);
+                let docid = self::to_docid_with_extension(&path, &config.collection, &root_dir);
                 println!("Added new: {}", path);
                 let content = self::read_content(&path)?;
                 actions.push(ft_api::bulk_update::Action::Added {
@@ -111,7 +111,7 @@ fn read_raw_files(
                 });
             }
             crate::git::FileMode::Modified(path) => {
-                let docid = self::to_raw_docid(&path, &config.collection, &root_dir);
+                let docid = self::to_docid_with_extension(&path, &config.collection, &root_dir);
                 println!("Added new: {}", path);
                 let content = self::read_content(&path)?;
                 actions.push(ft_api::bulk_update::Action::Updated {
@@ -121,7 +121,7 @@ fn read_raw_files(
             }
             crate::git::FileMode::Deleted(path) => {
                 if config.backend.accept(std::path::Path::new(&path)) {
-                    let docid = self::to_raw_docid(&path, &config.collection, &root_dir);
+                    let docid = self::to_docid_with_extension(&path, &config.collection, &root_dir);
                     println!("Deleted: {}", path);
                     actions.push(ft_api::bulk_update::Action::Deleted { id: docid });
                 }
@@ -166,7 +166,8 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
         crate::git::changed_files(&status.last_synced_hash, &latest_hash, &git_root, &root_dir)?
     };
 
-    self::traverse_tree(&std::path::PathBuf::from(&root_dir));
+    let t = self::root_tree(&std::path::PathBuf::from(&root_dir))?;
+    println!("{:#?}", t);
 
     let actions = {
         match config.backend {
@@ -194,13 +195,40 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
     Ok(())
 }
 
-fn traverse_tree(root_dir: &std::path::PathBuf) -> crate::Result<()> {
+#[derive(Debug)]
+struct Node {
+    pub is_dir: bool,
+    pub path: String,
+    pub children: Vec<Node>,
+}
+
+fn root_tree(root_dir: &std::path::PathBuf) -> crate::Result<Node> {
+    let root = Node {
+        is_dir: true,
+        path: root_dir.to_string_lossy().to_string(),
+        children: traverse_tree(root_dir)?,
+    };
+    Ok(root)
+}
+
+fn traverse_tree(root_dir: &std::path::PathBuf) -> crate::Result<Vec<Node>> {
+    let mut children = vec![];
+
     for entry in std::fs::read_dir(root_dir)? {
-        let p = entry.unwrap().path();
+        let p = entry?.path();
         if p.is_dir() {
-            println!("{}", p.to_string_lossy().to_string());
-            traverse_tree(&p);
+            children.push(Node {
+                is_dir: true,
+                path: p.to_string_lossy().to_string(),
+                children: traverse_tree(&p)?,
+            });
+        } else {
+            children.push(Node {
+                is_dir: false,
+                path: p.to_string_lossy().to_string(),
+                children: vec![],
+            });
         }
     }
-    Ok(())
+    Ok(children)
 }
