@@ -1,6 +1,6 @@
 -- fbt:
 cmd: $FBT_CWD/target/debug/ft-sync --test --config=ft-sync-la-la-la.p1 status
-
+skip: config not supported
 
 -- stdout:
 

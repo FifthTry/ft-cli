@@ -10,14 +10,11 @@ Deepak Angrula <deepak@fifthtry.com>
 
 
 USAGE:
-    ft-sync [OPTIONS] [SUBCOMMAND]
+    ft-sync [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
-
-OPTIONS:
-    -c, --config <FILE>    path to the ft-sync config file [default: ft-sync.p1]
 
 SUBCOMMANDS:
     help      Prints this message or the help of the given subcommand(s)

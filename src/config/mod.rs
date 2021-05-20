@@ -75,8 +75,7 @@ impl Config {
         config_file.parent().unwrap().join(cwd.as_path())
     }
 
-    pub fn root_abs_path(&self) -> std::path::PathBuf {
-        self.parent_dir()
-            .join(std::path::Path::new(self.root.as_str()))
+    pub fn root_path(&self) -> std::path::PathBuf {
+        std::path::PathBuf::from(self.root.as_str())
     }
 }

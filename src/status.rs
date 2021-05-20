@@ -1,4 +1,4 @@
-pub fn status(config: &crate::Config, _config_file: &str) -> crate::Result<()> {
+pub fn status(config: &crate::Config) -> crate::Result<()> {
     let auth_code = match config.auth {
         crate::Auth::AuthCode(ref s) => s,
         _ => return Ok(()),
