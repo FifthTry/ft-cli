@@ -167,9 +167,11 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
     };
 
     let t = self::root_tree(&std::path::PathBuf::from(&root_dir))?;
-    println!("{:#?}", t);
+    println!("{:#?}", &t);
+    let toc = self::tree_to_toc_util(&t);
+    println!("{}", toc);
 
-    let actions = {
+    let _actions = {
         match config.backend {
             crate::Backend::FTD => self::read_ftd_files(&config, root_dir.as_str(), files)?,
             crate::Backend::RAW => self::read_raw_files(&config, root_dir.as_str(), files)?,
@@ -231,4 +233,30 @@ fn traverse_tree(root_dir: &std::path::Path) -> crate::Result<Vec<Node>> {
         }
     }
     Ok(children)
+}
+
+fn tree_to_toc_util(node: &Node) -> String {
+    let mut toc = String::new();
+    tree_to_toc(node, 0, &mut toc);
+    toc
+}
+
+fn tree_to_toc(node: &Node, level: usize, toc_string: &mut String) {
+    // toc_string.push_str(&format!(
+    //     "{: >width$}- {path}\n",
+    //     "",
+    //     width = level,
+    //     path = &node.path
+    // ));
+    for x in node.children.iter() {
+        toc_string.push_str(&format!(
+            "{: >width$}- {path}\n",
+            "",
+            width = level + 2,
+            path = &x.path
+        ));
+        if x.is_dir {
+            tree_to_toc(&x, level + 2, toc_string);
+        }
+    }
 }
