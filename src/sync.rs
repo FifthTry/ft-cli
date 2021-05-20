@@ -197,6 +197,15 @@ pub fn sync(config: &crate::Config, _dry_run: bool) -> crate::Result<()> {
     Ok(())
 }
 
+// Can be simplified to
+/*
+#[derive(Debug)]
+struct Node {
+    Dir{ path: String, children: Vec<Node> }
+    File{ path: String }
+}
+ */
+
 #[derive(Debug)]
 struct Node {
     pub is_dir: bool,
@@ -241,6 +250,7 @@ fn tree_to_toc_util(node: &Node) -> String {
     toc
 }
 
+// Incomplete, Need to do small change
 fn tree_to_toc(node: &Node, level: usize, toc_string: &mut String) {
     // toc_string.push_str(&format!(
     //     "{: >width$}- {path}\n",
