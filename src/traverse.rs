@@ -184,6 +184,7 @@ pub fn dir_till_path(node: &Node, path: &str) -> Vec<String> {
 
     let mut dirs = vec![];
     dir_till_path_util(node, path, &mut dirs);
+    dirs.reverse();
     dirs
 }
 
@@ -269,19 +270,17 @@ mod tests {
         )
     }
 
-    #[ignore]
     #[test]
     fn till_dir() {
         let expected_output = vec![
-            "docs/a/b/c/d/e".to_string(),
-            "docs/a/b/c/d".to_string(),
-            "docs/a/b/c".to_string(),
-            "docs/a/b".to_string(),
             "docs/a".to_string(),
+            "docs/a/b".to_string(),
+            "docs/a/b/c".to_string(),
+            "docs/a/b/c/d".to_string(),
+            "docs/a/b/c/d/e".to_string(),
         ];
 
         let output = super::dir_till_path(&test_node(), "docs/a/b/c/d/e/f.txt");
-
         assert_eq!(expected_output, output);
     }
 }
