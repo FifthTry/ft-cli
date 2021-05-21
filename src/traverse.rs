@@ -123,7 +123,7 @@ pub fn collection_toc(node: &Node, root_dir: &str, collection_id: &str) -> Strin
         }
     }
 
-    let mut toc = String::new();
+    let mut toc = "-- toc:\n\n".to_string();
     tree_to_toc_util(node, 0, &mut toc, root_dir, collection_id);
     toc
 }
@@ -159,7 +159,7 @@ pub fn to_markdown(node: &Node, root_dir: &str, collection_id: &str) -> String {
             }
         }
     }
-    let mut markdown = "-- markdown:\n".to_string();
+    let mut markdown = "-- markdown:\n\n".to_string();
     tree_to_toc_util(node, 0, &mut markdown, root_dir, collection_id);
     markdown
 }
@@ -235,7 +235,9 @@ mod tests {
         let node = test_node();
         assert_eq!(
             super::collection_toc(&node, "docs", "testuser/index"),
-            r#"- testuser/index/a
+            r#"-- toc:
+
+- testuser/index/a
   `a/`
   - testuser/index/a/b
     `b/`
@@ -260,6 +262,7 @@ mod tests {
         assert_eq!(
             super::to_markdown(&node, "docs", "testuser/index"),
             r#"-- markdown:
+
 - [`a`](testuser/index/a)
   - [`b`](testuser/index/a/b)
     - [`c`](testuser/index/a/b/c)
