@@ -23,7 +23,7 @@ impl Node {
     }
 
     pub fn readme_exists(&self) -> bool {
-        return self.readme().is_some();
+        self.readme().is_some()
     }
 
     pub fn document_id(&self, root_dir: &str, collection_id: &str) -> std::path::PathBuf {
