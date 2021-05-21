@@ -94,14 +94,15 @@ impl FileMode {
     }
 
     pub fn raw_content(&self) -> crate::Result<String> {
-        // txt, md, mdx
         let extension = self
             .path()
             .extension()
-            .expect(&format!(
-                "File extension not found: {}",
-                self.path().to_string_lossy()
-            ))
+            .unwrap_or_else(|| {
+                panic!(
+                    "File extension not found: {}",
+                    self.path().to_string_lossy()
+                )
+            })
             .to_string_lossy()
             .to_string();
 
