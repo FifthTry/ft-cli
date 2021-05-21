@@ -36,6 +36,12 @@ pub fn sync(config: &crate::Config) -> crate::Result<()> {
         actions
     };
 
+    //let t = crate::traverse::root_tree(&std::path::PathBuf::from(&config.root))?;
+
+    // println!("{:#?}", t);
+    //
+    // println!("{}", crate::traverse::collection_toc(&t));
+
     let st = std::time::Instant::now();
 
     ft_api::bulk_update(
