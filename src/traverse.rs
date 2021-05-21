@@ -105,28 +105,25 @@ mod tests {
     fn test_node() -> super::Node {
         Node {
             is_dir: true,
-            path: "/Users/abrar/Documents/github/ft-sync/docs".to_string(),
+            path: "docs".to_string(),
             children: vec![Node {
                 is_dir: true,
-                path: "/Users/abrar/Documents/github/ft-sync/docs/a".to_string(),
+                path: "docs/a".to_string(),
                 children: vec![Node {
                     is_dir: true,
-                    path: "/Users/abrar/Documents/github/ft-sync/docs/a/b".to_string(),
+                    path: "docs/a/b".to_string(),
                     children: vec![Node {
                         is_dir: true,
-                        path: "/Users/abrar/Documents/github/ft-sync/docs/a/b/c".to_string(),
+                        path: "docs/a/b/c".to_string(),
                         children: vec![Node {
                             is_dir: true,
-                            path: "/Users/abrar/Documents/github/ft-sync/docs/a/b/c/d".to_string(),
+                            path: "docs/a/b/c/d".to_string(),
                             children: vec![Node {
                                 is_dir: true,
-                                path: "/Users/abrar/Documents/github/ft-sync/docs/a/b/c/d/e"
-                                    .to_string(),
+                                path: "docs/a/b/c/d/e".to_string(),
                                 children: vec![Node {
                                     is_dir: false,
-                                    path:
-                                        "/Users/abrar/Documents/github/ft-sync/docs/a/b/c/d/e/f.txt"
-                                            .to_string(),
+                                    path: "docs/a/b/c/d/e/f.txt".to_string(),
                                     children: vec![],
                                 }],
                             }],
@@ -142,17 +139,17 @@ mod tests {
         let node = test_node();
         assert_eq!(
             super::collection_toc(&node),
-            r#"- /Users/abrar/Documents/github/ft-sync/docs/a
+            r#"- docs/a
   `a/`
-  - /Users/abrar/Documents/github/ft-sync/docs/a/b
+  - docs/a/b
     `b/`
-    - /Users/abrar/Documents/github/ft-sync/docs/a/b/c
+    - docs/a/b/c
       `c/`
-      - /Users/abrar/Documents/github/ft-sync/docs/a/b/c/d
+      - docs/a/b/c/d
         `d/`
-        - /Users/abrar/Documents/github/ft-sync/docs/a/b/c/d/e
+        - docs/a/b/c/d/e
           `e/`
-          - /Users/abrar/Documents/github/ft-sync/docs/a/b/c/d/e/f.txt
+          - docs/a/b/c/d/e/f.txt
             `f.txt`
 "#
             .to_string()
@@ -163,17 +160,14 @@ mod tests {
     #[test]
     fn till_dir() {
         let expected_output = vec![
-            "/Users/abrar/Documents/github/ft-sync/docs/a/b/c/d/e".to_string(),
-            "/Users/abrar/Documents/github/ft-sync/docs/a/b/c/d".to_string(),
-            "/Users/abrar/Documents/github/ft-sync/docs/a/b/c".to_string(),
-            "/Users/abrar/Documents/github/ft-sync/docs/a/b".to_string(),
-            "/Users/abrar/Documents/github/ft-sync/docs/a".to_string(),
+            "docs/a/b/c/d/e".to_string(),
+            "docs/a/b/c/d".to_string(),
+            "docs/a/b/c".to_string(),
+            "docs/a/b".to_string(),
+            "docs/a".to_string(),
         ];
 
-        let output = super::dir_till_path(
-            &test_node(),
-            "/Users/abrar/Documents/github/ft-sync/docs/a/b/c/d/e/f.txt",
-        );
+        let output = super::dir_till_path(&test_node(), "docs/a/b/c/d/e/f.txt");
 
         assert_eq!(expected_output, output);
     }
