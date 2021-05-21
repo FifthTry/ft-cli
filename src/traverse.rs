@@ -33,6 +33,10 @@ impl Node {
     pub fn to_markdown(&self, root_dir: &str, collection_id: &str) -> String {
         self::to_markdown(self, root_dir, collection_id)
     }
+
+    pub fn collection_toc(&self, root_dir: &str, collection_id: &str) -> String {
+        self::collection_toc(self, root_dir, collection_id)
+    }
 }
 
 pub fn root_tree(root_dir: &std::path::Path) -> crate::Result<Node> {
@@ -75,15 +79,8 @@ pub fn collection_toc(node: &Node, root_dir: &str, collection_id: &str) -> Strin
         collection_id: &str,
     ) {
         for x in node.children.iter() {
-            let x_path = std::path::Path::new(&x.path)
-                .strip_prefix(root_dir)
-                .unwrap_or_else(|_| {
-                    panic!(
-                        "path `{}` is not starts with root_dir `{}`",
-                        &x.path, root_dir
-                    )
-                });
-            let mut path = std::path::PathBuf::from(collection_id).join(&x_path);
+            let mut path = x.document_id(root_dir, collection_id);
+
             let file_name = path
                 .clone()
                 .file_name()
@@ -92,15 +89,7 @@ pub fn collection_toc(node: &Node, root_dir: &str, collection_id: &str) -> Strin
                 .to_string();
 
             if let Some(readme) = x.readme() {
-                let x_path = std::path::Path::new(&readme)
-                    .strip_prefix(root_dir)
-                    .unwrap_or_else(|_| {
-                        panic!(
-                            "path `{}` is not starts with root_dir `{}`",
-                            &readme, root_dir
-                        )
-                    });
-                path = std::path::PathBuf::from(collection_id).join(&x_path);
+                path = crate::id::to_document_id(&readme, root_dir, collection_id);
             }
 
             toc_string.push_str(&format!(
@@ -145,15 +134,7 @@ pub fn to_markdown(node: &Node, root_dir: &str, collection_id: &str) -> String {
         collection_id: &str,
     ) {
         for x in node.children.iter() {
-            let x_path = std::path::Path::new(&x.path)
-                .strip_prefix(root_dir)
-                .unwrap_or_else(|_| {
-                    panic!(
-                        "path `{}` is not starts with root_dir `{}`",
-                        &x.path, root_dir
-                    )
-                });
-            let path = std::path::PathBuf::from(collection_id).join(&x_path);
+            let path = x.document_id(root_dir, collection_id);
             let file_name = path.file_name().unwrap().to_string_lossy();
             if x.is_dir {
                 markdown.push_str(&format!(
