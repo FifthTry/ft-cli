@@ -5,6 +5,28 @@ pub struct Node {
     pub children: Vec<Node>,
 }
 
+impl Node {
+    pub fn readme(&self) -> Option<String> {
+        if !self.is_dir {
+            return None;
+        }
+        self.children
+            .iter()
+            .filter(|c| !c.is_dir)
+            .find(|c| {
+                let p = std::path::PathBuf::from(&self.path).join("readme");
+                println!("{}, {}", &c.path, p.to_string_lossy());
+                let t = c
+                    .path
+                    .to_lowercase()
+                    .starts_with(&p.to_string_lossy().to_string());
+                println!("{}", t);
+                t
+            })
+            .map(|x| x.path.to_string())
+    }
+}
+
 pub fn root_tree(root_dir: &std::path::Path) -> crate::Result<Node> {
     fn traverse_tree(root_dir: &std::path::Path) -> crate::Result<Vec<Node>> {
         let mut children = vec![];
@@ -39,8 +61,18 @@ pub fn root_tree(root_dir: &std::path::Path) -> crate::Result<Node> {
 pub fn collection_toc(node: &Node, collection_id: &str) -> String {
     fn tree_to_toc_util(node: &Node, level: usize, toc_string: &mut String, collection_id: &str) {
         for x in node.children.iter() {
-            let path = std::path::PathBuf::from(collection_id).join(&x.path);
-            let file_name = path.file_name().unwrap().to_string_lossy();
+            let mut path = std::path::PathBuf::from(collection_id).join(&x.path);
+            let file_name = path
+                .clone()
+                .file_name()
+                .unwrap()
+                .to_string_lossy()
+                .to_string();
+
+            if let Some(readme) = x.readme() {
+                path = std::path::PathBuf::from(collection_id).join(readme);
+            }
+
             toc_string.push_str(&format!(
                 "{: >width$}- {path}\n",
                 "",
@@ -135,19 +167,26 @@ mod tests {
                     children: vec![Node {
                         is_dir: true,
                         path: "docs/a/b/c".to_string(),
-                        children: vec![Node {
-                            is_dir: true,
-                            path: "docs/a/b/c/d".to_string(),
-                            children: vec![Node {
+                        children: vec![
+                            Node {
                                 is_dir: true,
-                                path: "docs/a/b/c/d/e".to_string(),
+                                path: "docs/a/b/c/d".to_string(),
                                 children: vec![Node {
-                                    is_dir: false,
-                                    path: "docs/a/b/c/d/e/f.txt".to_string(),
-                                    children: vec![],
+                                    is_dir: true,
+                                    path: "docs/a/b/c/d/e".to_string(),
+                                    children: vec![Node {
+                                        is_dir: false,
+                                        path: "docs/a/b/c/d/e/f.txt".to_string(),
+                                        children: vec![],
+                                    }],
                                 }],
-                            }],
-                        }],
+                            },
+                            Node {
+                                is_dir: false,
+                                path: "docs/a/b/c/readme.md".to_string(),
+                                children: vec![],
+                            },
+                        ],
                     }],
                 }],
             }],
@@ -163,7 +202,7 @@ mod tests {
   `a/`
   - testuser/index/docs/a/b
     `b/`
-    - testuser/index/docs/a/b/c
+    - testuser/index/docs/a/b/c/readme.md
       `c/`
       - testuser/index/docs/a/b/c/d
         `d/`
@@ -171,6 +210,8 @@ mod tests {
           `e/`
           - testuser/index/docs/a/b/c/d/e/f.txt
             `f.txt`
+      - testuser/index/docs/a/b/c/readme.md
+        `readme.md`
 "#
             .to_string()
         )
@@ -187,6 +228,7 @@ mod tests {
       - [`d`](testuser/index/docs/a/b/c/d)
         - [`e`](testuser/index/docs/a/b/c/d/e)
           - [`f.txt`](testuser/index/docs/a/b/c/d/e/f.txt)
+      - [`readme.md`](testuser/index/docs/a/b/c/readme.md)
 "#
         )
     }
