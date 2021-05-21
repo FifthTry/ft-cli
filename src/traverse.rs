@@ -155,13 +155,23 @@ pub fn to_markdown(node: &Node, root_dir: &str, collection_id: &str) -> String {
                 });
             let path = std::path::PathBuf::from(collection_id).join(&x_path);
             let file_name = path.file_name().unwrap().to_string_lossy();
-            markdown.push_str(&format!(
-                "{: >width$}- [`{file_name}`]({path})\n",
-                "",
-                width = level,
-                file_name = file_name,
-                path = path.to_string_lossy()
-            ));
+            if x.is_dir {
+                markdown.push_str(&format!(
+                    "{: >width$}- [`{file_name}/`]({path})\n",
+                    "",
+                    width = level,
+                    file_name = file_name,
+                    path = path.to_string_lossy()
+                ));
+            } else {
+                markdown.push_str(&format!(
+                    "{: >width$}- [`{file_name}`]({path})\n",
+                    "",
+                    width = level,
+                    file_name = file_name,
+                    path = path.to_string_lossy()
+                ));
+            }
             if x.is_dir {
                 tree_to_toc_util(&x, level + 2, markdown, root_dir, collection_id);
             }
@@ -271,11 +281,11 @@ mod tests {
             super::to_markdown(&node, "docs", "testuser/index"),
             r#"-- markdown:
 
-- [`a`](testuser/index/a)
-  - [`b`](testuser/index/a/b)
-    - [`c`](testuser/index/a/b/c)
-      - [`d`](testuser/index/a/b/c/d)
-        - [`e`](testuser/index/a/b/c/d/e)
+- [`a/`](testuser/index/a)
+  - [`b/`](testuser/index/a/b)
+    - [`c/`](testuser/index/a/b/c)
+      - [`d/`](testuser/index/a/b/c/d)
+        - [`e/`](testuser/index/a/b/c/d/e)
           - [`f.txt`](testuser/index/a/b/c/d/e/f.txt)
       - [`readme.md`](testuser/index/a/b/c/readme.md)
 "#
