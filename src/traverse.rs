@@ -35,7 +35,7 @@ pub fn root_tree(root_dir: &std::path::Path) -> crate::Result<Node> {
     Ok(root)
 }
 
-pub fn tree_to_toc(node: &Node) -> String {
+pub fn collection_toc(node: &Node) -> String {
     // Incomplete, Need to do small change
     fn tree_to_toc_util(node: &Node, level: usize, toc_string: &mut String) {
         // toc_string.push_str(&format!(
