@@ -1,5 +1,6 @@
 -- fbt:
 cmd: $FBT_CWD/target/debug/ft-sync --test sync
+skip: not yet testable
 
 -- stdout:
 
