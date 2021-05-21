@@ -90,6 +90,7 @@ impl FileMode {
     }
 
     pub fn raw_content(&self) -> crate::Result<String> {
+        // txt, md, mdx
         Ok(ftd::p1::to_string(&[
             ftd::p1::Section::with_name("raw").and_body(self.content()?.as_str())
         ]))

@@ -16,6 +16,9 @@ pub fn sync(config: &crate::Config) -> crate::Result<()> {
     let actions = {
         let mut actions = vec![];
 
+        let tree = crate::traverse::root_tree(&std::path::PathBuf::from(&config.root))?;
+        println!("{:#?}", tree);
+
         let files = if status.last_synced_hash.is_empty() {
             crate::git::ls_tree(&latest_hash, config.root.as_str())?
         } else {
@@ -27,33 +30,39 @@ pub fn sync(config: &crate::Config) -> crate::Result<()> {
                 crate::Backend::FTD => {
                     crate::ftd::handle(file, config.root.as_str(), config.collection.as_str())?
                 }
-                crate::Backend::Raw => {
-                    crate::raw::handle(file, config.root.as_str(), config.collection.as_str())?
-                }
+                crate::Backend::Raw => crate::raw::handle(
+                    &tree,
+                    file,
+                    config.root.as_str(),
+                    config.collection.as_str(),
+                )?,
             });
         }
+
+        // in case of raw
+        // collection index document
+        // if readme present so append it in markdown
+        // for every folder(Folders without readme file)
+        // append markdown tree directory if something created or deleted
+        // Logic Need to find the node in the tree and then convert that tree node to the markdown
 
         actions
     };
 
-    //let t = crate::traverse::root_tree(&std::path::PathBuf::from(&config.root))?;
-
-    // println!("{:#?}", t);
-    //
-    // println!("{}", crate::traverse::collection_toc(&t));
+    println!("{:#?}", actions);
 
     let st = std::time::Instant::now();
 
-    ft_api::bulk_update(
-        config.collection.as_str(),
-        status.last_synced_hash.as_str(),
-        latest_hash.as_str(),
-        config.repo.as_str(),
-        actions,
-        auth_code.as_str(),
-        crate::utils::platform()?,
-        crate::utils::client_version(),
-    )?;
+    // ft_api::bulk_update(
+    //     config.collection.as_str(),
+    //     status.last_synced_hash.as_str(),
+    //     latest_hash.as_str(),
+    //     config.repo.as_str(),
+    //     actions,
+    //     auth_code.as_str(),
+    //     crate::utils::platform()?,
+    //     crate::utils::client_version(),
+    // )?;
 
     if crate::is_test() {
         println!("Synced successfully.");
