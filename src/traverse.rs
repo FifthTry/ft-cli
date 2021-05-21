@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct Node {
     pub is_dir: bool,
     pub path: String,
@@ -35,31 +36,64 @@ pub fn root_tree(root_dir: &std::path::Path) -> crate::Result<Node> {
     Ok(root)
 }
 
-pub fn tree_to_toc(node: &Node) -> String {
-    // Incomplete, Need to do small change
-    fn tree_to_toc_util(node: &Node, level: usize, toc_string: &mut String) {
-        // toc_string.push_str(&format!(
-        //     "{: >width$}- {path}\n",
-        //     "",
-        //     width = level,
-        //     path = &node.path
-        // ));
+pub fn collection_toc(node: &Node, collection_id: &str) -> String {
+    fn tree_to_toc_util(node: &Node, level: usize, toc_string: &mut String, collection_id: &str) {
         for x in node.children.iter() {
+            let path = std::path::PathBuf::from(collection_id).join(&x.path);
+            let file_name = path.file_name().unwrap().to_string_lossy();
             toc_string.push_str(&format!(
                 "{: >width$}- {path}\n",
                 "",
-                width = level + 2,
-                path = &x.path
+                width = level,
+                path = path.to_string_lossy()
             ));
             if x.is_dir {
-                tree_to_toc_util(&x, level + 2, toc_string);
+                toc_string.push_str(&format!(
+                    "{: >width$}`{path}/`\n",
+                    "",
+                    width = level + 2,
+                    path = file_name
+                ));
+            } else {
+                toc_string.push_str(&format!(
+                    "{: >width$}`{path}`\n",
+                    "",
+                    width = level + 2,
+                    path = file_name
+                ));
+            }
+
+            if x.is_dir {
+                tree_to_toc_util(&x, level + 2, toc_string, collection_id);
             }
         }
     }
 
     let mut toc = String::new();
-    tree_to_toc_util(node, 0, &mut toc);
+    tree_to_toc_util(node, 0, &mut toc, collection_id);
     toc
+}
+
+pub fn to_markdown(node: &Node, collection_id: &str) -> String {
+    fn tree_to_toc_util(node: &Node, level: usize, markdown: &mut String, collection_id: &str) {
+        for x in node.children.iter() {
+            let path = std::path::PathBuf::from(collection_id).join(&x.path);
+            let file_name = path.file_name().unwrap().to_string_lossy();
+            markdown.push_str(&format!(
+                "{: >width$}- [`{file_name}`]({path})\n",
+                "",
+                width = level,
+                file_name = file_name,
+                path = path.to_string_lossy()
+            ));
+            if x.is_dir {
+                tree_to_toc_util(&x, level + 2, markdown, collection_id);
+            }
+        }
+    }
+    let mut markdown = String::new();
+    tree_to_toc_util(node, 0, &mut markdown, collection_id);
+    markdown
 }
 
 pub fn dir_till_path(node: &Node, path: &str) -> Vec<String> {
@@ -85,32 +119,31 @@ pub fn dir_till_path(node: &Node, path: &str) -> Vec<String> {
     dirs
 }
 
-pub fn main() {
-    fn test_node() -> Node {
+#[cfg(test)]
+mod tests {
+    use super::Node;
+    fn test_node() -> super::Node {
         Node {
             is_dir: true,
-            path: "/Users/abrar/Documents/github/ft-sync/docs".to_string(),
+            path: "docs".to_string(),
             children: vec![Node {
                 is_dir: true,
-                path: "/Users/abrar/Documents/github/ft-sync/docs/a".to_string(),
+                path: "docs/a".to_string(),
                 children: vec![Node {
                     is_dir: true,
-                    path: "/Users/abrar/Documents/github/ft-sync/docs/a/b".to_string(),
+                    path: "docs/a/b".to_string(),
                     children: vec![Node {
                         is_dir: true,
-                        path: "/Users/abrar/Documents/github/ft-sync/docs/a/b/c".to_string(),
+                        path: "docs/a/b/c".to_string(),
                         children: vec![Node {
                             is_dir: true,
-                            path: "/Users/abrar/Documents/github/ft-sync/docs/a/b/c/d".to_string(),
+                            path: "docs/a/b/c/d".to_string(),
                             children: vec![Node {
                                 is_dir: true,
-                                path: "/Users/abrar/Documents/github/ft-sync/docs/a/b/c/d/e"
-                                    .to_string(),
+                                path: "docs/a/b/c/d/e".to_string(),
                                 children: vec![Node {
                                     is_dir: false,
-                                    path:
-                                        "/Users/abrar/Documents/github/ft-sync/docs/a/b/c/d/e/f.txt"
-                                            .to_string(),
+                                    path: "docs/a/b/c/d/e/f.txt".to_string(),
                                     children: vec![],
                                 }],
                             }],
@@ -121,18 +154,56 @@ pub fn main() {
         }
     }
 
-    let expected_output = vec![
-        "/Users/abrar/Documents/github/ft-sync/docs/a/b/c/d/e".to_string(),
-        "/Users/abrar/Documents/github/ft-sync/docs/a/b/c/d".to_string(),
-        "/Users/abrar/Documents/github/ft-sync/docs/a/b/c".to_string(),
-        "/Users/abrar/Documents/github/ft-sync/docs/a/b".to_string(),
-        "/Users/abrar/Documents/github/ft-sync/docs/a".to_string(),
-    ];
+    #[test]
+    fn collection_toc_test() {
+        let node = test_node();
+        assert_eq!(
+            super::collection_toc(&node, "testuser/index"),
+            r#"- testuser/index/docs/a
+  `a/`
+  - testuser/index/docs/a/b
+    `b/`
+    - testuser/index/docs/a/b/c
+      `c/`
+      - testuser/index/docs/a/b/c/d
+        `d/`
+        - testuser/index/docs/a/b/c/d/e
+          `e/`
+          - testuser/index/docs/a/b/c/d/e/f.txt
+            `f.txt`
+"#
+            .to_string()
+        )
+    }
 
-    let output = dir_till_path(
-        &test_node(),
-        "/Users/abrar/Documents/github/ft-sync/docs/a/b/c/d/e/f.txt",
-    );
+    #[test]
+    fn to_markdown() {
+        let node = test_node();
+        assert_eq!(
+            super::to_markdown(&node, "testuser/index"),
+            r#"- [`a`](testuser/index/docs/a)
+  - [`b`](testuser/index/docs/a/b)
+    - [`c`](testuser/index/docs/a/b/c)
+      - [`d`](testuser/index/docs/a/b/c/d)
+        - [`e`](testuser/index/docs/a/b/c/d/e)
+          - [`f.txt`](testuser/index/docs/a/b/c/d/e/f.txt)
+"#
+        )
+    }
 
-    assert_eq!(expected_output, output);
+    #[ignore]
+    #[test]
+    fn till_dir() {
+        let expected_output = vec![
+            "docs/a/b/c/d/e".to_string(),
+            "docs/a/b/c/d".to_string(),
+            "docs/a/b/c".to_string(),
+            "docs/a/b".to_string(),
+            "docs/a".to_string(),
+        ];
+
+        let output = super::dir_till_path(&test_node(), "docs/a/b/c/d/e/f.txt");
+
+        assert_eq!(expected_output, output);
+    }
 }

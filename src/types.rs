@@ -44,6 +44,7 @@ pub enum SyncMode {
     TwoWay,
 }
 
+#[derive(Debug)]
 pub enum FileMode {
     Deleted(String),
     Created(String),

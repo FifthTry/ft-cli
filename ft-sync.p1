@@ -1,7 +1,7 @@
 -- ft-sync:
 mode: local-to-remote
-backend: ftd
-root: tests/docs
+backend: raw
+root: tests/07-raw-mode/input/docs
 repo: a/b
 collection: testuser/index
 
