@@ -36,43 +36,41 @@ pub fn root_tree(root_dir: &std::path::Path) -> crate::Result<Node> {
     Ok(root)
 }
 
-pub fn collection_toc(node: &Node) -> String {
-    fn tree_to_toc_util(node: &Node, level: usize, toc_string: &mut String) {
+pub fn collection_toc(node: &Node, collection_id: &str) -> String {
+    fn tree_to_toc_util(node: &Node, level: usize, toc_string: &mut String, collection_id: &str) {
         for x in node.children.iter() {
+            let path = std::path::PathBuf::from(collection_id).join(&x.path);
+            let file_name = path.file_name().unwrap().to_string_lossy();
             toc_string.push_str(&format!(
                 "{: >width$}- {path}\n",
                 "",
                 width = level,
-                path = &x.path
+                path = path.to_string_lossy()
             ));
-
-            let p = std::path::PathBuf::from(&x.path);
-            let path = p.file_name().unwrap().to_string_lossy();
-
             if x.is_dir {
                 toc_string.push_str(&format!(
                     "{: >width$}`{path}/`\n",
                     "",
                     width = level + 2,
-                    path = path
+                    path = file_name
                 ));
             } else {
                 toc_string.push_str(&format!(
                     "{: >width$}`{path}`\n",
                     "",
                     width = level + 2,
-                    path = path
+                    path = file_name
                 ));
             }
 
             if x.is_dir {
-                tree_to_toc_util(&x, level + 2, toc_string);
+                tree_to_toc_util(&x, level + 2, toc_string, collection_id);
             }
         }
     }
 
     let mut toc = String::new();
-    tree_to_toc_util(node, 0, &mut toc);
+    tree_to_toc_util(node, 0, &mut toc, collection_id);
     toc
 }
 
@@ -138,18 +136,18 @@ mod tests {
     fn collection_toc_test() {
         let node = test_node();
         assert_eq!(
-            super::collection_toc(&node),
-            r#"- docs/a
+            super::collection_toc(&node, "testuser/index"),
+            r#"- testuser/index/docs/a
   `a/`
-  - docs/a/b
+  - testuser/index/docs/a/b
     `b/`
-    - docs/a/b/c
+    - testuser/index/docs/a/b/c
       `c/`
-      - docs/a/b/c/d
+      - testuser/index/docs/a/b/c/d
         `d/`
-        - docs/a/b/c/d/e
+        - testuser/index/docs/a/b/c/d/e
           `e/`
-          - docs/a/b/c/d/e/f.txt
+          - testuser/index/docs/a/b/c/d/e/f.txt
             `f.txt`
 "#
             .to_string()
