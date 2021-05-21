@@ -15,13 +15,9 @@ impl Node {
             .filter(|c| !c.is_dir)
             .find(|c| {
                 let p = std::path::PathBuf::from(&self.path).join("readme");
-                println!("{}, {}", &c.path, p.to_string_lossy());
-                let t = c
-                    .path
+                c.path
                     .to_lowercase()
-                    .starts_with(&p.to_string_lossy().to_string());
-                println!("{}", t);
-                t
+                    .starts_with(&p.to_string_lossy().to_string())
             })
             .map(|x| x.path.to_string())
     }
