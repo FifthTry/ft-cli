@@ -118,10 +118,19 @@ pub fn collection_toc(node: &Node, root_dir: &str, collection_id: &str) -> Strin
     toc
 }
 
-pub fn to_markdown(node: &Node, collection_id: &str) -> String {
-    fn tree_to_toc_util(node: &Node, level: usize, markdown: &mut String, collection_id: &str) {
+pub fn to_markdown(node: &Node, root_dir: &str, collection_id: &str) -> String {
+    fn tree_to_toc_util(
+        node: &Node,
+        level: usize,
+        markdown: &mut String,
+        root_dir: &str,
+        collection_id: &str,
+    ) {
         for x in node.children.iter() {
-            let path = std::path::PathBuf::from(collection_id).join(&x.path);
+            let x_path = std::path::Path::new(&x.path)
+                .strip_prefix(root_dir)
+                .unwrap();
+            let path = std::path::PathBuf::from(collection_id).join(&x_path);
             let file_name = path.file_name().unwrap().to_string_lossy();
             markdown.push_str(&format!(
                 "{: >width$}- [`{file_name}`]({path})\n",
@@ -131,12 +140,12 @@ pub fn to_markdown(node: &Node, collection_id: &str) -> String {
                 path = path.to_string_lossy()
             ));
             if x.is_dir {
-                tree_to_toc_util(&x, level + 2, markdown, collection_id);
+                tree_to_toc_util(&x, level + 2, markdown, root_dir, collection_id);
             }
         }
     }
     let mut markdown = String::new();
-    tree_to_toc_util(node, 0, &mut markdown, collection_id);
+    tree_to_toc_util(node, 0, &mut markdown, root_dir, collection_id);
     markdown
 }
 
@@ -233,14 +242,14 @@ mod tests {
     fn to_markdown() {
         let node = test_node();
         assert_eq!(
-            super::to_markdown(&node, "testuser/index"),
-            r#"- [`a`](testuser/index/docs/a)
-  - [`b`](testuser/index/docs/a/b)
-    - [`c`](testuser/index/docs/a/b/c)
-      - [`d`](testuser/index/docs/a/b/c/d)
-        - [`e`](testuser/index/docs/a/b/c/d/e)
-          - [`f.txt`](testuser/index/docs/a/b/c/d/e/f.txt)
-      - [`readme.md`](testuser/index/docs/a/b/c/readme.md)
+            super::to_markdown(&node, "docs", "testuser/index"),
+            r#"- [`a`](testuser/index/a)
+  - [`b`](testuser/index/a/b)
+    - [`c`](testuser/index/a/b/c)
+      - [`d`](testuser/index/a/b/c/d)
+        - [`e`](testuser/index/a/b/c/d/e)
+          - [`f.txt`](testuser/index/a/b/c/d/e/f.txt)
+      - [`readme.md`](testuser/index/a/b/c/readme.md)
 "#
         )
     }
