@@ -27,6 +27,10 @@ impl Backend {
             _ => None,
         }
     }
+
+    pub fn is_raw(&self) -> bool {
+        matches!(self, Backend::Raw)
+    }
 }
 
 impl std::fmt::Display for Backend {
@@ -91,9 +95,25 @@ impl FileMode {
 
     pub fn raw_content(&self) -> crate::Result<String> {
         // txt, md, mdx
-        Ok(ftd::p1::to_string(&[
-            ftd::p1::Section::with_name("raw").and_body(self.content()?.as_str())
-        ]))
+        let extension = self
+            .path()
+            .extension()
+            .expect(&format!(
+                "File extension not found: {}",
+                self.path().to_string_lossy()
+            ))
+            .to_string_lossy()
+            .to_string();
+
+        let section = if extension.eq("md") || extension.eq("mdx") {
+            [ftd::p1::Section::with_name("markdown").and_body(self.content()?.as_str())]
+        } else {
+            [ftd::p1::Section::with_name("code")
+                .add_header("lang", &extension)
+                .and_body(self.content()?.as_str())]
+        };
+
+        Ok(ftd::p1::to_string(&section))
     }
 
     pub fn path(&self) -> std::path::PathBuf {

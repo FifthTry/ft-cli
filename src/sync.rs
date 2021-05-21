@@ -39,13 +39,25 @@ pub fn sync(config: &crate::Config) -> crate::Result<()> {
             });
         }
 
-        // in case of raw
-        // collection index document
-        // if readme present so append it in markdown
-        // for every folder(Folders without readme file)
-        // append markdown tree directory if something created or deleted
-        // Logic Need to find the node in the tree and then convert that tree node to the markdown
+        if config.backend.is_raw() {
+            let readme_content = if let Some(readme) = tree.readme() {
+                let file = crate::FileMode::Modified(readme);
+                file.content()?
+            } else {
+                "".to_string()
+            };
 
+            let collection_toc =
+                tree.collection_toc(config.root.as_str(), config.collection.as_str());
+
+            actions.push(ft_api::bulk_update::Action::Updated {
+                id: config.collection.to_string(),
+                content: format!(
+                    "-- h1: {}\n\n{}\n\n\n{}",
+                    config.collection, readme_content, collection_toc
+                ),
+            })
+        }
         actions
     };
 
