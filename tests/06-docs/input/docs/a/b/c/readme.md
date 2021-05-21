@@ -1,0 +1,1 @@
+# Readme inside c folder
