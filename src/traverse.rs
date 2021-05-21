@@ -159,7 +159,7 @@ pub fn to_markdown(node: &Node, root_dir: &str, collection_id: &str) -> String {
             }
         }
     }
-    let mut markdown = String::new();
+    let mut markdown = "-- markdown:\n".to_string();
     tree_to_toc_util(node, 0, &mut markdown, root_dir, collection_id);
     markdown
 }
@@ -259,7 +259,8 @@ mod tests {
         let node = test_node();
         assert_eq!(
             super::to_markdown(&node, "docs", "testuser/index"),
-            r#"- [`a`](testuser/index/a)
+            r#"-- markdown:
+- [`a`](testuser/index/a)
   - [`b`](testuser/index/a/b)
     - [`c`](testuser/index/a/b/c)
       - [`d`](testuser/index/a/b/c/d)
