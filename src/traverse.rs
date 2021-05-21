@@ -58,10 +58,19 @@ pub fn root_tree(root_dir: &std::path::Path) -> crate::Result<Node> {
     Ok(root)
 }
 
-pub fn collection_toc(node: &Node, collection_id: &str) -> String {
-    fn tree_to_toc_util(node: &Node, level: usize, toc_string: &mut String, collection_id: &str) {
+pub fn collection_toc(node: &Node, root_dir: &str, collection_id: &str) -> String {
+    fn tree_to_toc_util(
+        node: &Node,
+        level: usize,
+        toc_string: &mut String,
+        root_dir: &str,
+        collection_id: &str,
+    ) {
         for x in node.children.iter() {
-            let mut path = std::path::PathBuf::from(collection_id).join(&x.path);
+            let x_path = std::path::Path::new(&x.path)
+                .strip_prefix(root_dir)
+                .unwrap();
+            let mut path = std::path::PathBuf::from(collection_id).join(&x_path);
             let file_name = path
                 .clone()
                 .file_name()
@@ -70,7 +79,10 @@ pub fn collection_toc(node: &Node, collection_id: &str) -> String {
                 .to_string();
 
             if let Some(readme) = x.readme() {
-                path = std::path::PathBuf::from(collection_id).join(readme);
+                let x_path = std::path::Path::new(&readme)
+                    .strip_prefix(root_dir)
+                    .unwrap();
+                path = std::path::PathBuf::from(collection_id).join(&x_path);
             }
 
             toc_string.push_str(&format!(
@@ -96,13 +108,13 @@ pub fn collection_toc(node: &Node, collection_id: &str) -> String {
             }
 
             if x.is_dir {
-                tree_to_toc_util(&x, level + 2, toc_string, collection_id);
+                tree_to_toc_util(&x, level + 2, toc_string, root_dir, collection_id);
             }
         }
     }
 
     let mut toc = String::new();
-    tree_to_toc_util(node, 0, &mut toc, collection_id);
+    tree_to_toc_util(node, 0, &mut toc, root_dir, collection_id);
     toc
 }
 
@@ -197,20 +209,20 @@ mod tests {
     fn collection_toc_test() {
         let node = test_node();
         assert_eq!(
-            super::collection_toc(&node, "testuser/index"),
-            r#"- testuser/index/docs/a
+            super::collection_toc(&node, "docs", "testuser/index"),
+            r#"- testuser/index/a
   `a/`
-  - testuser/index/docs/a/b
+  - testuser/index/a/b
     `b/`
-    - testuser/index/docs/a/b/c/readme.md
+    - testuser/index/a/b/c/readme.md
       `c/`
-      - testuser/index/docs/a/b/c/d
+      - testuser/index/a/b/c/d
         `d/`
-        - testuser/index/docs/a/b/c/d/e
+        - testuser/index/a/b/c/d/e
           `e/`
-          - testuser/index/docs/a/b/c/d/e/f.txt
+          - testuser/index/a/b/c/d/e/f.txt
             `f.txt`
-      - testuser/index/docs/a/b/c/readme.md
+      - testuser/index/a/b/c/readme.md
         `readme.md`
 "#
             .to_string()
