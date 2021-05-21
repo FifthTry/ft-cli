@@ -67,13 +67,14 @@ pub fn collection_toc(node: &Node, root_dir: &str, collection_id: &str) -> Strin
         collection_id: &str,
     ) {
         for x in node.children.iter() {
-            let x_path = std::path::Path::new(&x.path).strip_prefix(root_dir).expect(
-                format!(
-                    "path `{}` is not starts with root_dir `{}`",
-                    &x.path, root_dir
-                )
-                .as_str(),
-            );
+            let x_path = std::path::Path::new(&x.path)
+                .strip_prefix(root_dir)
+                .unwrap_or_else(|_| {
+                    panic!(
+                        "path `{}` is not starts with root_dir `{}`",
+                        &x.path, root_dir
+                    )
+                });
             let mut path = std::path::PathBuf::from(collection_id).join(&x_path);
             let file_name = path
                 .clone()
@@ -83,13 +84,14 @@ pub fn collection_toc(node: &Node, root_dir: &str, collection_id: &str) -> Strin
                 .to_string();
 
             if let Some(readme) = x.readme() {
-                let x_path = std::path::Path::new(&readme).strip_prefix(root_dir).expect(
-                    format!(
-                        "path `{}` is not starts with root_dir `{}`",
-                        &readme, root_dir
-                    )
-                    .as_str(),
-                );
+                let x_path = std::path::Path::new(&readme)
+                    .strip_prefix(root_dir)
+                    .unwrap_or_else(|_| {
+                        panic!(
+                            "path `{}` is not starts with root_dir `{}`",
+                            &readme, root_dir
+                        )
+                    });
                 path = std::path::PathBuf::from(collection_id).join(&x_path);
             }
 
@@ -135,13 +137,14 @@ pub fn to_markdown(node: &Node, root_dir: &str, collection_id: &str) -> String {
         collection_id: &str,
     ) {
         for x in node.children.iter() {
-            let x_path = std::path::Path::new(&x.path).strip_prefix(root_dir).expect(
-                format!(
-                    "path `{}` is not starts with root_dir `{}`",
-                    &x.path, root_dir
-                )
-                .as_str(),
-            );
+            let x_path = std::path::Path::new(&x.path)
+                .strip_prefix(root_dir)
+                .unwrap_or_else(|_| {
+                    panic!(
+                        "path `{}` is not starts with root_dir `{}`",
+                        &x.path, root_dir
+                    )
+                });
             let path = std::path::PathBuf::from(collection_id).join(&x_path);
             let file_name = path.file_name().unwrap().to_string_lossy();
             markdown.push_str(&format!(
