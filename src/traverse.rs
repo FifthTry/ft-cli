@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Node {
     pub is_dir: bool,
     pub path: String,
@@ -275,16 +275,117 @@ mod tests {
 
     #[test]
     fn till_dir() {
-        // let expected_output = vec![
-        //     "docs/a".to_string(),
-        //     "docs/a/b".to_string(),
-        //     "docs/a/b/c".to_string(),
-        //     "docs/a/b/c/d".to_string(),
-        //     "docs/a/b/c/d/e".to_string(),
-        // ];
-        //
-        // let output = super::dir_till_path(&test_node(), "docs/a/b/c/d/e/f.txt");
-        // assert_eq!(expected_output, output);
-        assert!(true)
+        let tree = vec![
+            super::Node {
+                is_dir: true,
+                path: "docs/a".to_string(),
+                children: vec![super::Node {
+                    is_dir: true,
+                    path: "docs/a/b".to_string(),
+                    children: vec![super::Node {
+                        is_dir: true,
+                        path: "docs/a/b/c".to_string(),
+                        children: vec![
+                            super::Node {
+                                is_dir: true,
+                                path: "docs/a/b/c/d".to_string(),
+                                children: vec![super::Node {
+                                    is_dir: true,
+                                    path: "docs/a/b/c/d/e".to_string(),
+                                    children: vec![super::Node {
+                                        is_dir: false,
+                                        path: "docs/a/b/c/d/e/f.txt".to_string(),
+                                        children: vec![],
+                                    }],
+                                }],
+                            },
+                            super::Node {
+                                is_dir: false,
+                                path: "docs/a/b/c/readme.md".to_string(),
+                                children: vec![],
+                            },
+                        ],
+                    }],
+                }],
+            },
+            super::Node {
+                is_dir: true,
+                path: "docs/a/b".to_string(),
+                children: vec![super::Node {
+                    is_dir: true,
+                    path: "docs/a/b/c".to_string(),
+                    children: vec![
+                        super::Node {
+                            is_dir: true,
+                            path: "docs/a/b/c/d".to_string(),
+                            children: vec![super::Node {
+                                is_dir: true,
+                                path: "docs/a/b/c/d/e".to_string(),
+                                children: vec![super::Node {
+                                    is_dir: false,
+                                    path: "docs/a/b/c/d/e/f.txt".to_string(),
+                                    children: vec![],
+                                }],
+                            }],
+                        },
+                        super::Node {
+                            is_dir: false,
+                            path: "docs/a/b/c/readme.md".to_string(),
+                            children: vec![],
+                        },
+                    ],
+                }],
+            },
+            super::Node {
+                is_dir: true,
+                path: "docs/a/b/c".to_string(),
+                children: vec![
+                    super::Node {
+                        is_dir: true,
+                        path: "docs/a/b/c/d".to_string(),
+                        children: vec![super::Node {
+                            is_dir: true,
+                            path: "docs/a/b/c/d/e".to_string(),
+                            children: vec![super::Node {
+                                is_dir: false,
+                                path: "docs/a/b/c/d/e/f.txt".to_string(),
+                                children: vec![],
+                            }],
+                        }],
+                    },
+                    super::Node {
+                        is_dir: false,
+                        path: "docs/a/b/c/readme.md".to_string(),
+                        children: vec![],
+                    },
+                ],
+            },
+            super::Node {
+                is_dir: true,
+                path: "docs/a/b/c/d".to_string(),
+                children: vec![super::Node {
+                    is_dir: true,
+                    path: "docs/a/b/c/d/e".to_string(),
+                    children: vec![super::Node {
+                        is_dir: false,
+                        path: "docs/a/b/c/d/e/f.txt".to_string(),
+                        children: vec![],
+                    }],
+                }],
+            },
+            super::Node {
+                is_dir: true,
+                path: "docs/a/b/c/d/e".to_string(),
+                children: vec![super::Node {
+                    is_dir: false,
+                    path: "docs/a/b/c/d/e/f.txt".to_string(),
+                    children: vec![],
+                }],
+            },
+        ];
+
+        let test_tree = test_node();
+        let output = super::ancestors(&test_tree, "docs/a/b/c/d/e/f.txt");
+        assert_eq!(tree.iter().collect::<Vec<_>>(), output);
     }
 }
