@@ -7,12 +7,12 @@
       "current_hash": "hello",
       "files": [
         {
-          "content": "-- raw:\n\n\n# hello world\n\n\n\n\n",
+          "content": "-- raw:\n\n# hello world\n",
           "id": "testuser/index/foo.md",
           "type": "Updated"
         },
         {
-          "content": "-- raw:\n\n\nbar bar bar\n\n\n\n\n",
+          "content": "-- raw:\n\nbar bar bar\n",
           "id": "testuser/index/bar.txt",
           "type": "Added"
         }
