@@ -14,6 +14,11 @@ struct File {
     content: String,
 }
 
+pub enum Error {
+    RealmClientError(realm_client::Error),
+    ContentMismatch { id: String },
+}
+
 #[allow(clippy::too_many_arguments)]
 pub fn bulk_update(
     collection: &str,
@@ -61,4 +66,23 @@ pub enum Action {
     Updated { id: String, content: String },
     Added { id: String, content: String },
     Deleted { id: String },
+}
+
+fn digest(actions: &[Action]) -> Vec<Action> {
+    // more than one Updated with the same id, ensure each content is exactly same and merge
+    // into one
+    //
+    // more than one Added with the same id, ensure each content is exactly same and merge
+    // into one
+    //
+    // if both Updated and Added have same id, ensure content matches and than merge Updated
+    //
+    // if more than one Deleted with the same id, merge into one
+    //
+    // if something is added and deleted, return Error::AddedAndDeleted {id: ""}
+    //
+    // if content is both Updated and Deleted, only send Deleted
+    //
+    // Note: If content mismatches, we will return Error::ContentMismatch
+    vec![]
 }

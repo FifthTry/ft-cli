@@ -126,7 +126,7 @@ pub fn collection_toc(node: &Node, root_dir: &str, collection_id: &str) -> Strin
 }
 
 pub fn to_markdown(node: &Node, root_dir: &str, collection_id: &str) -> String {
-    fn tree_to_toc_util(
+    fn tree_to_markdown_util(
         node: &Node,
         level: usize,
         markdown: &mut String,
@@ -134,11 +134,19 @@ pub fn to_markdown(node: &Node, root_dir: &str, collection_id: &str) -> String {
         collection_id: &str,
     ) {
         for x in node.children.iter() {
-            let path = x.document_id(root_dir, collection_id);
-            let file_name = path.file_name().unwrap().to_string_lossy();
+            let mut path = x.document_id(root_dir, collection_id);
+            let file_name = path
+                .clone()
+                .file_name()
+                .unwrap()
+                .to_string_lossy()
+                .to_string();
             if x.is_dir {
+                if let Some(readme) = x.readme() {
+                    path = crate::id::to_document_id(&readme, root_dir, collection_id);
+                }
                 markdown.push_str(&format!(
-                    "{: >width$}- [`{file_name}/`](/{path}/)\n",
+                    "{: >width$}- [`{file_name}/`](/{path})\n",
                     "",
                     width = level,
                     file_name = file_name,
@@ -146,7 +154,7 @@ pub fn to_markdown(node: &Node, root_dir: &str, collection_id: &str) -> String {
                 ));
             } else {
                 markdown.push_str(&format!(
-                    "{: >width$}- [`{file_name}`](/{path}/)\n",
+                    "{: >width$}- [`{file_name}`](/{path})\n",
                     "",
                     width = level,
                     file_name = file_name,
@@ -154,12 +162,12 @@ pub fn to_markdown(node: &Node, root_dir: &str, collection_id: &str) -> String {
                 ));
             }
             if x.is_dir {
-                tree_to_toc_util(&x, level + 2, markdown, root_dir, collection_id);
+                tree_to_markdown_util(&x, level + 2, markdown, root_dir, collection_id);
             }
         }
     }
     let mut markdown = "-- markdown:\n\n".to_string();
-    tree_to_toc_util(node, 0, &mut markdown, root_dir, collection_id);
+    tree_to_markdown_util(node, 0, &mut markdown, root_dir, collection_id);
     markdown
 }
 
@@ -262,13 +270,13 @@ mod tests {
             super::to_markdown(&node, "docs", "testuser/index"),
             r#"-- markdown:
 
-- [`a/`](/testuser/index/a/)
-  - [`b/`](/testuser/index/a/b/)
-    - [`c/`](/testuser/index/a/b/c/)
-      - [`d/`](/testuser/index/a/b/c/d/)
-        - [`e/`](/testuser/index/a/b/c/d/e/)
-          - [`f.txt`](/testuser/index/a/b/c/d/e/f.txt/)
-      - [`readme.md`](/testuser/index/a/b/c/readme.md/)
+- [`a/`](/testuser/index/a)
+  - [`b/`](/testuser/index/a/b)
+    - [`c/`](/testuser/index/a/b/c/readme.md)
+      - [`d/`](/testuser/index/a/b/c/d)
+        - [`e/`](/testuser/index/a/b/c/d/e)
+          - [`f.txt`](/testuser/index/a/b/c/d/e/f.txt)
+      - [`readme.md`](/testuser/index/a/b/c/readme.md)
 "#
         )
     }
