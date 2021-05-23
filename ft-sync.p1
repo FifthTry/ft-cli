@@ -12,7 +12,6 @@ collection: testuser/index
 
 -- index-extra:
 
-
 \-- meta:
 git-repo: a/b
 lang: en

@@ -17,7 +17,6 @@ pub fn sync(config: &crate::Config) -> crate::Result<()> {
         let mut actions = vec![];
 
         let tree = crate::traverse::root_tree(&std::path::PathBuf::from(&config.root))?;
-        println!("{:#?}", tree);
 
         let files = if status.last_synced_hash.is_empty() {
             crate::git::ls_tree(&latest_hash, config.root.as_str())?
@@ -69,7 +68,7 @@ pub fn sync(config: &crate::Config) -> crate::Result<()> {
         actions
     };
 
-    println!("{:#?}", actions);
+    // println!("{:#?}", actions);
 
     let st = std::time::Instant::now();
 
