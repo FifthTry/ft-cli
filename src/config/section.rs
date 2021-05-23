@@ -2,6 +2,7 @@
 pub enum Section {
     FtSync(FtSync),
     Ignored(Ignored),
+    IndexExtra(IndexExtra),
 }
 
 impl Section {
@@ -9,6 +10,7 @@ impl Section {
         Ok(match p1.name.as_str() {
             "ft-sync" => Self::FtSync(FtSync::from_p1(p1)?),
             "ignored" => Self::Ignored(Ignored::from_p1(p1)?),
+            "index-extra" => Self::IndexExtra(IndexExtra::from_p1(p1)?),
             t => {
                 return Err(ftd::p1::Error::InvalidInput {
                     message: format!(
@@ -77,6 +79,27 @@ impl FtSync {
             root,
             repo,
             collection,
+        })
+    }
+}
+
+#[derive(Debug)]
+pub struct IndexExtra {
+    pub body: String,
+}
+
+impl IndexExtra {
+    pub fn from_p1(p1: &ftd::p1::Section) -> ftd::p1::Result<Self> {
+        Ok(Self {
+            body: match p1.body.as_ref() {
+                Some(b) => b.clone(),
+                None => {
+                    return Err(ftd::p1::Error::InvalidInput {
+                        message: "body of index-extra section is empty".to_string(),
+                        context: "".to_string(),
+                    })
+                }
+            },
         })
     }
 }

@@ -12,6 +12,7 @@ pub struct Config {
     pub auth: crate::Auth,
     pub dot_ft: bool,
     pub path: std::path::PathBuf,
+    pub index_extra: String,
 }
 
 impl Config {
@@ -26,6 +27,7 @@ impl Config {
         let p1 = ftd::p1::parse(content)?;
         let mut ft_sync: Option<section::FtSync> = None;
         let mut ignored: Vec<section::Ignored> = vec![];
+        let mut index_extra: Option<section::IndexExtra> = None;
         for section in p1 {
             let s = section::Section::from_p1(&section)?;
             match s {
@@ -39,6 +41,7 @@ impl Config {
                     }
                 }
                 section::Section::Ignored(sec) => ignored.push(sec),
+                section::Section::IndexExtra(sec) => index_extra = Some(sec),
             }
         }
 
@@ -56,6 +59,15 @@ impl Config {
             .flat_map(|ig| ig.patterns)
             .collect::<Vec<_>>();
 
+        let index_extra = match index_extra {
+            Some(f) => f,
+            None => {
+                return Err(crate::Error::ConfigFileParseError {
+                    error: "index-extra section not found".to_string(),
+                })
+            }
+        };
+
         Ok(Config {
             ignored,
             repo: ft_sync.repo,
@@ -66,6 +78,7 @@ impl Config {
             auth: crate::Auth::AuthCode(crate::config::env::auth_code()),
             dot_ft: false,
             path: std::path::PathBuf::from(file_path),
+            index_extra: index_extra.body,
         })
     }
 

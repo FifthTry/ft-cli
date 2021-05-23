@@ -42,9 +42,9 @@ pub fn sync(config: &crate::Config) -> crate::Result<()> {
         if config.backend.is_raw() {
             let readme_content = if let Some(readme) = tree.readme() {
                 let file = crate::FileMode::Modified(readme);
-                file.content()?
+                Some(file.content()?)
             } else {
-                "".to_string()
+                None
             };
 
             let collection_toc =
@@ -53,8 +53,16 @@ pub fn sync(config: &crate::Config) -> crate::Result<()> {
             actions.push(ft_api::bulk_update::Action::Updated {
                 id: config.collection.to_string(),
                 content: format!(
-                    "-- h1: {}\n\n{}\n\n\n{}",
-                    config.collection, readme_content, collection_toc
+                    "-- h1: {}\n\n\n{}\n{}\n\n\n{}",
+                    config.collection,
+                    config.index_extra,
+                    match readme_content {
+                        Some(c) => format!("\n-- markdown:\n\n{}", c),
+                        None => {
+                            "".to_string()
+                        }
+                    },
+                    collection_toc
                 ),
             })
         }
