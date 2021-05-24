@@ -37,6 +37,10 @@ impl Node {
     pub fn collection_toc(&self, root_dir: &str, collection_id: &str) -> String {
         self::collection_toc(self, root_dir, collection_id)
     }
+
+    pub fn to_ftd_toc(&self, root_dir: &str, collection_id: &str) -> ftd::ToC {
+        self::to_ftd_toc(self, root_dir, collection_id)
+    }
 }
 
 pub fn root_tree(root_dir: &std::path::Path) -> crate::Result<Node> {
@@ -68,6 +72,41 @@ pub fn root_tree(root_dir: &std::path::Path) -> crate::Result<Node> {
         children: traverse_tree(root_dir)?,
     };
     Ok(root)
+}
+
+pub fn to_ftd_toc(node: &Node, root_dir: &str, collection_id: &str) -> ftd::toc::ToC {
+    fn to_toc_items(node: &Node, root_dir: &str, collection_id: &str) -> Vec<ftd::toc::TocItem> {
+        node.children
+            .iter()
+            .map(|c| {
+                let mut path = c.document_id(root_dir, collection_id);
+                let file_name = path
+                    .clone()
+                    .file_name()
+                    .unwrap()
+                    .to_string_lossy()
+                    .to_string();
+
+                let title = if c.is_dir {
+                    format!("{}/", file_name)
+                } else {
+                    file_name
+                };
+
+                if let Some(readme) = c.readme() {
+                    path = crate::id::to_document_id(&readme, root_dir, collection_id);
+                }
+
+                let mut item =
+                    ftd::toc::TocItem::with_title_and_id(&title, &path.to_string_lossy());
+                item.children = to_toc_items(c, root_dir, collection_id);
+                item
+            })
+            .collect()
+    }
+    ftd::ToC {
+        items: to_toc_items(node, root_dir, collection_id),
+    }
 }
 
 pub fn collection_toc(node: &Node, root_dir: &str, collection_id: &str) -> String {

@@ -46,24 +46,34 @@ pub fn sync(config: &crate::Config) -> crate::Result<()> {
                 None
             };
 
-            let collection_toc =
-                tree.collection_toc(config.root.as_str(), config.collection.as_str());
-
-            actions.push(ft_api::bulk_update::Action::Updated {
-                id: config.collection.to_string(),
-                content: format!(
-                    "-- h1: {}\n\n\n{}\n{}\n\n\n{}",
-                    config.collection,
-                    config.index_extra,
-                    match readme_content {
-                        Some(c) => format!("\n-- markdown:\n\n{}", c),
-                        None => {
-                            "".to_string()
-                        }
-                    },
-                    collection_toc
+            let content = vec![
+                ftd::Section::Heading(ftd::Heading::new(0, config.collection.as_str())),
+                // TODO: index_extra as meta
+                ftd::Section::Markdown(ftd::Markdown::from_body(
+                    &readme_content.unwrap_or_else(|| "".to_string()),
+                )),
+                ftd::Section::ToC(
+                    tree.to_ftd_toc(config.root.as_str(), config.collection.as_str()),
                 ),
-            })
+            ];
+
+            println!("{:#?}", content);
+
+            // actions.push(ft_api::bulk_update::Action::Updated {
+            //     id: config.collection.to_string(),
+            //     content: format!(
+            //         "-- h1: {}\n\n\n{}\n{}",
+            //         config.collection,
+            //         config.index_extra,
+            //         // match readme_content {
+            //         //     Some(c) => format!("\n-- markdown:\n\n{}", c),
+            //         //     None => {
+            //         //         "".to_string()
+            //         //     }
+            //         // },
+            //         collection_toc
+            //     ),
+            // })
         }
         actions
     };
