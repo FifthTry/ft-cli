@@ -46,7 +46,7 @@ pub fn sync(config: &crate::Config) -> crate::Result<()> {
                 None
             };
 
-            let content = vec![
+            let mut content = vec![
                 ftd::Section::Heading(ftd::Heading::new(0, config.collection.as_str())),
                 ftd::Section::Markdown(ftd::Markdown::from_body(
                     &readme_content.unwrap_or_else(|| "".to_string()),
@@ -56,12 +56,11 @@ pub fn sync(config: &crate::Config) -> crate::Result<()> {
                 ),
             ];
 
-            let collection =
-                ftd::p1::to_string(&content.iter().map(|v| v.to_p1()).collect::<Vec<_>>());
+            content.append(&mut config.index_extra.clone());
 
             actions.push(ft_api::bulk_update::Action::Updated {
                 id: config.collection.to_string(),
-                content: format!("{}\n\n{}", collection, config.index_extra),
+                content: ftd::p1::to_string(&content.iter().map(|v| v.to_p1()).collect::<Vec<_>>()),
             })
         }
         actions

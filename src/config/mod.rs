@@ -12,7 +12,7 @@ pub struct Config {
     pub auth: crate::Auth,
     pub dot_ft: bool,
     pub path: std::path::PathBuf,
-    pub index_extra: String,
+    pub index_extra: Vec<ftd::Section>,
 }
 
 impl Config {
@@ -60,13 +60,13 @@ impl Config {
             .collect::<Vec<_>>();
 
         let index_extra = match index_extra {
-            Some(f) => Some(f),
+            Some(f) => f.body.sections,
             None if ft_sync.backend.is_raw() => {
                 return Err(crate::Error::ConfigFileParseError {
-                    error: "index-extra section not found".to_string(),
+                    error: "index-extra section not found in config".to_string(),
                 })
             }
-            _ => None,
+            _ => vec![],
         };
 
         Ok(Config {
@@ -79,9 +79,7 @@ impl Config {
             auth: crate::Auth::AuthCode(crate::config::env::auth_code()),
             dot_ft: false,
             path: std::path::PathBuf::from(file_path),
-            index_extra: index_extra
-                .map(|x| x.body)
-                .unwrap_or_else(|| "".to_string()),
+            index_extra,
         })
     }
 

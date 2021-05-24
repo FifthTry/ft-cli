@@ -85,14 +85,19 @@ impl FtSync {
 
 #[derive(Debug)]
 pub struct IndexExtra {
-    pub body: String,
+    pub body: ftd::Document,
 }
 
 impl IndexExtra {
     pub fn from_p1(p1: &ftd::p1::Section) -> ftd::p1::Result<Self> {
         Ok(Self {
             body: match p1.body.as_ref() {
-                Some(b) => b.clone(),
+                Some(b) => ftd::Document::parse(b, "ft-sync").map_err(|e| {
+                    ftd::p1::Error::InvalidInput {
+                        message: "Can not parse index-extra".to_string(),
+                        context: e.to_string(),
+                    }
+                })?,
                 None => {
                     return Err(ftd::p1::Error::InvalidInput {
                         message: "body of index-extra section is empty".to_string(),
