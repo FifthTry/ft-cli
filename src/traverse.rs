@@ -80,12 +80,7 @@ pub fn to_ftd_toc(node: &Node, root_dir: &str, collection_id: &str) -> ftd::toc:
             .iter()
             .map(|c| {
                 let mut path = c.document_id(root_dir, collection_id);
-                let file_name = path
-                    .clone()
-                    .file_name()
-                    .unwrap()
-                    .to_string_lossy()
-                    .to_string();
+                let file_name = path.file_name().unwrap().to_string_lossy().to_string();
 
                 let title = if c.is_dir {
                     format!("{}/", file_name)
