@@ -107,16 +107,24 @@ impl FileMode {
             .to_string();
 
         let section = if extension.eq("md") || extension.eq("mdx") {
-            [ftd::p1::Section::with_name("markdown").and_body(self.content()?.as_str())]
+            [ftd::Section::Markdown(ftd::Markdown::from_body(
+                self.content()?.as_str(),
+            ))]
         } else if extension.eq("rst") {
-            [ftd::p1::Section::with_name("rst").and_body(self.content()?.as_str())]
+            [ftd::Section::Rst(ftd::Rst::from_body(
+                self.content()?.as_str(),
+            ))]
         } else {
-            [ftd::p1::Section::with_name("code")
-                .add_header("lang", &extension)
-                .and_body(self.content()?.as_str())]
+            [ftd::Section::Code(
+                ftd::Code::default()
+                    .with_lang(&extension)
+                    .with_code(self.content()?.as_str()),
+            )]
         };
 
-        Ok(ftd::p1::to_string(&section))
+        Ok(ftd::p1::to_string(
+            &section.iter().map(|v| v.to_p1()).collect::<Vec<_>>(),
+        ))
     }
 
     pub fn path(&self) -> std::path::PathBuf {
