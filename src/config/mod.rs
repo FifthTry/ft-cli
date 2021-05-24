@@ -60,12 +60,13 @@ impl Config {
             .collect::<Vec<_>>();
 
         let index_extra = match index_extra {
-            Some(f) => f,
-            None => {
+            Some(f) => Some(f),
+            None if ft_sync.backend.is_raw() => {
                 return Err(crate::Error::ConfigFileParseError {
                     error: "index-extra section not found".to_string(),
                 })
             }
+            _ => None,
         };
 
         Ok(Config {
@@ -78,7 +79,9 @@ impl Config {
             auth: crate::Auth::AuthCode(crate::config::env::auth_code()),
             dot_ft: false,
             path: std::path::PathBuf::from(file_path),
-            index_extra: index_extra.body,
+            index_extra: index_extra
+                .and_then(|x| Some(x.body))
+                .unwrap_or_else(|| "".to_string()),
         })
     }
 
