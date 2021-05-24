@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Ord, Eq, PartialOrd)]
 pub struct Node {
     pub is_dir: bool,
     pub path: String,
@@ -63,6 +63,8 @@ pub fn root_tree(root_dir: &std::path::Path) -> crate::Result<Node> {
                 });
             }
         }
+        children.sort();
+
         Ok(children)
     }
 
