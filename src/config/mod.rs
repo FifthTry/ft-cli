@@ -80,7 +80,7 @@ impl Config {
             dot_ft: false,
             path: std::path::PathBuf::from(file_path),
             index_extra: index_extra
-                .and_then(|x| Some(x.body))
+                .map(|x| x.body)
                 .unwrap_or_else(|| "".to_string()),
         })
     }
