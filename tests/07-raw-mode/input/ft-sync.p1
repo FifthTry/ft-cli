@@ -9,4 +9,7 @@ collection: testuser/index
 
 \-- meta:
 git-repo: a/b
-lang: en
+lang: hi
+
+\--- reader:
+who: everyone
