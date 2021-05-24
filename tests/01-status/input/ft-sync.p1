@@ -9,9 +9,3 @@ collection: testuser/index
 -- ignored:
 
 *.py
-
--- index-extra:
-
-\-- meta:
-git-repo: a/b
-lang: en
