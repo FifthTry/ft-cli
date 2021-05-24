@@ -262,9 +262,9 @@ dependencies = [
 
 [[package]]
 name = "ftd"
-version = "0.1.3"
+version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c57789e6719465e69928e6f18be2a8201d573c322e8a61922a3245ebae58088e"
+checksum = "159ea6f24e2821d4d848af205362123ece33b6bcad58779b90f992d726aefcd6"
 dependencies = [
  "thiserror",
 ]
