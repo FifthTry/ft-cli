@@ -6,7 +6,7 @@ pub fn handle(
     root_dir: &str,
     collection: &str,
 ) -> crate::Result<Vec<ft_api::bulk_update::Action>> {
-    if !RAW_EXTENSIONS.iter().any(|x| file.extension().eq(x)) {
+    if !RAW_EXTENSIONS.contains(&file.extension().as_str()) {
         return Ok(vec![]);
     }
 

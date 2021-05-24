@@ -4,8 +4,3 @@ backend: ftd
 root: docs
 repo: amitu/fifthtry
 collection: testuser/index
-
-
--- ignored:
-
-*.py

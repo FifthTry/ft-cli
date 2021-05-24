@@ -227,7 +227,7 @@ mod tests {
                             },
                             Node {
                                 is_dir: false,
-                                path: "docs/a/b/c/readme.md".to_string(),
+                                path: "docs/a/b/c/README.md".to_string(),
                                 children: vec![],
                             },
                         ],
@@ -248,7 +248,7 @@ mod tests {
   `a/`
   - testuser/index/a/b
     `b/`
-    - testuser/index/a/b/c/readme.md
+    - testuser/index/a/b/c/README.md
       `c/`
       - testuser/index/a/b/c/d
         `d/`
@@ -256,8 +256,8 @@ mod tests {
           `e/`
           - testuser/index/a/b/c/d/e/f.txt
             `f.txt`
-      - testuser/index/a/b/c/readme.md
-        `readme.md`
+      - testuser/index/a/b/c/README.md
+        `README.md`
 "#
             .to_string()
         )
@@ -272,11 +272,11 @@ mod tests {
 
 - [`a/`](/testuser/index/a)
   - [`b/`](/testuser/index/a/b)
-    - [`c/`](/testuser/index/a/b/c/readme.md)
+    - [`c/`](/testuser/index/a/b/c/README.md)
       - [`d/`](/testuser/index/a/b/c/d)
         - [`e/`](/testuser/index/a/b/c/d/e)
           - [`f.txt`](/testuser/index/a/b/c/d/e/f.txt)
-      - [`readme.md`](/testuser/index/a/b/c/readme.md)
+      - [`README.md`](/testuser/index/a/b/c/README.md)
 "#
         )
     }
@@ -309,7 +309,7 @@ mod tests {
                             },
                             super::Node {
                                 is_dir: false,
-                                path: "docs/a/b/c/readme.md".to_string(),
+                                path: "docs/a/b/c/README.md".to_string(),
                                 children: vec![],
                             },
                         ],
@@ -338,7 +338,7 @@ mod tests {
                         },
                         super::Node {
                             is_dir: false,
-                            path: "docs/a/b/c/readme.md".to_string(),
+                            path: "docs/a/b/c/README.md".to_string(),
                             children: vec![],
                         },
                     ],
@@ -363,7 +363,7 @@ mod tests {
                     },
                     super::Node {
                         is_dir: false,
-                        path: "docs/a/b/c/readme.md".to_string(),
+                        path: "docs/a/b/c/README.md".to_string(),
                         children: vec![],
                     },
                 ],
