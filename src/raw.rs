@@ -29,8 +29,8 @@ pub fn handle(
                 .collect();
 
             actions.push(ft_api::bulk_update::Action::Added {
+                content: file.raw_content(&id)?,
                 id,
-                content: file.raw_content()?,
             });
             actions
         }
@@ -38,8 +38,8 @@ pub fn handle(
         crate::types::FileMode::Modified(_) => {
             println!("Updated: {}", id.as_str());
             vec![ft_api::bulk_update::Action::Updated {
+                content: file.raw_content(&id)?,
                 id,
-                content: file.raw_content()?,
             }]
         }
 

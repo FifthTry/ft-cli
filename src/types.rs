@@ -93,7 +93,7 @@ impl FileMode {
             .map_err(|e| crate::Error::ReadError(e, self.path_str()))
     }
 
-    pub fn raw_content(&self) -> crate::Result<String> {
+    pub fn raw_content(&self, title: &str) -> crate::Result<String> {
         let extension = self
             .path()
             .extension()
@@ -108,17 +108,17 @@ impl FileMode {
 
         let section = if extension.eq("md") || extension.eq("mdx") {
             [
-                ftd::Section::Heading(ftd::Heading::new(0, &self.path().to_string_lossy())),
+                ftd::Section::Heading(ftd::Heading::new(0, title)),
                 ftd::Section::Markdown(ftd::Markdown::from_body(self.content()?.as_str())),
             ]
         } else if extension.eq("rst") {
             [
-                ftd::Section::Heading(ftd::Heading::new(0, &self.path().to_string_lossy())),
+                ftd::Section::Heading(ftd::Heading::new(0, title)),
                 ftd::Section::Rst(ftd::Rst::from_body(self.content()?.as_str())),
             ]
         } else {
             [
-                ftd::Section::Heading(ftd::Heading::new(0, &self.path().to_string_lossy())),
+                ftd::Section::Heading(ftd::Heading::new(0, title)),
                 ftd::Section::Code(
                     ftd::Code::default()
                         .with_lang(&extension)
