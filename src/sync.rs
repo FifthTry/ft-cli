@@ -24,45 +24,28 @@ pub fn sync(config: &crate::Config) -> crate::Result<()> {
             crate::git::changed_files(&status.last_synced_hash, &latest_hash, config.root.as_str())?
         };
 
-        for file in files.into_iter() {
+        for file in files.iter() {
             actions.append(&mut match config.backend {
                 crate::Backend::FTD => {
                     crate::ftd::handle(file, config.root.as_str(), config.collection.as_str())?
                 }
                 crate::Backend::Raw => crate::raw::handle(
                     &tree,
-                    file,
+                    &file,
                     config.root.as_str(),
                     config.collection.as_str(),
                 )?,
             });
         }
 
-        if config.backend.is_raw() {
-            let readme_content = if let Some(readme) = tree.readme() {
-                let file = crate::FileMode::Modified(readme);
-                Some(file.content()?)
-            } else {
-                None
-            };
-
-            let mut content = vec![
-                ftd::Section::Heading(ftd::Heading::new(0, config.collection.as_str())),
-                ftd::Section::Markdown(ftd::Markdown::from_body(
-                    &readme_content.unwrap_or_else(|| "".to_string()),
-                )),
-                ftd::Section::ToC(
-                    tree.to_ftd_toc(config.root.as_str(), config.collection.as_str()),
-                ),
-            ];
-
-            content.append(&mut config.index_extra.clone());
-
-            actions.push(ft_api::bulk_update::Action::Updated {
-                id: config.collection.to_string(),
-                content: ftd::p1::to_string(&content.iter().map(|v| v.to_p1()).collect::<Vec<_>>()),
+        if config.backend.is_raw()
+            && files.iter().any(|v| {
+                matches!(v, crate::FileMode::Created(_)) || matches!(v, crate::FileMode::Deleted(_))
             })
+        {
+            actions.push(crate::raw::index(&tree, config)?)
         }
+
         actions
     };
 

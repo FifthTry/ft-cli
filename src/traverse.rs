@@ -26,20 +26,20 @@ impl Node {
         self.readme().is_some()
     }
 
-    pub fn document_id(&self, root_dir: &str, collection_id: &str) -> std::path::PathBuf {
-        crate::id::to_document_id(&self.path, root_dir, collection_id)
+    pub fn document_id(&self, root: &str, collection: &str) -> std::path::PathBuf {
+        crate::id::to_document_id(&self.path, root, collection)
     }
 
-    pub fn to_markdown(&self, root_dir: &str, collection_id: &str) -> String {
-        self::to_markdown(self, root_dir, collection_id)
+    pub fn to_markdown(&self, root: &str, collection: &str) -> String {
+        self::to_markdown(self, root, collection)
     }
 
-    pub fn collection_toc(&self, root_dir: &str, collection_id: &str) -> String {
-        self::collection_toc(self, root_dir, collection_id)
+    pub fn collection_toc(&self, root: &str, collection: &str) -> String {
+        self::collection_toc(self, root, collection)
     }
 
-    pub fn to_ftd_toc(&self, root_dir: &str, collection_id: &str) -> ftd::ToC {
-        self::to_ftd_toc(self, root_dir, collection_id)
+    pub fn to_ftd_toc(&self, root: &str, collection: &str) -> ftd::ToC {
+        self::to_ftd_toc(self, root, collection)
     }
 }
 
