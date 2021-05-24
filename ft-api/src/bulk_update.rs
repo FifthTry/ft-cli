@@ -106,8 +106,7 @@ fn digest(actions: Vec<Action>) -> Vec<Action> {
         })
         .collect();
 
-    let updated_map: std::collections::HashMap<_, _> =
-        updated.clone().into_iter().map(|x| x).collect();
+    let updated_map: std::collections::HashMap<_, _> = updated.clone().into_iter().collect();
 
     for (id, content) in updated.iter() {
         if let Some(c) = updated_map.get(id) {
@@ -136,7 +135,7 @@ fn digest(actions: Vec<Action>) -> Vec<Action> {
         })
         .collect();
 
-    let added_map: std::collections::HashMap<_, _> = added.clone().into_iter().map(|x| x).collect();
+    let added_map: std::collections::HashMap<_, _> = added.clone().into_iter().collect();
 
     for (id, content) in added.iter() {
         if let Some(c) = added_map.get(id) {
@@ -163,7 +162,7 @@ fn digest(actions: Vec<Action>) -> Vec<Action> {
         })
         .collect();
 
-    let deleted: std::collections::HashMap<_, _> =
+    let _deleted: std::collections::HashMap<_, _> =
         deleted.clone().into_iter().map(|x| (x, true)).collect();
 
     // TODO: collect unique deleted ID's
