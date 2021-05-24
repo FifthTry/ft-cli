@@ -106,30 +106,20 @@ impl FileMode {
             .to_string_lossy()
             .to_string();
 
+        let heading = ftd::Section::Heading(ftd::Heading::new(0, format!("`{}`", title).as_str()));
         let section = if extension.eq("md") || extension.eq("mdx") {
-            [
-                ftd::Section::Heading(ftd::Heading::new(0, title)),
-                ftd::Section::Markdown(ftd::Markdown::from_body(self.content()?.as_str())),
-            ]
+            ftd::Section::Markdown(ftd::Markdown::from_body(self.content()?.as_str()))
         } else if extension.eq("rst") {
-            [
-                ftd::Section::Heading(ftd::Heading::new(0, title)),
-                ftd::Section::Rst(ftd::Rst::from_body(self.content()?.as_str())),
-            ]
+            ftd::Section::Rst(ftd::Rst::from_body(self.content()?.as_str()))
         } else {
-            [
-                ftd::Section::Heading(ftd::Heading::new(0, title)),
-                ftd::Section::Code(
-                    ftd::Code::default()
-                        .with_lang(&extension)
-                        .with_code(self.content()?.as_str()),
-                ),
-            ]
+            ftd::Section::Code(
+                ftd::Code::default()
+                    .with_lang(&extension)
+                    .with_code(self.content()?.as_str()),
+            )
         };
 
-        Ok(ftd::p1::to_string(
-            &section.iter().map(|v| v.to_p1()).collect::<Vec<_>>(),
-        ))
+        Ok(ftd::Document::new(&[heading, section]).convert_to_string())
     }
 
     pub fn path(&self) -> std::path::PathBuf {

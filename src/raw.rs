@@ -17,7 +17,7 @@ pub fn index(
             config
                 .title
                 .clone()
-                .unwrap_or_else(|| config.collection.to_string())
+                .unwrap_or_else(|| format!("`{}`", config.collection.as_str()))
                 .as_str(),
         )),
         ftd::Section::Markdown(ftd::Markdown::from_body(
@@ -28,6 +28,7 @@ pub fn index(
 
     content.extend_from_slice(&config.index_extra);
 
+    println!("Updated: {}", config.collection.as_str());
     Ok(ft_api::bulk_update::Action::Updated {
         id: config.collection.to_string(),
         content: ftd::Document::new(&content).convert_to_string(),

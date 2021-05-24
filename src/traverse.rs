@@ -83,9 +83,9 @@ pub fn to_ftd_toc(node: &Node, root_dir: &str, collection_id: &str) -> ftd::toc:
                 let file_name = path.file_name().unwrap().to_string_lossy().to_string();
 
                 let title = if c.is_dir {
-                    format!("{}/", file_name)
+                    format!("`{}/`", file_name)
                 } else {
-                    file_name
+                    format!("`{}`", file_name)
                 };
 
                 if let Some(readme) = c.readme() {
