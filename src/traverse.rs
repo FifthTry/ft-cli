@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Ord, Eq, PartialOrd)]
 pub struct Node {
     pub is_dir: bool,
     pub path: String,
@@ -20,6 +20,26 @@ impl Node {
                     .starts_with(&p.to_string_lossy().to_string())
             })
             .map(|x| x.path.to_string())
+    }
+
+    pub fn readme_exists(&self) -> bool {
+        self.readme().is_some()
+    }
+
+    pub fn document_id(&self, root: &str, collection: &str) -> std::path::PathBuf {
+        crate::id::to_document_id(&self.path, root, collection)
+    }
+
+    pub fn to_markdown(&self, root: &str, collection: &str) -> String {
+        self::to_markdown(self, root, collection)
+    }
+
+    pub fn collection_toc(&self, root: &str, collection: &str) -> String {
+        self::collection_toc(self, root, collection)
+    }
+
+    pub fn to_ftd_toc(&self, root: &str, collection: &str) -> ftd::ToC {
+        self::to_ftd_toc(self, root, collection)
     }
 }
 
@@ -43,6 +63,8 @@ pub fn root_tree(root_dir: &std::path::Path) -> crate::Result<Node> {
                 });
             }
         }
+        children.sort();
+
         Ok(children)
     }
 
@@ -54,6 +76,36 @@ pub fn root_tree(root_dir: &std::path::Path) -> crate::Result<Node> {
     Ok(root)
 }
 
+pub fn to_ftd_toc(node: &Node, root_dir: &str, collection_id: &str) -> ftd::toc::ToC {
+    fn to_toc_items(node: &Node, root_dir: &str, collection_id: &str) -> Vec<ftd::toc::TocItem> {
+        node.children
+            .iter()
+            .map(|c| {
+                let mut path = c.document_id(root_dir, collection_id);
+                let file_name = path.file_name().unwrap().to_string_lossy().to_string();
+
+                let title = if c.is_dir {
+                    format!("`{}/`", file_name)
+                } else {
+                    format!("`{}`", file_name)
+                };
+
+                if let Some(readme) = c.readme() {
+                    path = crate::id::to_document_id(&readme, root_dir, collection_id);
+                }
+
+                let mut item =
+                    ftd::toc::TocItem::with_title_and_id(&title, &path.to_string_lossy());
+                item.children = to_toc_items(c, root_dir, collection_id);
+                item
+            })
+            .collect()
+    }
+    ftd::ToC {
+        items: to_toc_items(node, root_dir, collection_id),
+    }
+}
+
 pub fn collection_toc(node: &Node, root_dir: &str, collection_id: &str) -> String {
     fn tree_to_toc_util(
         node: &Node,
@@ -63,15 +115,8 @@ pub fn collection_toc(node: &Node, root_dir: &str, collection_id: &str) -> Strin
         collection_id: &str,
     ) {
         for x in node.children.iter() {
-            let x_path = std::path::Path::new(&x.path)
-                .strip_prefix(root_dir)
-                .unwrap_or_else(|_| {
-                    panic!(
-                        "path `{}` is not starts with root_dir `{}`",
-                        &x.path, root_dir
-                    )
-                });
-            let mut path = std::path::PathBuf::from(collection_id).join(&x_path);
+            let mut path = x.document_id(root_dir, collection_id);
+
             let file_name = path
                 .clone()
                 .file_name()
@@ -80,15 +125,7 @@ pub fn collection_toc(node: &Node, root_dir: &str, collection_id: &str) -> Strin
                 .to_string();
 
             if let Some(readme) = x.readme() {
-                let x_path = std::path::Path::new(&readme)
-                    .strip_prefix(root_dir)
-                    .unwrap_or_else(|_| {
-                        panic!(
-                            "path `{}` is not starts with root_dir `{}`",
-                            &readme, root_dir
-                        )
-                    });
-                path = std::path::PathBuf::from(collection_id).join(&x_path);
+                path = crate::id::to_document_id(&readme, root_dir, collection_id);
             }
 
             toc_string.push_str(&format!(
@@ -125,7 +162,7 @@ pub fn collection_toc(node: &Node, root_dir: &str, collection_id: &str) -> Strin
 }
 
 pub fn to_markdown(node: &Node, root_dir: &str, collection_id: &str) -> String {
-    fn tree_to_toc_util(
+    fn tree_to_markdown_util(
         node: &Node,
         level: usize,
         markdown: &mut String,
@@ -133,42 +170,52 @@ pub fn to_markdown(node: &Node, root_dir: &str, collection_id: &str) -> String {
         collection_id: &str,
     ) {
         for x in node.children.iter() {
-            let x_path = std::path::Path::new(&x.path)
-                .strip_prefix(root_dir)
-                .unwrap_or_else(|_| {
-                    panic!(
-                        "path `{}` is not starts with root_dir `{}`",
-                        &x.path, root_dir
-                    )
-                });
-            let path = std::path::PathBuf::from(collection_id).join(&x_path);
-            let file_name = path.file_name().unwrap().to_string_lossy();
-            markdown.push_str(&format!(
-                "{: >width$}- [`{file_name}`]({path})\n",
-                "",
-                width = level,
-                file_name = file_name,
-                path = path.to_string_lossy()
-            ));
+            let mut path = x.document_id(root_dir, collection_id);
+            let file_name = path
+                .clone()
+                .file_name()
+                .unwrap()
+                .to_string_lossy()
+                .to_string();
             if x.is_dir {
-                tree_to_toc_util(&x, level + 2, markdown, root_dir, collection_id);
+                if let Some(readme) = x.readme() {
+                    path = crate::id::to_document_id(&readme, root_dir, collection_id);
+                }
+                markdown.push_str(&format!(
+                    "{: >width$}- [`{file_name}/`](/{path})\n",
+                    "",
+                    width = level,
+                    file_name = file_name,
+                    path = path.to_string_lossy()
+                ));
+            } else {
+                markdown.push_str(&format!(
+                    "{: >width$}- [`{file_name}`](/{path})\n",
+                    "",
+                    width = level,
+                    file_name = file_name,
+                    path = path.to_string_lossy()
+                ));
+            }
+            if x.is_dir {
+                tree_to_markdown_util(&x, level + 2, markdown, root_dir, collection_id);
             }
         }
     }
     let mut markdown = "-- markdown:\n\n".to_string();
-    tree_to_toc_util(node, 0, &mut markdown, root_dir, collection_id);
+    tree_to_markdown_util(node, 0, &mut markdown, root_dir, collection_id);
     markdown
 }
 
-pub fn dir_till_path(node: &Node, path: &str) -> Vec<String> {
-    fn dir_till_path_util(node: &Node, path: &str, dirs: &mut Vec<String>) -> bool {
+pub fn ancestors<'a>(node: &'a Node, path: &str) -> Vec<&'a Node> {
+    fn dir_till_path_util<'a>(node: &'a Node, path: &str, dirs: &mut Vec<&'a Node>) -> bool {
         if node.path.eq(path) {
             return true;
         }
 
         for node in node.children.iter() {
             if node.is_dir && dir_till_path_util(&node, path, dirs) {
-                dirs.push(node.path.to_string());
+                dirs.push(node);
                 return true;
             }
             if node.path.eq(path) {
@@ -216,7 +263,7 @@ mod tests {
                             },
                             Node {
                                 is_dir: false,
-                                path: "docs/a/b/c/readme.md".to_string(),
+                                path: "docs/a/b/c/README.md".to_string(),
                                 children: vec![],
                             },
                         ],
@@ -237,7 +284,7 @@ mod tests {
   `a/`
   - testuser/index/a/b
     `b/`
-    - testuser/index/a/b/c/readme.md
+    - testuser/index/a/b/c/README.md
       `c/`
       - testuser/index/a/b/c/d
         `d/`
@@ -245,8 +292,8 @@ mod tests {
           `e/`
           - testuser/index/a/b/c/d/e/f.txt
             `f.txt`
-      - testuser/index/a/b/c/readme.md
-        `readme.md`
+      - testuser/index/a/b/c/README.md
+        `README.md`
 "#
             .to_string()
         )
@@ -259,28 +306,130 @@ mod tests {
             super::to_markdown(&node, "docs", "testuser/index"),
             r#"-- markdown:
 
-- [`a`](testuser/index/a)
-  - [`b`](testuser/index/a/b)
-    - [`c`](testuser/index/a/b/c)
-      - [`d`](testuser/index/a/b/c/d)
-        - [`e`](testuser/index/a/b/c/d/e)
-          - [`f.txt`](testuser/index/a/b/c/d/e/f.txt)
-      - [`readme.md`](testuser/index/a/b/c/readme.md)
+- [`a/`](/testuser/index/a)
+  - [`b/`](/testuser/index/a/b)
+    - [`c/`](/testuser/index/a/b/c/README.md)
+      - [`d/`](/testuser/index/a/b/c/d)
+        - [`e/`](/testuser/index/a/b/c/d/e)
+          - [`f.txt`](/testuser/index/a/b/c/d/e/f.txt)
+      - [`README.md`](/testuser/index/a/b/c/README.md)
 "#
         )
     }
 
     #[test]
     fn till_dir() {
-        let expected_output = vec![
-            "docs/a".to_string(),
-            "docs/a/b".to_string(),
-            "docs/a/b/c".to_string(),
-            "docs/a/b/c/d".to_string(),
-            "docs/a/b/c/d/e".to_string(),
+        let tree = vec![
+            super::Node {
+                is_dir: true,
+                path: "docs/a".to_string(),
+                children: vec![super::Node {
+                    is_dir: true,
+                    path: "docs/a/b".to_string(),
+                    children: vec![super::Node {
+                        is_dir: true,
+                        path: "docs/a/b/c".to_string(),
+                        children: vec![
+                            super::Node {
+                                is_dir: true,
+                                path: "docs/a/b/c/d".to_string(),
+                                children: vec![super::Node {
+                                    is_dir: true,
+                                    path: "docs/a/b/c/d/e".to_string(),
+                                    children: vec![super::Node {
+                                        is_dir: false,
+                                        path: "docs/a/b/c/d/e/f.txt".to_string(),
+                                        children: vec![],
+                                    }],
+                                }],
+                            },
+                            super::Node {
+                                is_dir: false,
+                                path: "docs/a/b/c/README.md".to_string(),
+                                children: vec![],
+                            },
+                        ],
+                    }],
+                }],
+            },
+            super::Node {
+                is_dir: true,
+                path: "docs/a/b".to_string(),
+                children: vec![super::Node {
+                    is_dir: true,
+                    path: "docs/a/b/c".to_string(),
+                    children: vec![
+                        super::Node {
+                            is_dir: true,
+                            path: "docs/a/b/c/d".to_string(),
+                            children: vec![super::Node {
+                                is_dir: true,
+                                path: "docs/a/b/c/d/e".to_string(),
+                                children: vec![super::Node {
+                                    is_dir: false,
+                                    path: "docs/a/b/c/d/e/f.txt".to_string(),
+                                    children: vec![],
+                                }],
+                            }],
+                        },
+                        super::Node {
+                            is_dir: false,
+                            path: "docs/a/b/c/README.md".to_string(),
+                            children: vec![],
+                        },
+                    ],
+                }],
+            },
+            super::Node {
+                is_dir: true,
+                path: "docs/a/b/c".to_string(),
+                children: vec![
+                    super::Node {
+                        is_dir: true,
+                        path: "docs/a/b/c/d".to_string(),
+                        children: vec![super::Node {
+                            is_dir: true,
+                            path: "docs/a/b/c/d/e".to_string(),
+                            children: vec![super::Node {
+                                is_dir: false,
+                                path: "docs/a/b/c/d/e/f.txt".to_string(),
+                                children: vec![],
+                            }],
+                        }],
+                    },
+                    super::Node {
+                        is_dir: false,
+                        path: "docs/a/b/c/README.md".to_string(),
+                        children: vec![],
+                    },
+                ],
+            },
+            super::Node {
+                is_dir: true,
+                path: "docs/a/b/c/d".to_string(),
+                children: vec![super::Node {
+                    is_dir: true,
+                    path: "docs/a/b/c/d/e".to_string(),
+                    children: vec![super::Node {
+                        is_dir: false,
+                        path: "docs/a/b/c/d/e/f.txt".to_string(),
+                        children: vec![],
+                    }],
+                }],
+            },
+            super::Node {
+                is_dir: true,
+                path: "docs/a/b/c/d/e".to_string(),
+                children: vec![super::Node {
+                    is_dir: false,
+                    path: "docs/a/b/c/d/e/f.txt".to_string(),
+                    children: vec![],
+                }],
+            },
         ];
 
-        let output = super::dir_till_path(&test_node(), "docs/a/b/c/d/e/f.txt");
-        assert_eq!(expected_output, output);
+        let test_tree = test_node();
+        let output = super::ancestors(&test_tree, "docs/a/b/c/d/e/f.txt");
+        assert_eq!(tree.iter().collect::<Vec<_>>(), output);
     }
 }

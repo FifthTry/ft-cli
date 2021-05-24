@@ -16,31 +16,40 @@ pub fn sync(config: &crate::Config) -> crate::Result<()> {
     let actions = {
         let mut actions = vec![];
 
+        let tree = crate::traverse::root_tree(&std::path::PathBuf::from(&config.root))?;
+
         let files = if status.last_synced_hash.is_empty() {
             crate::git::ls_tree(&latest_hash, config.root.as_str())?
         } else {
             crate::git::changed_files(&status.last_synced_hash, &latest_hash, config.root.as_str())?
         };
 
-        for file in files.into_iter() {
+        for file in files.iter() {
             actions.append(&mut match config.backend {
                 crate::Backend::FTD => {
                     crate::ftd::handle(file, config.root.as_str(), config.collection.as_str())?
                 }
-                crate::Backend::Raw => {
-                    crate::raw::handle(file, config.root.as_str(), config.collection.as_str())?
-                }
+                crate::Backend::Raw => crate::raw::handle(
+                    &tree,
+                    &file,
+                    config.root.as_str(),
+                    config.collection.as_str(),
+                )?,
             });
+        }
+
+        if config.backend.is_raw()
+            && files.iter().any(|v| {
+                matches!(v, crate::FileMode::Created(_)) || matches!(v, crate::FileMode::Deleted(_))
+            })
+        {
+            actions.push(crate::raw::index(&tree, config)?)
         }
 
         actions
     };
 
-    //let t = crate::traverse::root_tree(&std::path::PathBuf::from(&config.root))?;
-
-    // println!("{:#?}", t);
-    //
-    // println!("{}", crate::traverse::collection_toc(&t));
+    // println!("{:#?}", actions);
 
     let st = std::time::Instant::now();
 

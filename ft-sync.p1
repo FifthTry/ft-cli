@@ -5,7 +5,11 @@ root: tests/07-raw-mode/input/docs
 repo: a/b
 collection: testuser/index
 
+-- index-extra:
 
--- ignored:
+\-- meta:
+git-repo: a/b
+lang: en
 
-*.py
+\--- reader:
+who: everyone

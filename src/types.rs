@@ -27,6 +27,10 @@ impl Backend {
             _ => None,
         }
     }
+
+    pub fn is_raw(&self) -> bool {
+        matches!(self, Backend::Raw)
+    }
 }
 
 impl std::fmt::Display for Backend {
@@ -89,10 +93,33 @@ impl FileMode {
             .map_err(|e| crate::Error::ReadError(e, self.path_str()))
     }
 
-    pub fn raw_content(&self) -> crate::Result<String> {
-        Ok(ftd::p1::to_string(&[
-            ftd::p1::Section::with_name("raw").and_body(self.content()?.as_str())
-        ]))
+    pub fn raw_content(&self, title: &str) -> crate::Result<String> {
+        let extension = self
+            .path()
+            .extension()
+            .unwrap_or_else(|| {
+                panic!(
+                    "File extension not found: {}",
+                    self.path().to_string_lossy()
+                )
+            })
+            .to_string_lossy()
+            .to_string();
+
+        let heading = ftd::Section::Heading(ftd::Heading::new(0, format!("`{}`", title).as_str()));
+        let section = if extension.eq("md") || extension.eq("mdx") {
+            ftd::Section::Markdown(ftd::Markdown::from_body(self.content()?.as_str()))
+        } else if extension.eq("rst") {
+            ftd::Section::Rst(ftd::Rst::from_body(self.content()?.as_str()))
+        } else {
+            ftd::Section::Code(
+                ftd::Code::default()
+                    .with_lang(&extension)
+                    .with_code(self.content()?.as_str()),
+            )
+        };
+
+        Ok(ftd::Document::new(&[heading, section]).convert_to_string())
     }
 
     pub fn path(&self) -> std::path::PathBuf {

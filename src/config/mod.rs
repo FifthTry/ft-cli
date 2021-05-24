@@ -6,12 +6,14 @@ pub struct Config {
     pub ignored: Vec<String>,
     pub repo: String,
     pub collection: String,
+    pub title: Option<String>,
     pub backend: crate::Backend,
     pub root: String,
     pub mode: crate::SyncMode,
     pub auth: crate::Auth,
     pub dot_ft: bool,
     pub path: std::path::PathBuf,
+    pub index_extra: Vec<ftd::Section>,
 }
 
 impl Config {
@@ -26,6 +28,7 @@ impl Config {
         let p1 = ftd::p1::parse(content)?;
         let mut ft_sync: Option<section::FtSync> = None;
         let mut ignored: Vec<section::Ignored> = vec![];
+        let mut index_extra: Option<section::IndexExtra> = None;
         for section in p1 {
             let s = section::Section::from_p1(&section)?;
             match s {
@@ -39,6 +42,7 @@ impl Config {
                     }
                 }
                 section::Section::Ignored(sec) => ignored.push(sec),
+                section::Section::IndexExtra(sec) => index_extra = Some(sec),
             }
         }
 
@@ -56,16 +60,28 @@ impl Config {
             .flat_map(|ig| ig.patterns)
             .collect::<Vec<_>>();
 
+        let index_extra = match index_extra {
+            Some(f) => f.body.sections,
+            None if ft_sync.backend.is_raw() => {
+                return Err(crate::Error::ConfigFileParseError {
+                    error: "index-extra section not found in config".to_string(),
+                })
+            }
+            _ => vec![],
+        };
+
         Ok(Config {
             ignored,
             repo: ft_sync.repo,
             collection: ft_sync.collection,
+            title: ft_sync.title,
             backend: ft_sync.backend,
             root: ft_sync.root,
             mode: crate::SyncMode::LocalToRemote,
             auth: crate::Auth::AuthCode(crate::config::env::auth_code()),
             dot_ft: false,
             path: std::path::PathBuf::from(file_path),
+            index_extra,
         })
     }
 

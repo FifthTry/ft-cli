@@ -1,5 +1,5 @@
 pub fn handle(
-    file: crate::FileMode,
+    file: &crate::FileMode,
     root_dir: &str,
     collection: &str,
 ) -> crate::Result<Vec<ft_api::bulk_update::Action>> {

@@ -4,6 +4,7 @@ backend: raw
 root: docs
 repo: amitu/fifthtry
 collection: testuser/index
+title: hello world
 
 -- index-extra:
 
