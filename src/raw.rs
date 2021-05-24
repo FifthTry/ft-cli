@@ -12,7 +12,14 @@ pub fn index(
     };
 
     let mut content = vec![
-        ftd::Section::Heading(ftd::Heading::new(0, config.collection.as_str())),
+        ftd::Section::Heading(ftd::Heading::new(
+            0,
+            config
+                .title
+                .clone()
+                .unwrap_or_else(|| config.collection.to_string())
+                .as_str(),
+        )),
         ftd::Section::Markdown(ftd::Markdown::from_body(
             &readme_content.unwrap_or_else(|| "".to_string()),
         )),
@@ -23,7 +30,7 @@ pub fn index(
 
     Ok(ft_api::bulk_update::Action::Updated {
         id: config.collection.to_string(),
-        content: ftd::p1::to_string(&content.iter().map(|v| v.to_p1()).collect::<Vec<_>>()),
+        content: ftd::Document::new(&content).convert_to_string(),
     })
 }
 

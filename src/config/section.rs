@@ -55,30 +55,29 @@ pub struct FtSync {
     pub root: String,
     pub repo: String,
     pub collection: String,
+    pub title: Option<String>,
 }
 
 impl FtSync {
     pub fn from_p1(p1: &ftd::p1::Section) -> ftd::p1::Result<Self> {
-        let mode = p1.header.string("mode")?;
-        let backend = p1.header.str("backend")?;
-        let backend = match crate::Backend::from(backend) {
-            Some(v) => v,
-            None => {
-                return Err(ftd::p1::Error::InvalidInput {
-                    message: "invalid backend (allowed: ftd)".to_string(),
-                    context: backend.to_string(),
-                })
-            }
-        };
-        let root = p1.header.string("root")?;
-        let repo = p1.header.string("repo")?;
-        let collection = p1.header.string("collection")?;
         Ok(Self {
-            mode,
-            backend,
-            root,
-            repo,
-            collection,
+            mode: p1.header.string("mode")?,
+            backend: {
+                let b = p1.header.str("backend")?;
+                match crate::Backend::from(b) {
+                    Some(v) => v,
+                    None => {
+                        return Err(ftd::p1::Error::InvalidInput {
+                            message: "invalid backend (allowed: ftd)".to_string(),
+                            context: b.to_string(),
+                        })
+                    }
+                }
+            },
+            root: p1.header.string("root")?,
+            repo: p1.header.string("repo")?,
+            collection: p1.header.string("collection")?,
+            title: p1.header.string_optional("title")?,
         })
     }
 }
