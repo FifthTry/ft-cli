@@ -1,4 +1,4 @@
-const RAW_EXTENSIONS: [&str; 3] = ["txt", "md", "mdx"];
+const RAW_EXTENSIONS: [&str; 4] = ["txt", "md", "mdx", "rst"];
 
 pub fn handle(
     root_tree: &crate::traverse::Node,

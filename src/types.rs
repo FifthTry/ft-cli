@@ -108,6 +108,8 @@ impl FileMode {
 
         let section = if extension.eq("md") || extension.eq("mdx") {
             [ftd::p1::Section::with_name("markdown").and_body(self.content()?.as_str())]
+        } else if extension.eq("rst") {
+            [ftd::p1::Section::with_name("rst").and_body(self.content()?.as_str())]
         } else {
             [ftd::p1::Section::with_name("code")
                 .add_header("lang", &extension)
