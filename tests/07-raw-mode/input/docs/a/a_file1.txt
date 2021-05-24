@@ -1,1 +1,2 @@
 This is file 1 inside a
+Another line This is file 1 inside a

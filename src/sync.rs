@@ -48,7 +48,6 @@ pub fn sync(config: &crate::Config) -> crate::Result<()> {
 
             let content = vec![
                 ftd::Section::Heading(ftd::Heading::new(0, config.collection.as_str())),
-                // TODO: index_extra as meta
                 ftd::Section::Markdown(ftd::Markdown::from_body(
                     &readme_content.unwrap_or_else(|| "".to_string()),
                 )),
@@ -57,23 +56,13 @@ pub fn sync(config: &crate::Config) -> crate::Result<()> {
                 ),
             ];
 
-            println!("{:#?}", content);
+            let collection =
+                ftd::p1::to_string(&content.iter().map(|v| v.to_p1()).collect::<Vec<_>>());
 
-            // actions.push(ft_api::bulk_update::Action::Updated {
-            //     id: config.collection.to_string(),
-            //     content: format!(
-            //         "-- h1: {}\n\n\n{}\n{}",
-            //         config.collection,
-            //         config.index_extra,
-            //         // match readme_content {
-            //         //     Some(c) => format!("\n-- markdown:\n\n{}", c),
-            //         //     None => {
-            //         //         "".to_string()
-            //         //     }
-            //         // },
-            //         collection_toc
-            //     ),
-            // })
+            actions.push(ft_api::bulk_update::Action::Updated {
+                id: config.collection.to_string(),
+                content: format!("{}\n\n{}", collection, config.index_extra),
+            })
         }
         actions
     };

@@ -107,19 +107,24 @@ impl FileMode {
             .to_string();
 
         let section = if extension.eq("md") || extension.eq("mdx") {
-            [ftd::Section::Markdown(ftd::Markdown::from_body(
-                self.content()?.as_str(),
-            ))]
+            [
+                ftd::Section::Heading(ftd::Heading::new(0, &self.path().to_string_lossy())),
+                ftd::Section::Markdown(ftd::Markdown::from_body(self.content()?.as_str())),
+            ]
         } else if extension.eq("rst") {
-            [ftd::Section::Rst(ftd::Rst::from_body(
-                self.content()?.as_str(),
-            ))]
+            [
+                ftd::Section::Heading(ftd::Heading::new(0, &self.path().to_string_lossy())),
+                ftd::Section::Rst(ftd::Rst::from_body(self.content()?.as_str())),
+            ]
         } else {
-            [ftd::Section::Code(
-                ftd::Code::default()
-                    .with_lang(&extension)
-                    .with_code(self.content()?.as_str()),
-            )]
+            [
+                ftd::Section::Heading(ftd::Heading::new(0, &self.path().to_string_lossy())),
+                ftd::Section::Code(
+                    ftd::Code::default()
+                        .with_lang(&extension)
+                        .with_code(self.content()?.as_str()),
+                ),
+            ]
         };
 
         Ok(ftd::p1::to_string(
