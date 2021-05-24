@@ -1,9 +1,15 @@
+const RAW_EXTENSIONS: [&'static str; 3] = ["txt", "md", "mdx"];
+
 pub fn handle(
     root_tree: &crate::traverse::Node,
     file: crate::FileMode,
     root_dir: &str,
     collection: &str,
 ) -> crate::Result<Vec<ft_api::bulk_update::Action>> {
+    if !RAW_EXTENSIONS.iter().any(|x| file.extension().eq(x)) {
+        return Ok(vec![]);
+    }
+
     let id = file.id_with_extension(root_dir, collection);
 
     Ok(match file {
