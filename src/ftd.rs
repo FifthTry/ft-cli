@@ -1,4 +1,20 @@
-pub fn handle(
+pub fn handle_files(
+    config: &crate::Config,
+    files: &[crate::FileMode],
+) -> crate::Result<Vec<ft_api::bulk_update::Action>> {
+    let mut actions = vec![];
+
+    for file in files.iter() {
+        actions.append(&mut self::handle(
+            file,
+            config.root.as_str(),
+            config.collection.as_str(),
+        )?);
+    }
+    Ok(actions)
+}
+
+fn handle(
     file: &crate::FileMode,
     root_dir: &str,
     collection: &str,
