@@ -21,12 +21,12 @@ pub fn handle_files(
         )?);
     }
 
-    self::index(&book.book, config)?;
-    if files.iter().any(|v| {
-        matches!(v, crate::FileMode::Created(_)) || matches!(v, crate::FileMode::Deleted(_))
-    }) {
-        actions.push(self::index(&book.book, config)?)
-    }
+    actions.push(self::index(&book.book, config)?);
+    // if files.iter().any(|v| {
+    //     matches!(v, crate::FileMode::Created(_)) || matches!(v, crate::FileMode::Deleted(_))
+    // }) {
+    //     actions.push(self::index(&book.book, config)?)
+    // }
 
     println!("actions: {:#?}", actions);
     Ok(actions)
@@ -68,10 +68,23 @@ fn index(
     book: &mdbook::book::Book,
     config: &crate::Config,
 ) -> crate::Result<ft_api::bulk_update::Action> {
-    let mut sections = vec![ftd::Section::ToC(self::to_ftd_toc(
+    let mut sections = vec![];
+
+    let title_page = std::path::Path::new(&config.root)
+        .join("src")
+        .join("title-page.md");
+    if title_page.exists() {
+        let content = std::fs::read_to_string(&title_page)
+            .map_err(|e| crate::Error::ReadError(e, title_page.to_string_lossy().to_string()))?;
+        sections.push(ftd::Section::Markdown(ftd::Markdown::from_body(
+            content.as_str(),
+        )));
+    }
+
+    sections.push(ftd::Section::ToC(self::to_ftd_toc(
         book,
         config.collection.as_str(),
-    ))];
+    )));
     sections.extend_from_slice(&config.index_extra);
 
     println!("Updated: {}", config.collection.as_str());
