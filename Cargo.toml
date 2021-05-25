@@ -19,6 +19,7 @@ ftd = { version = "0.1.4", features = ["fifthtry"] }
 ft-api = { path = "ft-api", version = "0.1.0" }
 chrono-tz = "0.5"
 realm-client = { path = "realm-client", version = "0.1.0" }
+mdbook = "0.4.8"
 
 [dependencies.chrono]
 features = ["serde"]
