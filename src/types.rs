@@ -33,6 +33,10 @@ impl Backend {
     pub fn is_raw(&self) -> bool {
         matches!(self, Backend::Raw)
     }
+
+    pub fn is_mdbook(&self) -> bool {
+        matches!(self, Backend::MdBook)
+    }
 }
 
 impl std::fmt::Display for Backend {

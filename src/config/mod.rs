@@ -62,7 +62,7 @@ impl Config {
 
         let index_extra = match index_extra {
             Some(f) => f.body.sections,
-            None if ft_sync.backend.is_raw() => {
+            None if ft_sync.backend.is_raw() || ft_sync.backend.is_mdbook() => {
                 return Err(crate::Error::ConfigFileParseError {
                     error: "index-extra section not found in config".to_string(),
                 })
