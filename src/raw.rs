@@ -1,6 +1,31 @@
 const RAW_EXTENSIONS: [&str; 4] = ["txt", "md", "mdx", "rst"];
 
-pub fn index(
+pub fn handle_files(
+    config: &crate::Config,
+    files: &[crate::FileMode],
+) -> crate::Result<Vec<ft_api::bulk_update::Action>> {
+    let mut actions = vec![];
+    let tree = crate::traverse::root_tree(&std::path::PathBuf::from(&config.root))?;
+
+    for file in files.iter() {
+        actions.append(&mut self::handle(
+            &tree,
+            &file,
+            config.root.as_str(),
+            config.collection.as_str(),
+        )?);
+    }
+
+    if files.iter().any(|v| {
+        matches!(v, crate::FileMode::Created(_)) || matches!(v, crate::FileMode::Deleted(_))
+    }) {
+        actions.push(self::index(&tree, config)?)
+    }
+
+    Ok(actions)
+}
+
+fn index(
     tree: &crate::traverse::Node,
     config: &crate::Config,
 ) -> crate::Result<ft_api::bulk_update::Action> {
@@ -35,7 +60,7 @@ pub fn index(
     })
 }
 
-pub fn handle(
+fn handle(
     tree: &crate::traverse::Node,
     file: &crate::FileMode,
     root: &str,
