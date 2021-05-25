@@ -10,11 +10,12 @@ pub fn handle_files(
         .build()
         .expect("Book generation failed");
 
+    let root_path = std::path::Path::new(config.root.as_str()).join("src");
     let mut actions = vec![];
     for file in files.iter() {
         actions.append(&mut self::handle(
             &file,
-            config.root.as_str(),
+            &root_path.to_string_lossy(),
             config.collection.as_str(),
         )?);
     }
@@ -41,6 +42,7 @@ fn handle(
     if file.extension() != "md" {
         return Ok(vec![]);
     }
+
     let id = file.id_with_extension(root, collection);
     Ok(match file {
         crate::types::FileMode::Created(_) => {

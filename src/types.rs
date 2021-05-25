@@ -84,7 +84,13 @@ impl FileMode {
         let t = self
             .path()
             .strip_prefix(root_dir)
-            .unwrap()
+            .unwrap_or_else(|_| {
+                panic!(
+                    "File path does not start with root dir: {}, root_dir: {}",
+                    self.path().to_string_lossy(),
+                    root_dir
+                )
+            })
             .to_string_lossy()
             .to_string();
 
