@@ -20,12 +20,10 @@ pub fn sync(config: &crate::Config) -> crate::Result<()> {
             crate::git::changed_files(&status.last_synced_hash, &latest_hash, config.root.as_str())?
         };
 
-        let actions = match config.backend {
+        match config.backend {
             crate::Backend::FTD => crate::ftd::handle_files(config, &files)?,
             crate::Backend::Raw => crate::raw::handle_files(config, &files)?,
-        };
-
-        actions
+        }
     };
 
     // println!("{:#?}", actions);
