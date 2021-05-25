@@ -17,6 +17,7 @@ pub struct User {
 pub enum Backend {
     FTD,
     Raw,
+    MdBook,
 }
 
 impl Backend {
@@ -24,6 +25,7 @@ impl Backend {
         match s {
             "ftd" => Some(Backend::FTD),
             "raw" => Some(Backend::Raw),
+            "mdbook" => Some(Backend::MdBook),
             _ => None,
         }
     }
@@ -38,6 +40,7 @@ impl std::fmt::Display for Backend {
         match self {
             Backend::FTD => write!(f, "ftd"),
             Backend::Raw => write!(f, "raw"),
+            Backend::MdBook => write!(f, "mdbook"),
         }
     }
 }

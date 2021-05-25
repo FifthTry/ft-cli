@@ -3,6 +3,7 @@ pub mod error;
 mod ftd;
 pub mod git;
 mod id;
+mod mdbook;
 mod raw;
 pub mod status;
 pub mod sync;

@@ -23,6 +23,7 @@ pub fn sync(config: &crate::Config) -> crate::Result<()> {
         match config.backend {
             crate::Backend::FTD => crate::ftd::handle_files(config, &files)?,
             crate::Backend::Raw => crate::raw::handle_files(config, &files)?,
+            crate::Backend::MdBook => crate::mdbook::handle_files(config, &files)?,
         }
     };
 
