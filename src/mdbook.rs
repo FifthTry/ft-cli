@@ -37,7 +37,7 @@ pub fn handle_files(
     // TODO: Need to remove it from this place
     actions.push(self::index(&book.book, config, &book_config.book.src)?);
 
-    // println!("actions: {:#?}", actions);
+    println!("actions: {:#?}", actions);
     Ok(actions)
 }
 
