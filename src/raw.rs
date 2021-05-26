@@ -77,7 +77,7 @@ fn handle(
             println!("Created: {}", id.as_str());
             let mut actions = ancestors(tree, file_path, root, collection);
             actions.push(ft_api::bulk_update::Action::Added {
-                content: file.raw_content(&id)?,
+                content: file.raw_content(&format!("`{}`", id))?,
                 id,
             });
             actions
@@ -86,7 +86,7 @@ fn handle(
         crate::types::FileMode::Modified(_) => {
             println!("Updated: {}", id.as_str());
             vec![ft_api::bulk_update::Action::Updated {
-                content: file.raw_content(&id)?,
+                content: file.raw_content(&format!("`{}`", id))?,
                 id,
             }]
         }

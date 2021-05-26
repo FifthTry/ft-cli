@@ -52,6 +52,16 @@ fn handle(
     root: &str,
     collection: &str,
 ) -> crate::Result<Vec<ft_api::bulk_update::Action>> {
+    fn title(summary: &mdbook::book::Summary, file_path: &std::path::Path, id: &str) -> String {
+        match file_path.file_name() {
+            Some(p) => match self::chapter_title(summary, &p.to_string_lossy().to_string()) {
+                Some(t) => t,
+                None => id.to_string(),
+            },
+            None => id.to_string(),
+        }
+    }
+
     // TODO: Need to discuss with amitu
     if file.extension() != "md" {
         return Ok(vec![]);
@@ -71,16 +81,6 @@ fn handle(
     // actions.push(self::index(&book.book, config)?);
 
     let id = file.id_with_extension(root, collection);
-
-    fn title(summary: &mdbook::book::Summary, file_path: &std::path::Path, id: &str) -> String {
-        match file_path.file_name() {
-            Some(p) => match self::chapter_title(summary, &p.to_string_lossy().to_string()) {
-                Some(t) => t,
-                None => id.to_string(),
-            },
-            None => id.to_string(),
-        }
-    }
 
     Ok(match file {
         crate::types::FileMode::Created(_) => {

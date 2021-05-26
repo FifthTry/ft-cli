@@ -119,7 +119,7 @@ impl FileMode {
             .to_string_lossy()
             .to_string();
 
-        let heading = ftd::Section::Heading(ftd::Heading::new(0, format!("`{}`", title).as_str()));
+        let heading = ftd::Section::Heading(ftd::Heading::new(0, title));
         let section = if extension.eq("md") || extension.eq("mdx") {
             ftd::Section::Markdown(ftd::Markdown::from_body(self.content()?.as_str()))
         } else if extension.eq("rst") {
