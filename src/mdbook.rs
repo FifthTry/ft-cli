@@ -57,15 +57,23 @@ fn handle(
         return Ok(vec![]);
     }
 
-    // TODO: If the file is not part of SUMMARY.md then ignore the file
-    //
+    // If the file is not part of SUMMARY.md then ignore the file
+    match file.path().file_name() {
+        Some(file_name) => {
+            if !is_summary_contains(summary, &file_name.to_string_lossy()) {
+                return Ok(vec![]);
+            }
+        }
+        None => return Ok(vec![]),
+    }
+
     // TODO: If the file is SUMMARY.md or title-page.md modified, then return index
     // actions.push(self::index(&book.book, config)?);
 
     let id = file.id_with_extension(root, collection);
 
-    fn title(summary: &mdbook::book::Summary, file_path: &str, id: &str) -> String {
-        match std::path::Path::new(file_path).file_name() {
+    fn title(summary: &mdbook::book::Summary, file_path: &std::path::Path, id: &str) -> String {
+        match file_path.file_name() {
             Some(p) => match self::chapter_title(summary, &p.to_string_lossy().to_string()) {
                 Some(t) => t,
                 None => id.to_string(),
@@ -75,17 +83,17 @@ fn handle(
     }
 
     Ok(match file {
-        crate::types::FileMode::Created(file_path) => {
+        crate::types::FileMode::Created(_) => {
             println!("Created: {}", id.as_str());
-            let title = title(summary, file_path, id.as_str());
+            let title = title(summary, &file.path(), id.as_str());
             vec![ft_api::bulk_update::Action::Added {
                 content: file.raw_content(&title)?,
                 id,
             }]
         }
-        crate::types::FileMode::Modified(file_path) => {
+        crate::types::FileMode::Modified(_) => {
             println!("Updated: {}", id.as_str());
-            let title = title(summary, file_path, id.as_str());
+            let title = title(summary, &file.path(), id.as_str());
             vec![ft_api::bulk_update::Action::Updated {
                 content: file.raw_content(&title)?,
                 id,
@@ -192,6 +200,7 @@ pub fn summary_content(src_dir: &std::path::Path) -> mdbook::errors::Result<mdbo
 
     let summary = mdbook::book::parse_summary(&summary_content)?;
 
+    // TODO: Will handle it later, this part of code is coming from `mdbook`
     // if create_missing {
     //     create_missing(&src_dir, &summary).with_context(|| "Unable to create missing chapters")?;
     // }
@@ -200,13 +209,25 @@ pub fn summary_content(src_dir: &std::path::Path) -> mdbook::errors::Result<mdbo
 }
 
 fn chapter_title(summary: &mdbook::book::Summary, file_name: &str) -> Option<String> {
-    fn find_in_items(items: &[mdbook::book::SummaryItem], file_name: &str) -> Option<String> {
+    self::get_by_name(summary, file_name).map(|x| x.name)
+}
+
+fn summary_title(summary: &mdbook::book::Summary) -> Option<String> {
+    summary.title.clone()
+}
+
+// can be moved to separate mod `mdbook`
+fn get_by_name(summary: &mdbook::book::Summary, file_name: &str) -> Option<mdbook::book::Link> {
+    fn find_in_items(
+        items: &[mdbook::book::SummaryItem],
+        file_name: &str,
+    ) -> Option<mdbook::book::Link> {
         for item in items {
             match match item {
                 mdbook::book::SummaryItem::Link(link) => {
                     if let Some(name) = link.location.as_ref() {
                         if name.to_string_lossy().eq(file_name) {
-                            return Some(link.name.to_string());
+                            return Some(link.clone());
                         }
                     }
                     find_in_items(&link.nested_items, file_name)
@@ -226,6 +247,6 @@ fn chapter_title(summary: &mdbook::book::Summary, file_name: &str) -> Option<Str
         .or_else(|| find_in_items(&summary.suffix_chapters, file_name))
 }
 
-fn summary_title(summary: &mdbook::book::Summary) -> Option<String> {
-    summary.title.clone()
+fn is_summary_contains(summary: &mdbook::book::Summary, file_name: &str) -> bool {
+    self::get_by_name(summary, file_name).is_some()
 }
