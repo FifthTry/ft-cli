@@ -31,16 +31,16 @@ pub fn sync(config: &crate::Config) -> crate::Result<()> {
 
     let st = std::time::Instant::now();
 
-    // ft_api::bulk_update(
-    //     config.collection.as_str(),
-    //     status.last_synced_hash.as_str(),
-    //     latest_hash.as_str(),
-    //     config.repo.as_str(),
-    //     actions,
-    //     auth_code.as_str(),
-    //     crate::utils::platform()?,
-    //     crate::utils::client_version(),
-    // )?;
+    ft_api::bulk_update(
+        config.collection.as_str(),
+        status.last_synced_hash.as_str(),
+        latest_hash.as_str(),
+        config.repo.as_str(),
+        actions,
+        auth_code.as_str(),
+        crate::utils::platform()?,
+        crate::utils::client_version(),
+    )?;
 
     if crate::is_test() {
         println!("Synced successfully.");
