@@ -174,11 +174,12 @@ fn to_ftd_toc(book: &mdbook::book::Book, collection_id: &str) -> ftd::toc::ToC {
                     item.children = to_ftd_items(&chapter.sub_items, collection_id);
                     toc_items.push(item);
                 }
-                _ => {
+                mdbook::BookItem::Separator => {
                     // Separator
                     // PartTitle
                     // TODO: Need to discuss what to do with other sections
                 }
+                mdbook::BookItem::PartTitle(_) => {}
             }
         }
         toc_items
