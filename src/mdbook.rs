@@ -35,7 +35,12 @@ pub fn handle_files(
     }
 
     // TODO: Need to remove it from this place
-    actions.push(self::index(&book.book, config, &book_config.book.src)?);
+    actions.push(self::index(
+        &summary,
+        &book.book,
+        config,
+        &book_config.book.src,
+    )?);
 
     println!("actions: {:#?}", actions);
     Ok(actions)
@@ -58,11 +63,21 @@ fn handle(
     // actions.push(self::index(&book.book, config)?);
 
     let id = file.id_with_extension(root, collection);
+
+    fn title(summary: &mdbook::book::Summary, file_path: &str, id: &str) -> String {
+        match std::path::Path::new(file_path).file_name() {
+            Some(p) => match self::chapter_title(summary, &p.to_string_lossy().to_string()) {
+                Some(t) => t,
+                None => id.to_string(),
+            },
+            None => id.to_string(),
+        }
+    }
+
     Ok(match file {
         crate::types::FileMode::Created(file_path) => {
             println!("Created: {}", id.as_str());
-            let title = self::chapter_title(&summary, &std::path::Path::new(file_path))
-                .unwrap_or_else(|| id.clone());
+            let title = title(summary, file_path, id.as_str());
             vec![ft_api::bulk_update::Action::Added {
                 content: file.raw_content(&title)?,
                 id,
@@ -70,8 +85,7 @@ fn handle(
         }
         crate::types::FileMode::Modified(file_path) => {
             println!("Updated: {}", id.as_str());
-            let title = self::chapter_title(&summary, &std::path::Path::new(file_path))
-                .unwrap_or_else(|| id.clone());
+            let title = title(summary, file_path, id.as_str());
             vec![ft_api::bulk_update::Action::Updated {
                 content: file.raw_content(&title)?,
                 id,
@@ -84,11 +98,17 @@ fn handle(
 }
 
 fn index(
+    summary: &mdbook::book::Summary,
     book: &mdbook::book::Book,
     config: &crate::Config,
     src: &std::path::Path,
 ) -> crate::Result<ft_api::bulk_update::Action> {
     let mut sections = vec![];
+
+    sections.push(ftd::Section::Heading(ftd::Heading::new(
+        0,
+        &self::summary_title(summary).unwrap_or_else(|| config.collection.to_string()),
+    )));
 
     let title_page = std::path::Path::new(&config.root)
         .join(src)
@@ -179,16 +199,13 @@ pub fn summary_content(src_dir: &std::path::Path) -> mdbook::errors::Result<mdbo
     Ok(summary)
 }
 
-fn chapter_title(summary: &mdbook::book::Summary, file_name: &std::path::Path) -> Option<String> {
-    fn find_in_items(
-        items: &[mdbook::book::SummaryItem],
-        file_name: &std::path::Path,
-    ) -> Option<String> {
+fn chapter_title(summary: &mdbook::book::Summary, file_name: &str) -> Option<String> {
+    fn find_in_items(items: &[mdbook::book::SummaryItem], file_name: &str) -> Option<String> {
         for item in items {
             match match item {
                 mdbook::book::SummaryItem::Link(link) => {
                     if let Some(name) = link.location.as_ref() {
-                        if name.eq(file_name) {
+                        if name.to_string_lossy().eq(file_name) {
                             return Some(link.name.to_string());
                         }
                     }
