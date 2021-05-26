@@ -767,6 +767,7 @@ dependencies = [
  "fbt-lib",
  "ft-api",
  "ftd",
+ "log",
  "mdbook",
  "realm-client",
  "reqwest",
