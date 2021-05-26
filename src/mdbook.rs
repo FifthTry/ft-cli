@@ -2,16 +2,25 @@ pub fn handle_files(
     config: &crate::Config,
     files: &[crate::FileMode],
 ) -> crate::Result<Vec<ft_api::bulk_update::Action>> {
-    let mdbook_config = mdbook::config::Config::default();
+    println!("{}", &config.root);
 
-    let book = mdbook::MDBook::init(config.root.as_str())
-        .create_gitignore(true)
-        .with_config(mdbook_config)
-        .build()
-        .expect("Book generation failed");
+    let (book_config, book) = {
+        let book_root = config.root.as_str();
+        let book_root: std::path::PathBuf = book_root.into();
+        let config_location = book_root.join("book.toml");
+        let config = if config_location.exists() {
+            mdbook::config::Config::from_disk(&config_location).expect("")
+        } else {
+            mdbook::config::Config::default()
+        };
+        (
+            config.clone(),
+            mdbook::MDBook::load_with_config(book_root, config).expect(""),
+        )
+    };
+    println!("{:#?}", book.book);
 
-    // TODO: Need to discuss it with amitu about appending "src"
-    let root_path = std::path::Path::new(config.root.as_str()).join("src");
+    let root_path = std::path::Path::new(config.root.as_str()).join(&book_config.book.src);
     let mut actions = vec![];
     for file in files.iter() {
         actions.append(&mut self::handle(
@@ -21,12 +30,8 @@ pub fn handle_files(
         )?);
     }
 
-    actions.push(self::index(&book.book, config)?);
-    // if files.iter().any(|v| {
-    //     matches!(v, crate::FileMode::Created(_)) || matches!(v, crate::FileMode::Deleted(_))
-    // }) {
-    //     actions.push(self::index(&book.book, config)?)
-    // }
+    // TODO: Need to remove it from this place
+    actions.push(self::index(&book.book, config, &book_config.book.src)?);
 
     println!("actions: {:#?}", actions);
     Ok(actions)
@@ -41,6 +46,11 @@ fn handle(
     if file.extension() != "md" {
         return Ok(vec![]);
     }
+
+    // TODO: If the file is not part of SUMMARY.md then ignore the file
+    //
+    // TODO: If the file is SUMMARY.md or title-page.md modified, then return index
+    // actions.push(self::index(&book.book, config)?);
 
     let id = file.id_with_extension(root, collection);
     Ok(match file {
@@ -67,11 +77,12 @@ fn handle(
 fn index(
     book: &mdbook::book::Book,
     config: &crate::Config,
+    src: &std::path::PathBuf,
 ) -> crate::Result<ft_api::bulk_update::Action> {
     let mut sections = vec![];
 
     let title_page = std::path::Path::new(&config.root)
-        .join("src")
+        .join(src)
         .join("title-page.md");
     if title_page.exists() {
         let content = std::fs::read_to_string(&title_page)
@@ -105,6 +116,7 @@ fn to_ftd_toc(book: &mdbook::book::Book, collection_id: &str) -> ftd::toc::ToC {
             match item {
                 mdbook::BookItem::Chapter(chapter) => {
                     // TODO: chapter.source_path, chapter.path both are optional
+                    // Draft Feature
                     let id = path_to_doc_id(
                         &chapter.path.as_ref().unwrap().to_string_lossy(),
                         collection_id,
@@ -120,6 +132,8 @@ fn to_ftd_toc(book: &mdbook::book::Book, collection_id: &str) -> ftd::toc::ToC {
                     toc_items.push(item);
                 }
                 _ => {
+                    // Separator
+                    // PartTitle
                     // TODO: Need to discuss what to do with other sections
                 }
             }
