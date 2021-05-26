@@ -2,8 +2,6 @@ pub fn handle_files(
     config: &crate::Config,
     files: &[crate::FileMode],
 ) -> crate::Result<Vec<ft_api::bulk_update::Action>> {
-    println!("{}", &config.root);
-
     let (book_config, book) = {
         let book_root = config.root.as_str();
         let book_root: std::path::PathBuf = book_root.into();
@@ -18,7 +16,7 @@ pub fn handle_files(
             mdbook::MDBook::load_with_config(book_root, config).expect(""),
         )
     };
-    println!("{:#?}", book.book);
+    // println!("{:#?}", book.book);
 
     let root_path = std::path::Path::new(config.root.as_str()).join(&book_config.book.src);
     let mut actions = vec![];
@@ -77,7 +75,7 @@ fn handle(
 fn index(
     book: &mdbook::book::Book,
     config: &crate::Config,
-    src: &std::path::PathBuf,
+    src: &std::path::Path,
 ) -> crate::Result<ft_api::bulk_update::Action> {
     let mut sections = vec![];
 
@@ -115,19 +113,27 @@ fn to_ftd_toc(book: &mdbook::book::Book, collection_id: &str) -> ftd::toc::ToC {
         for item in items.iter() {
             match item {
                 mdbook::BookItem::Chapter(chapter) => {
-                    // TODO: chapter.source_path, chapter.path both are optional
-                    // Draft Feature
                     let id = path_to_doc_id(
-                        &chapter.path.as_ref().unwrap().to_string_lossy(),
+                        &match chapter.path.as_ref() {
+                            Some(p) => p.to_string_lossy().to_string(),
+                            None => "virtual-document".to_string(),
+                        },
                         collection_id,
                     )
                     .to_string_lossy()
                     .to_string();
-                    // println!(
-                    //     "Title: {}, Id: {:?}, {:?}",
-                    //     chapter, chapter.source_path, &id
-                    // );
-                    let mut item = ftd::toc::TocItem::with_title_and_id(&chapter.to_string(), &id);
+
+                    let title = format!(
+                        "{}{}",
+                        chapter
+                            .number
+                            .as_ref()
+                            .map(|x| format!("`{}` ", x))
+                            .unwrap_or_else(|| "".to_string()),
+                        chapter.name
+                    );
+
+                    let mut item = ftd::toc::TocItem::with_title_and_id(&title, &id);
                     item.children = to_ftd_items(&chapter.sub_items, collection_id);
                     toc_items.push(item);
                 }
