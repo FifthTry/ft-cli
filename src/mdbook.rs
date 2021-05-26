@@ -7,13 +7,13 @@ pub fn handle_files(
         let book_root: std::path::PathBuf = book_root.into();
         let config_location = book_root.join("book.toml");
         let config = if config_location.exists() {
-            mdbook::config::Config::from_disk(&config_location).expect("")
+            mdbook::config::Config::from_disk(&config_location).expect("book.toml does not exists")
         } else {
             mdbook::config::Config::default()
         };
         (
             config.clone(),
-            mdbook::MDBook::load_with_config(book_root, config).expect(""),
+            mdbook::MDBook::load_with_config(book_root, config).expect("Not able to load mdbook"),
         )
     };
 
