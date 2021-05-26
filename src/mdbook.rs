@@ -111,12 +111,10 @@ fn index(
     config: &crate::Config,
     src: &std::path::Path,
 ) -> crate::Result<ft_api::bulk_update::Action> {
-    let mut sections = vec![];
-
-    sections.push(ftd::Section::Heading(ftd::Heading::new(
+    let mut sections = vec![ftd::Section::Heading(ftd::Heading::new(
         0,
         &self::summary_title(summary).unwrap_or_else(|| config.collection.to_string()),
-    )));
+    ))];
 
     let title_page = std::path::Path::new(&config.root)
         .join(src)
