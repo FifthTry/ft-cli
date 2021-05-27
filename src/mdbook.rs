@@ -173,7 +173,9 @@ fn index(
 
 fn to_ftd_toc(book: &mdbook::book::Book, collection_id: &str) -> ftd::toc::ToC {
     fn path_to_doc_id(path: &str, collection_id: &str) -> std::path::PathBuf {
-        std::path::PathBuf::from(collection_id).join(path)
+        std::path::PathBuf::from(collection_id)
+            .join(path)
+            .with_extension("")
     }
 
     fn to_ftd_items(items: &[mdbook::BookItem], collection_id: &str) -> Vec<ftd::toc::TocItem> {
