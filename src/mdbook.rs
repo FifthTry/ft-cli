@@ -33,12 +33,16 @@ pub fn handle_files(
     let summary = self::summary_content(&src_dir).unwrap();
 
     let book = self::link_preprocess_book(
-        &self::link_preprocessor_ctx(src_dir.clone(), book_config.clone(), "".to_string()),
+        &self::link_preprocessor_ctx(
+            std::path::PathBuf::from(config.root.as_str()),
+            book_config.clone(),
+            "".to_string(),
+        ),
         mdbook.book,
     );
 
     // println!("{:#?}", summary);
-    println!("{:#?}", book);
+    // println!("{:#?}", book);
 
     let mut actions = vec![];
     for file in files.iter() {
