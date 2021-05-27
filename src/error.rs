@@ -29,6 +29,9 @@ pub enum Error {
 
     #[error("UnknownError: {}", _0)]
     UnknownError(String),
+
+    #[error("IDError: {}", _0)]
+    IDError(String),
 }
 
 impl From<realm_client::Error> for Error {

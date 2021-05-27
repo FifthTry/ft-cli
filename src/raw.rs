@@ -70,7 +70,10 @@ fn handle(
         return Ok(vec![]);
     }
 
-    let id = file.id_with_extension(root, collection);
+    let id = match file.id_with_extension(root, collection) {
+        Ok(id) => id,
+        Err(_) => return Ok(vec![]),
+    };
 
     Ok(match file {
         crate::types::FileMode::Created(ref file_path) => {

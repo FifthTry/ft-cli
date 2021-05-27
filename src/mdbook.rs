@@ -2,9 +2,7 @@ pub fn handle_files(
     config: &crate::Config,
     files: &[crate::FileMode],
 ) -> crate::Result<Vec<ft_api::bulk_update::Action>> {
-    use log::warn;
-
-    let (book_config, book) = {
+    let (book_config, mdbook) = {
         let book_root = config.root.as_str();
         let book_root: std::path::PathBuf = book_root.into();
         let config_location = book_root.join("book.toml");
@@ -12,11 +10,11 @@ pub fn handle_files(
         // the book.json file is no longer used, so we should emit a warning to
         // let people know to migrate to book.toml
         if book_root.join("book.json").exists() {
-            warn!("It appears you are still using book.json for configuration.");
-            warn!("This format is no longer used, so you should migrate to the");
-            warn!("book.toml format.");
-            warn!("Check the user guide for migration information:");
-            warn!("\thttps://rust-lang.github.io/mdBook/format/config.html");
+            eprintln!("It appears you are still using book.json for configuration.");
+            eprintln!("This format is no longer used, so you should migrate to the");
+            eprintln!("book.toml format.");
+            eprintln!("Check the user guide for migration information:");
+            eprintln!("\thttps://rust-lang.github.io/mdBook/format/config.html");
         }
 
         let config = if config_location.exists() {
@@ -34,13 +32,19 @@ pub fn handle_files(
 
     let summary = self::summary_content(&src_dir).unwrap();
 
+    let book = self::link_preprocess_book(
+        &self::link_preprocessor_ctx(src_dir.clone(), book_config.clone(), "".to_string()),
+        mdbook.book,
+    );
+
     // println!("{:#?}", summary);
-    // println!("{:#?}", book.book);
+    println!("{:#?}", book);
 
     let mut actions = vec![];
     for file in files.iter() {
         actions.append(&mut self::handle(
             &summary,
+            &book,
             &file,
             &src_dir.to_string_lossy(),
             config.collection.as_str(),
@@ -48,19 +52,16 @@ pub fn handle_files(
     }
 
     // TODO: Need to remove it from this place
-    actions.push(self::index(
-        &summary,
-        &book.book,
-        config,
-        &book_config.book.src,
-    )?);
+    actions.push(self::index(&summary, &book, config, &book_config.book.src)?);
 
-    println!("actions: {:#?}", actions);
+    // println!("actions: {:#?}", actions);
+
     Ok(actions)
 }
 
 fn handle(
     summary: &mdbook::book::Summary,
+    book: &mdbook::book::Book,
     file: &crate::FileMode,
     root: &str,
     collection: &str,
@@ -81,26 +82,33 @@ fn handle(
     }
 
     // If the file is not part of SUMMARY.md then ignore the file
-    match file.path().file_name() {
-        Some(file_name) => {
-            if !is_summary_contains(summary, &file_name.to_string_lossy()) {
+    let file_name = match file.path().file_name() {
+        Some(name) => {
+            if !is_summary_contains(summary, &name.to_string_lossy()) {
                 return Ok(vec![]);
             }
+            name.to_string_lossy().to_string()
         }
         None => return Ok(vec![]),
-    }
+    };
 
     // TODO: If the file is SUMMARY.md or title-page.md modified, then return index
     // actions.push(self::index(&book.book, config)?);
 
-    let id = file.id_with_extension(root, collection);
+    let id = match file.id_with_extension(root, collection) {
+        Ok(id) => id,
+        Err(_) => return Ok(vec![]),
+    };
 
     Ok(match file {
         crate::types::FileMode::Created(_) => {
             println!("Created: {}", id.as_str());
             let title = title(summary, &file.path(), id.as_str());
             vec![ft_api::bulk_update::Action::Added {
-                content: file.raw_content(&title)?,
+                content: file.raw_content_with_content(
+                    &title,
+                    &self::find_chapter_in_book(book, &file_name).expect("File content not found"),
+                ), // file.raw_content(&title)?,
                 id,
             }]
         }
@@ -108,7 +116,10 @@ fn handle(
             println!("Updated: {}", id.as_str());
             let title = title(summary, &file.path(), id.as_str());
             vec![ft_api::bulk_update::Action::Updated {
-                content: file.raw_content(&title)?,
+                content: file.raw_content_with_content(
+                    &title,
+                    &self::find_chapter_in_book(book, &file_name).expect("File content not found"),
+                ), // file.raw_content(&title)?,
                 id,
             }]
         }
@@ -261,4 +272,47 @@ fn get_by_name(summary: &mdbook::book::Summary, file_name: &str) -> Option<mdboo
 
 fn is_summary_contains(summary: &mdbook::book::Summary, file_name: &str) -> bool {
     self::get_by_name(summary, file_name).is_some()
+}
+
+fn link_preprocessor_ctx(
+    root: std::path::PathBuf,
+    config: mdbook::config::Config,
+    renderer: String,
+) -> mdbook::preprocess::PreprocessorContext {
+    mdbook::preprocess::PreprocessorContext::new(root, config, renderer)
+}
+
+fn link_preprocess_book(
+    ctx: &mdbook::preprocess::PreprocessorContext,
+    book: mdbook::book::Book,
+) -> mdbook::book::Book {
+    use mdbook::preprocess::Preprocessor;
+    let link_preprocessor = mdbook::preprocess::LinkPreprocessor;
+    match link_preprocessor.run(ctx, book) {
+        Ok(book) => book,
+        Err(e) => panic!("{}", e),
+    }
+}
+
+fn find_chapter_in_book(book: &mdbook::book::Book, name: &str) -> Option<String> {
+    fn util(book: &[mdbook::book::BookItem], name: &str) -> Option<String> {
+        for book_item in book.iter() {
+            match match book_item {
+                mdbook::book::BookItem::Chapter(ch) => {
+                    if let Some(path) = ch.path.as_ref() {
+                        if path.eq(std::path::Path::new(name)) {
+                            return Some(ch.content.to_string());
+                        }
+                    }
+                    util(&ch.sub_items, name)
+                }
+                _ => None,
+            } {
+                Some(t) => return Some(t),
+                None => continue,
+            }
+        }
+        None
+    }
+    util(&book.sections, name)
 }

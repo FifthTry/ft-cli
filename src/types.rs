@@ -80,24 +80,24 @@ impl FileMode {
         }
     }
 
-    pub fn id_with_extension(&self, root_dir: &str, collection: &str) -> String {
-        let t = self
-            .path()
-            .strip_prefix(root_dir)
-            .unwrap_or_else(|_| {
-                panic!(
-                    "File path does not start with root dir: {}, root_dir: {}",
+    pub fn id_with_extension(&self, root_dir: &str, collection: &str) -> Result<String> {
+        let t = match self.path().strip_prefix(root_dir) {
+            Ok(path) => path.to_string_lossy().to_string(),
+            Err(e) => {
+                eprintln!(
+                    "File path does not start with root dir: {}, root_dir: {} err: {}",
                     self.path().to_string_lossy(),
-                    root_dir
-                )
-            })
-            .to_string_lossy()
-            .to_string();
+                    root_dir,
+                    e.to_string()
+                );
+                return Err(crate::error::Error::IDError("".to_string()));
+            }
+        };
 
         if t == "index" {
-            collection.to_string()
+            Ok(collection.to_string())
         } else {
-            collection.to_string() + "/" + t.as_str()
+            Ok(collection.to_string() + "/" + t.as_str())
         }
     }
 
@@ -133,6 +133,34 @@ impl FileMode {
         };
 
         Ok(ftd::Document::new(&[heading, section]).convert_to_string())
+    }
+
+    pub fn raw_content_with_content(&self, title: &str, content: &str) -> String {
+        let extension = self
+            .path()
+            .extension()
+            .unwrap_or_else(|| {
+                panic!(
+                    "File extension not found: {}",
+                    self.path().to_string_lossy()
+                )
+            })
+            .to_string_lossy()
+            .to_string();
+
+        let heading = ftd::Section::Heading(ftd::Heading::new(0, title));
+        let section = if extension.eq("md") || extension.eq("mdx") {
+            ftd::Section::Markdown(ftd::Markdown::from_body(content))
+        } else if extension.eq("rst") {
+            ftd::Section::Rst(ftd::Rst::from_body(content))
+        } else {
+            ftd::Section::Code(
+                ftd::Code::default()
+                    .with_lang(&extension)
+                    .with_code(content),
+            )
+        };
+        ftd::Document::new(&[heading, section]).convert_to_string()
     }
 
     pub fn path(&self) -> std::path::PathBuf {
