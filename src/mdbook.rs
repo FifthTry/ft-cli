@@ -80,6 +80,20 @@ fn handle(
         }
     }
 
+    fn content_with_title(
+        summary: &mdbook::book::Summary,
+        book: &mdbook::book::Book,
+        file_name: &str,
+        doc_id: &str,
+        file: &crate::types::FileMode,
+    ) -> String {
+        let content = self::find_chapter_in_book(book, &file_name).expect("File content not found");
+        let (content, content_title) = self::content_with_extract_title(&content);
+        // Fallback to summary title, If it is not found in md document
+        let title = content_title.unwrap_or_else(|| title(summary, &file.path(), doc_id));
+        file.raw_content_with_content(&title, &content)
+    }
+
     // TODO: Need to discuss with amitu
     if file.extension() != "md" {
         return Ok(vec![]);
@@ -106,20 +120,6 @@ fn handle(
             return Ok(vec![]);
         }
     };
-
-    fn content_with_title(
-        summary: &mdbook::book::Summary,
-        book: &mdbook::book::Book,
-        file_name: &str,
-        doc_id: &str,
-        file: &crate::types::FileMode,
-    ) -> String {
-        let content = self::find_chapter_in_book(book, &file_name).expect("File content not found");
-        let (content, content_title) = self::content_with_extract_title(&content);
-        // Fallback to summary title, If it is not found in md document
-        let title = content_title.unwrap_or_else(|| title(summary, &file.path(), doc_id));
-        file.raw_content_with_content(&title, &content)
-    }
 
     Ok(match file {
         crate::types::FileMode::Created(_) => {
