@@ -107,26 +107,32 @@ fn handle(
         }
     };
 
+    fn content_with_title(
+        summary: &mdbook::book::Summary,
+        book: &mdbook::book::Book,
+        file_name: &str,
+        doc_id: &str,
+        file: &crate::types::FileMode,
+    ) -> String {
+        let content = self::find_chapter_in_book(book, &file_name).expect("File content not found");
+        let (content, content_title) = self::content_with_extract_title(&content);
+        // Fallback to summary title, If it is not found in md document
+        let title = content_title.unwrap_or_else(|| title(summary, &file.path(), doc_id));
+        file.raw_content_with_content(&title, &content)
+    }
+
     Ok(match file {
         crate::types::FileMode::Created(_) => {
             println!("Created: {}", id.as_str());
-            let title = title(summary, &file.path(), id.as_str());
             vec![ft_api::bulk_update::Action::Added {
-                content: file.raw_content_with_content(
-                    &title,
-                    &self::find_chapter_in_book(book, &file_name).expect("File content not found"),
-                ), // file.raw_content(&title)?,
+                content: content_with_title(summary, book, &file_name, &id, &file),
                 id,
             }]
         }
         crate::types::FileMode::Modified(_) => {
             println!("Updated: {}", id.as_str());
-            let title = title(summary, &file.path(), id.as_str());
             vec![ft_api::bulk_update::Action::Updated {
-                content: file.raw_content_with_content(
-                    &title,
-                    &self::find_chapter_in_book(book, &file_name).expect("File content not found"),
-                ), // file.raw_content(&title)?,
+                content: content_with_title(summary, book, &file_name, &id, &file),
                 id,
             }]
         }
@@ -324,4 +330,33 @@ fn find_chapter_in_book(book: &mdbook::book::Book, name: &str) -> Option<String>
         None
     }
     util(&book.sections, name)
+}
+
+fn content_with_extract_title(content: &str) -> (String, Option<String>) {
+    let lines = content.lines().into_iter().collect::<Vec<_>>();
+    let mut title_line = None;
+    for line in lines.iter() {
+        if line.trim().starts_with('#') {
+            title_line = Some(line.to_string());
+            break;
+        }
+    }
+
+    let lines = match title_line.as_ref() {
+        Some(line) => lines
+            .into_iter()
+            .filter(|l| !l.trim().eq(line.trim()))
+            .collect::<Vec<_>>(),
+        None => lines,
+    };
+
+    (
+        lines.join("\n"),
+        title_line.map(|x| {
+            x.trim()
+                .trim_start_matches('#')
+                .trim_matches(' ')
+                .to_string()
+        }),
+    )
 }
