@@ -23,7 +23,13 @@ fn handle(
         return Ok(vec![]);
     }
 
-    let id = file.id(root_dir, collection);
+    let id = match file.id(root_dir, collection) {
+        Ok(id) => id,
+        Err(e) => {
+            eprintln!("{}", e.to_string());
+            return Ok(vec![]);
+        }
+    };
 
     Ok(match file {
         crate::types::FileMode::Created(_) => {

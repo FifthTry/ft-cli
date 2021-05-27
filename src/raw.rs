@@ -72,7 +72,10 @@ fn handle(
 
     let id = match file.id_with_extension(root, collection) {
         Ok(id) => id,
-        Err(_) => return Ok(vec![]),
+        Err(e) => {
+            eprintln!("{}", e.to_string());
+            return Ok(vec![]);
+        }
     };
 
     Ok(match file {

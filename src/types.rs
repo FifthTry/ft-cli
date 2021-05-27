@@ -63,20 +63,23 @@ pub enum FileMode {
 }
 
 impl FileMode {
-    pub fn id(&self, root_dir: &str, collection: &str) -> String {
-        let t = self
-            .path()
-            .strip_prefix(root_dir)
-            .unwrap()
-            .with_extension("")
-            .to_str()
-            .unwrap()
-            .to_string();
-
+    pub fn id(&self, root_dir: &str, collection: &str) -> Result<String> {
+        let t = match self.path().strip_prefix(root_dir) {
+            Ok(path) => path.with_extension("").to_string_lossy().to_string(),
+            Err(e) => {
+                let m = format!(
+                    "File path does not start with root dir: {}, root_dir: {} err: {}",
+                    self.path().to_string_lossy(),
+                    root_dir,
+                    e.to_string()
+                );
+                return Err(crate::error::Error::IDError(m));
+            }
+        };
         if t == "index" {
-            collection.to_string()
+            Ok(collection.to_string())
         } else {
-            collection.to_string() + "/" + t.as_str()
+            Ok(collection.to_string() + "/" + t.as_str())
         }
     }
 
@@ -84,13 +87,13 @@ impl FileMode {
         let t = match self.path().strip_prefix(root_dir) {
             Ok(path) => path.to_string_lossy().to_string(),
             Err(e) => {
-                eprintln!(
+                let m = format!(
                     "File path does not start with root dir: {}, root_dir: {} err: {}",
                     self.path().to_string_lossy(),
                     root_dir,
                     e.to_string()
                 );
-                return Err(crate::error::Error::IDError("".to_string()));
+                return Err(crate::error::Error::IDError(m));
             }
         };
 
