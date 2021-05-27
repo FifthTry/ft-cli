@@ -29,7 +29,6 @@ pub fn handle_files(
     };
 
     let src_dir = std::path::Path::new(config.root.as_str()).join(&book_config.book.src);
-
     let summary = self::summary_content(&src_dir).unwrap();
 
     let book = self::link_preprocess_book(
@@ -44,21 +43,22 @@ pub fn handle_files(
     // println!("{:#?}", summary);
     // println!("{:#?}", book);
 
-    let mut actions = vec![];
-    for file in files.iter() {
-        actions.append(&mut self::handle(
-            &summary,
-            &book,
-            &file,
-            &src_dir.to_string_lossy(),
-            config.collection.as_str(),
-        )?);
-    }
+    let actions = {
+        let mut actions = vec![];
+        for file in files.iter() {
+            actions.append(&mut self::handle(
+                &summary,
+                &book,
+                &file,
+                &src_dir.to_string_lossy(),
+                config.collection.as_str(),
+            )?);
+        }
 
-    // TODO: Need to remove it from this place
-    actions.push(self::index(&summary, &book, config, &book_config.book.src)?);
-
-    // println!("actions: {:#?}", actions);
+        // TODO: Need to remove it from this place
+        actions.push(self::index(&summary, &book, config, &book_config.book.src)?);
+        actions
+    };
 
     Ok(actions)
 }
