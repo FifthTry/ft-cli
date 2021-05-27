@@ -70,7 +70,7 @@ fn handle(
         return Ok(vec![]);
     }
 
-    let id = match file.id(root, collection) {
+    let id = match file.id_with_extension(root, collection) {
         Ok(id) => id,
         Err(e) => {
             eprintln!("{}", e.to_string());

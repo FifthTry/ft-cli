@@ -99,7 +99,7 @@ fn handle(
     // TODO: If the file is SUMMARY.md or title-page.md modified, then return index
     // actions.push(self::index(&book.book, config)?);
 
-    let id = match file.id_with_extension(root, collection) {
+    let id = match file.id(root, collection) {
         Ok(id) => id,
         Err(e) => {
             eprintln!("{}", e.to_string());
