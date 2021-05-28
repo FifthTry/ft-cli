@@ -1,0 +1,10 @@
+-- fbt:
+cmd: $FBT_CWD/target/debug/ft-sync --test sync
+skip: optional root not yet supported
+
+-- stdout:
+
+Updated: testuser/index/foo.md
+Created: testuser/index/bar.txt
+Updated: testuser/index
+Synced successfully.

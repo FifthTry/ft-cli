@@ -1,0 +1,15 @@
+-- ft-sync:
+mode: local-to-remote
+backend: raw
+repo: amitu/fifthtry
+collection: testuser/index
+title: hello world
+
+-- index-extra:
+
+\-- meta:
+git-repo: a/b
+lang: hi
+
+\--- reader:
+who: everyone
