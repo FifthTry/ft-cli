@@ -1495,6 +1495,7 @@ checksum = "7ffc5c5338469d4d3ea17d269fa8ea3512ad247247c30bd2df69e68309ed0a08"
 [[package]]
 name = "mdbook"
 version = "0.4.8"
+source = "git+https://github.com/fifthtry/mdBook?branch=fifthtry#1193bca83618fb06d42a78b5525f447f9c333838"
 dependencies = [
  "ammonia",
  "anyhow",
