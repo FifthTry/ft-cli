@@ -1,5 +1,5 @@
 [package]
-name = "ft-sync"
+name = "ft-cli"
 version = "0.1.0"
 authors = ["Deepak Angrula <deepak@fifthtry.com>"]
 edition = "2018"
@@ -8,6 +8,9 @@ description = ""
 [workspace]
 members = ["ft-api", "realm-client"]
 
+[[bin]]
+name = "ft"
+path = "src/main.rs"
 
 [dependencies]
 clap = "2.33.3"

@@ -1,16 +1,16 @@
 -- fbt:
-cmd: $FBT_CWD/target/debug/ft-sync --test --help
+cmd: $FBT_CWD/target/debug/ft --test --help
 
 Will have to be updated every time version changes.
 
 -- stdout:
 
-ft-sync 0.1.0
+ft 0.1.0
 Deepak Angrula <deepak@fifthtry.com>
 
 
 USAGE:
-    ft-sync [SUBCOMMAND]
+    ft [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information

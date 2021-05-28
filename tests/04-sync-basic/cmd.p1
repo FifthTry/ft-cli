@@ -1,5 +1,5 @@
 -- fbt:
-cmd: $FBT_CWD/target/debug/ft-sync --test sync
+cmd: $FBT_CWD/target/debug/ft --test sync
 
 In this test we are testing if a file is each added, deleted and updated if they
 are being sent to server.

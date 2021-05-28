@@ -1,5 +1,5 @@
 -- fbt:
-cmd: $FBT_CWD/target/debug/ft-sync --test sync
+cmd: $FBT_CWD/target/debug/ft --test sync
 skip: We will remove it later
 
 -- stdout:

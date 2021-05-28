@@ -1,5 +1,5 @@
 -- fbt:
-cmd: $FBT_CWD/target/debug/ft-sync --test status
+cmd: $FBT_CWD/target/debug/ft --test status
 skip: not yet testable
 
 -- env:
