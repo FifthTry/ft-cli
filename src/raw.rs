@@ -70,14 +70,20 @@ fn handle(
         return Ok(vec![]);
     }
 
-    let id = file.id_with_extension(root, collection);
+    let id = match file.id_with_extension(root, collection) {
+        Ok(id) => id,
+        Err(e) => {
+            eprintln!("{}", e.to_string());
+            return Ok(vec![]);
+        }
+    };
 
     Ok(match file {
         crate::types::FileMode::Created(ref file_path) => {
             println!("Created: {}", id.as_str());
             let mut actions = ancestors(tree, file_path, root, collection);
             actions.push(ft_api::bulk_update::Action::Added {
-                content: file.raw_content(&id)?,
+                content: file.raw_content(&format!("`{}`", id))?,
                 id,
             });
             actions
@@ -86,7 +92,7 @@ fn handle(
         crate::types::FileMode::Modified(_) => {
             println!("Updated: {}", id.as_str());
             vec![ft_api::bulk_update::Action::Updated {
-                content: file.raw_content(&id)?,
+                content: file.raw_content(&format!("`{}`", id))?,
                 id,
             }]
         }

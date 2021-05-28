@@ -74,7 +74,10 @@ impl FtSync {
                     }
                 }
             },
-            root: p1.header.string("root")?,
+            root: p1
+                .header
+                .string_optional("root")?
+                .unwrap_or_else(|| "".to_string()), // Empty because it is relative to git root
             repo: p1.header.string("repo")?,
             collection: p1.header.string("collection")?,
             title: p1.header.string_optional("title")?,
