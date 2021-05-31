@@ -56,9 +56,6 @@ pub fn handle_files(
                 config.collection.as_str(),
             )?);
         }
-
-        // TODO: Need to remove it from this place
-        actions.push(self::index(&summary, &book, config, &book_config.book.src)?);
         actions
     };
 
@@ -106,8 +103,6 @@ fn handle(
         Some(name) => name.to_string_lossy().to_string(),
         None => return Ok(vec![]),
     };
-
-    println!("file extension: {}", file_name);
 
     if file_name.eq("ft-sync.p1") || file_name.eq("SUMMARY.md") || file_name.eq("title-page.md") {
         return Ok(vec![self::index(
