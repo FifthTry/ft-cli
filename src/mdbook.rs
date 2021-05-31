@@ -407,7 +407,7 @@ fn replace_backtick(content: &str) -> String {
             buffer = "-- markdown:\n\n".to_string();
         } else {
             buffer.push_str(line);
-            buffer.push_str("\n");
+            buffer.push('\n');
         }
     }
 
