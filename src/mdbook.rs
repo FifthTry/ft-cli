@@ -87,12 +87,14 @@ fn handle(
         doc_id: &str,
         file: &crate::types::FileMode,
     ) -> String {
-        let content = self::find_chapter_in_book(book, &file_name).expect("File content not found");
-        let (content, content_title) = self::content_with_extract_title(&content);
+        let (content, content_title) = self::content_with_extract_title(
+            &self::find_chapter_in_book(book, &file_name).expect("File content not found"),
+        );
         // Fallback to summary title, If it is not found in md document
-        let title = content_title.unwrap_or_else(|| title(summary, &file.path(), doc_id));
-        let content = file.raw_content_with_content(&title, &content);
-        replace_backtick(&content)
+        replace_backtick(&file.raw_content_with_content(
+            &content_title.unwrap_or_else(|| title(summary, &file.path(), doc_id)),
+            &content,
+        ))
     }
 
     // TODO: Need to discuss with amitu
