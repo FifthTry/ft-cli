@@ -666,6 +666,37 @@ dependencies = [
 ]
 
 [[package]]
+name = "fifthtry-mdbook"
+version = "0.4.8"
+source = "git+https://github.com/fifthtry/mdBook?branch=fifthtry#4ee7215d95d585923c7a8fc225f1738e5c87f1e1"
+dependencies = [
+ "ammonia",
+ "anyhow",
+ "chrono",
+ "clap",
+ "elasticlunr-rs",
+ "env_logger",
+ "futures-util",
+ "gitignore",
+ "handlebars",
+ "lazy_static 1.4.0",
+ "log",
+ "memchr",
+ "notify",
+ "open",
+ "pulldown-cmark",
+ "regex",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "shlex",
+ "tempfile",
+ "tokio 0.2.25",
+ "toml",
+ "warp",
+]
+
+[[package]]
 name = "filetime"
 version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -765,9 +796,9 @@ dependencies = [
  "chrono-tz",
  "clap",
  "fbt-lib",
+ "fifthtry-mdbook",
  "ft-api",
  "ftd",
- "mdbook",
  "realm-client",
  "reqwest",
  "rusty-hook",
@@ -1491,37 +1522,6 @@ name = "matches"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ffc5c5338469d4d3ea17d269fa8ea3512ad247247c30bd2df69e68309ed0a08"
-
-[[package]]
-name = "mdbook"
-version = "0.4.8"
-source = "git+https://github.com/fifthtry/mdBook?branch=fifthtry#1193bca83618fb06d42a78b5525f447f9c333838"
-dependencies = [
- "ammonia",
- "anyhow",
- "chrono",
- "clap",
- "elasticlunr-rs",
- "env_logger",
- "futures-util",
- "gitignore",
- "handlebars",
- "lazy_static 1.4.0",
- "log",
- "memchr",
- "notify",
- "open",
- "pulldown-cmark",
- "regex",
- "serde",
- "serde_derive",
- "serde_json",
- "shlex",
- "tempfile",
- "tokio 0.2.25",
- "toml",
- "warp",
-]
 
 [[package]]
 name = "memchr"

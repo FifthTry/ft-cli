@@ -1,3 +1,5 @@
+use fifthtry_mdbook as mdbook;
+
 pub fn handle_files(
     config: &crate::Config,
     files: &[crate::FileMode],
