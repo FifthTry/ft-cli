@@ -149,10 +149,9 @@ fn index(
     config: &crate::Config,
     src: &std::path::Path,
 ) -> crate::Result<ft_api::bulk_update::Action> {
-    let mut sections = vec![ftd::Section::Heading(ftd::Heading::new(
-        0,
-        &self::summary_title(summary).unwrap_or_else(|| config.collection.to_string()),
-    ))];
+    let mut title = self::summary_title(summary).unwrap_or_else(|| config.collection.to_string());
+
+    let mut sections = vec![];
 
     let title_page = std::path::Path::new(&config.root)
         .join(src)
@@ -160,9 +159,19 @@ fn index(
     if title_page.exists() {
         let content = std::fs::read_to_string(&title_page)
             .map_err(|e| crate::Error::ReadError(e, title_page.to_string_lossy().to_string()))?;
+
+        let (content, content_title) = self::content_with_extract_title(&content);
+
+        if let Some(content_title) = content_title {
+            title = content_title;
+        }
+
+        sections.push(ftd::Section::Heading(ftd::Heading::new(0, &title)));
         sections.push(ftd::Section::Markdown(ftd::Markdown::from_body(
             content.as_str(),
         )));
+    } else {
+        sections.push(ftd::Section::Heading(ftd::Heading::new(0, &title)));
     }
 
     sections.push(ftd::Section::ToC(self::to_ftd_toc(
