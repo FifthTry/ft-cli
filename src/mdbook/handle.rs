@@ -49,14 +49,13 @@ pub fn handle_files(
             actions.append(&mut self::handle(
                 &summary,
                 &book,
+                config,
+                &book_config,
                 &file,
                 &src_dir.to_string_lossy(),
                 config.collection.as_str(),
             )?);
         }
-
-        // TODO: Need to remove it from this place
-        actions.push(self::index(&summary, &book, config, &book_config.book.src)?);
         actions
     };
 
@@ -66,6 +65,8 @@ pub fn handle_files(
 fn handle(
     summary: &mdbook::book::Summary,
     book: &mdbook::book::Book,
+    config: &crate::Config,
+    book_config: &mdbook::Config,
     file: &crate::FileMode,
     root: &str,
     collection: &str,
@@ -87,31 +88,38 @@ fn handle(
         doc_id: &str,
         file: &crate::types::FileMode,
     ) -> String {
-        let content = self::find_chapter_in_book(book, &file_name).expect("File content not found");
-        let (content, content_title) = self::content_with_extract_title(&content);
+        let (content, content_title) = self::content_with_extract_title(
+            &self::find_chapter_in_book(book, &file_name).expect("File content not found"),
+        );
         // Fallback to summary title, If it is not found in md document
-        let title = content_title.unwrap_or_else(|| title(summary, &file.path(), doc_id));
-        file.raw_content_with_content(&title, &content)
-    }
-
-    // TODO: Need to discuss with amitu
-    if file.extension() != "md" {
-        return Ok(vec![]);
+        crate::mdbook::fenced_blocks::fenced_to_code(&file.raw_content_with_content(
+            &content_title.unwrap_or_else(|| title(summary, &file.path(), doc_id)),
+            &content,
+        ))
     }
 
     // If the file is not part of SUMMARY.md then ignore the file
     let file_name = match file.path().file_name() {
-        Some(name) => {
-            if !is_summary_contains(summary, &name.to_string_lossy()) {
-                return Ok(vec![]);
-            }
-            name.to_string_lossy().to_string()
-        }
+        Some(name) => name.to_string_lossy().to_string(),
         None => return Ok(vec![]),
     };
 
-    // TODO: If the file is SUMMARY.md or title-page.md modified, then return index
-    // actions.push(self::index(&book.book, config)?);
+    if file_name.eq("ft-sync.p1") || file_name.eq("SUMMARY.md") || file_name.eq("title-page.md") {
+        return Ok(vec![self::index(
+            &summary,
+            &book,
+            config,
+            &book_config.book.src,
+        )?]);
+    }
+
+    if file.extension() != "md" {
+        return Ok(vec![]);
+    }
+
+    if !is_summary_contains(summary, &file_name) {
+        return Ok(vec![]);
+    }
 
     let id = match file.id(root, collection) {
         Ok(id) => id,
@@ -148,10 +156,9 @@ fn index(
     config: &crate::Config,
     src: &std::path::Path,
 ) -> crate::Result<ft_api::bulk_update::Action> {
-    let mut sections = vec![ftd::Section::Heading(ftd::Heading::new(
-        0,
-        &self::summary_title(summary).unwrap_or_else(|| config.collection.to_string()),
-    ))];
+    let mut title = self::summary_title(summary).unwrap_or_else(|| config.collection.to_string());
+
+    let mut sections = vec![];
 
     let title_page = std::path::Path::new(&config.root)
         .join(src)
@@ -159,9 +166,19 @@ fn index(
     if title_page.exists() {
         let content = std::fs::read_to_string(&title_page)
             .map_err(|e| crate::Error::ReadError(e, title_page.to_string_lossy().to_string()))?;
+
+        let (content, content_title) = self::content_with_extract_title(&content);
+
+        if let Some(content_title) = content_title {
+            title = content_title;
+        }
+
+        sections.push(ftd::Section::Heading(ftd::Heading::new(0, &title)));
         sections.push(ftd::Section::Markdown(ftd::Markdown::from_body(
             content.as_str(),
         )));
+    } else {
+        sections.push(ftd::Section::Heading(ftd::Heading::new(0, &title)));
     }
 
     sections.push(ftd::Section::ToC(self::to_ftd_toc(
