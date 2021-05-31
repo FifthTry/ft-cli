@@ -91,7 +91,9 @@ fn handle(
         let (content, content_title) = self::content_with_extract_title(&content);
         // Fallback to summary title, If it is not found in md document
         let title = content_title.unwrap_or_else(|| title(summary, &file.path(), doc_id));
-        file.raw_content_with_content(&title, &content)
+        let content = file.raw_content_with_content(&title, &content);
+        let content = replace_backtick(&content);
+        content
     }
 
     // TODO: Need to discuss with amitu
@@ -409,7 +411,7 @@ fn replace_backtick(content: &str) -> String {
             }
 
             state.state = ParsingState::WaitingForEndBackTick;
-            buffer = format!("-- code:\nlang: {}\n", lang);
+            buffer = format!("-- code:\nlang: {}\n\n", lang);
         } else if line.trim().starts_with("```")
             && state.state == ParsingState::WaitingForEndBackTick
         {
