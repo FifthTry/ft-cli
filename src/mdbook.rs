@@ -49,6 +49,8 @@ pub fn handle_files(
             actions.append(&mut self::handle(
                 &summary,
                 &book,
+                config,
+                &book_config,
                 &file,
                 &src_dir.to_string_lossy(),
                 config.collection.as_str(),
@@ -66,6 +68,8 @@ pub fn handle_files(
 fn handle(
     summary: &mdbook::book::Summary,
     book: &mdbook::book::Book,
+    config: &crate::Config,
+    book_config: &mdbook::Config,
     file: &crate::FileMode,
     root: &str,
     collection: &str,
@@ -97,24 +101,30 @@ fn handle(
         ))
     }
 
-    // TODO: Need to discuss with amitu
+    // If the file is not part of SUMMARY.md then ignore the file
+    let file_name = match file.path().file_name() {
+        Some(name) => name.to_string_lossy().to_string(),
+        None => return Ok(vec![]),
+    };
+
+    println!("file extension: {}", file_name);
+
+    if file_name.eq("ft-sync.p1") || file_name.eq("SUMMARY.md") || file_name.eq("title-page.md") {
+        return Ok(vec![self::index(
+            &summary,
+            &book,
+            config,
+            &book_config.book.src,
+        )?]);
+    }
+
     if file.extension() != "md" {
         return Ok(vec![]);
     }
 
-    // If the file is not part of SUMMARY.md then ignore the file
-    let file_name = match file.path().file_name() {
-        Some(name) => {
-            if !is_summary_contains(summary, &name.to_string_lossy()) {
-                return Ok(vec![]);
-            }
-            name.to_string_lossy().to_string()
-        }
-        None => return Ok(vec![]),
-    };
-
-    // TODO: If the file is SUMMARY.md or title-page.md modified, then return index
-    // actions.push(self::index(&book.book, config)?);
+    if !is_summary_contains(summary, &file_name) {
+        return Ok(vec![]);
+    }
 
     let id = match file.id(root, collection) {
         Ok(id) => id,
