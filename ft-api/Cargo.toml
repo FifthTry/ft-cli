@@ -10,4 +10,4 @@ serde = "1.0"
 serde_derive = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
 maplit = "1"
-realm-client = { path = "../realm-client" }
+realm-client = { path = "../realm-client", version = "0.1.0" }
