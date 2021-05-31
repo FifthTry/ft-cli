@@ -379,7 +379,7 @@ fn replace_backtick(content: &str) -> String {
     };
 
     fn parse_lang(line: &str) -> String {
-        let line = line.replace("```", "").split(",").collect::<Vec<_>>();
+        let line = line.replace("```", "").split(',').collect::<Vec<_>>();
         "txt".to_string()
     }
 
@@ -388,7 +388,7 @@ fn replace_backtick(content: &str) -> String {
     }
 
     let mut buffer: String = "".to_string();
-    for line in content.split("\n") {
+    for line in content.split('\n') {
         if line.trim().starts_with("```") && state.state == ParsingState::WaitingForBackTick {
             let lang = parse_lang(line);
             if !buffer.trim().eq("-- markdown:") {
