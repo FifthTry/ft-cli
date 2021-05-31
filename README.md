@@ -1,6 +1,6 @@
-# `ft-sync`: CLI to Sync FifthTry Content Locally
+# `ft-cli`: CLI to Sync FifthTry Content Locally
 
-`ft-sync` is an open source utility to sync content hosted on FifthTry.com with
+`ft-cli` is an open source utility to sync content hosted on FifthTry.com with
 local folder. It can be used to sync content stored in github to be uploaded to 
 FifthTry, or for FifthTry content to be synced with Dropbox etc.
 
