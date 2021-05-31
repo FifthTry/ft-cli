@@ -92,8 +92,7 @@ fn handle(
         // Fallback to summary title, If it is not found in md document
         let title = content_title.unwrap_or_else(|| title(summary, &file.path(), doc_id));
         let content = file.raw_content_with_content(&title, &content);
-        let content = replace_backtick(&content);
-        content
+        replace_backtick(&content)
     }
 
     // TODO: Need to discuss with amitu
