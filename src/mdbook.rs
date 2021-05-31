@@ -361,6 +361,7 @@ fn content_with_extract_title(content: &str) -> (String, Option<String>) {
     )
 }
 
+// TODO: Need to discuss how can we improve this function and where should we keep different parts
 fn replace_backtick(content: &str) -> String {
     #[derive(PartialEq)]
     enum ParsingState {
@@ -379,8 +380,18 @@ fn replace_backtick(content: &str) -> String {
     };
 
     fn parse_lang(line: &str) -> String {
-        let line = line.replace("```", "").split(',').collect::<Vec<_>>();
-        "txt".to_string()
+        let line = line.replace("```", "");
+        let line = line.trim().split(',').collect::<Vec<_>>();
+        (match line.get(0) {
+            Some(&"rust") => "rs",
+            Some(&"console") => "sh",
+            Some(&"cmd") => "sh",
+            Some(&"toml") => "toml",
+            Some(&"java") => "java",
+            Some(&"python") => "py",
+            _ => "txt",
+        })
+        .to_string()
     }
 
     fn finalize(state: State) -> String {
