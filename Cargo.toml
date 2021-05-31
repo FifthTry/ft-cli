@@ -1,5 +1,5 @@
 [package]
-name = "ft-sync"
+name = "ft-cli"
 version = "0.1.0"
 authors = ["Deepak Angrula <deepak@fifthtry.com>"]
 edition = "2018"
@@ -8,6 +8,9 @@ description = ""
 [workspace]
 members = ["ft-api", "realm-client"]
 
+[[bin]]
+name = "ft"
+path = "src/main.rs"
 
 [dependencies]
 clap = "2.33.3"
@@ -19,7 +22,7 @@ ftd = { version = "0.1.4", features = ["fifthtry"] }
 ft-api = { path = "ft-api", version = "0.1.0" }
 chrono-tz = "0.5"
 realm-client = { path = "realm-client", version = "0.1.0" }
-mdbook = { git = "https://github.com/fifthtry/mdBook", version = "0.4.8", branch="fifthtry"}
+mdbook = { git = "https://github.com/fifthtry/mdBook", version = "0.4.8", branch = "fifthtry" }
 # mdbook = {path = "../mdBook"}
 
 [dependencies.chrono]

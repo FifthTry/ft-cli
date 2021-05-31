@@ -1,5 +1,5 @@
 fn main() {
-    let cmd = clap::App::new(env!("CARGO_PKG_NAME"))
+    let cmd = clap::App::new("ft")
         .author(env!("CARGO_PKG_AUTHORS"))
         .version(env!("CARGO_PKG_VERSION"))
         .about(env!("CARGO_PKG_DESCRIPTION"))
@@ -17,14 +17,14 @@ fn main() {
         .subcommand(clap::SubCommand::with_name("sync").about("sync files"))
         .get_matches();
 
-    let config = ft_sync::Config::from_file("ft-sync.p1").expect("failed to read config");
+    let config = ft_cli::Config::from_file("ft-sync.p1").expect("failed to read config");
 
     match cmd.subcommand() {
-        ("status", _) => match ft_sync::status(&config) {
+        ("status", _) => match ft_cli::status(&config) {
             Ok(()) => {}
             Err(e) => println!("{}", e.to_string()),
         },
-        ("sync", _args) => match ft_sync::sync(&config) {
+        ("sync", _args) => match ft_cli::sync(&config) {
             Ok(()) => {}
             Err(e) => println!("{}", e.to_string()),
         },

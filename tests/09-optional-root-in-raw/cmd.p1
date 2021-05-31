@@ -1,6 +1,6 @@
 -- fbt:
 cmd: $FBT_CWD/target/debug/ft --test sync
-skip: We will remove it later
+skip: optional root not yet supported
 
 -- stdout:
 
