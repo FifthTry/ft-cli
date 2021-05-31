@@ -3,6 +3,10 @@ name = "realm-client"
 version = "0.1.0"
 authors = ["Amit Upadhyay <upadhyay@gmail.com>"]
 edition = "2018"
+description = "realm-client: http client for realm backend"
+license = "MIT"
+repository = "https://github.com/fifthtry/ft-cli"
+homepage = "https://www.fifthtry.com/amitu/realm/"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

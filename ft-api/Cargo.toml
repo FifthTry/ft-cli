@@ -3,6 +3,10 @@ name = "ft-api"
 version = "0.1.0"
 authors = ["Abrar <abrar.nitk@gmail.com>"]
 edition = "2018"
+description = "api client to interact with fifthtry over http"
+license = "MIT"
+repository = "https://github.com/fifthtry/ft-cli"
+homepage = "https://www.fifthtry.com/fifthtry/ft-sync/"
 
 [dependencies]
 serde_json = "1.0"

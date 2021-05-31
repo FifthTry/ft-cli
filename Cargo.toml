@@ -3,7 +3,10 @@ name = "ft-cli"
 version = "0.1.0"
 authors = ["Deepak Angrula <deepak@fifthtry.com>"]
 edition = "2018"
-description = ""
+description = "ft-cli is a tool for syncing a git repo or a local folder to a FifthTry account"
+license = "MIT"
+repository = "https://github.com/fifthtry/ft-cli"
+homepage = "https://www.fifthtry.com/amitu/realm/"
 
 [workspace]
 members = ["ft-api", "realm-client"]
