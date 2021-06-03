@@ -13,6 +13,7 @@ pub fn sync(config: &crate::Config) -> crate::Result<()> {
         &crate::utils::client_version(),
     )?;
 
+    // Need to handle sync --all
     let actions = {
         let files = if status.last_synced_hash.is_empty() {
             crate::git::ls_tree(&latest_hash, config.root.as_str())?
