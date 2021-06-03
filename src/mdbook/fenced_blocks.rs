@@ -78,20 +78,19 @@ pub(crate) fn img_to_code(content: &str) -> String {
             }
 
             let dom = html_parser::Dom::parse(content)
-                .expect(format!("unable to parse: {}", line).as_str());
-            if let Some(child) = dom.children.get(0) {
-                if let html_parser::Node::Element(element) = child {
-                    if let Some(Some(src)) = element.attributes.get("src") {
-                        let cap = if let Some(Some(alt)) = element.attributes.get("alt") {
-                            alt.as_str()
-                        } else {
-                            ""
-                        };
-                        let section = ftd::p1::Section::with_name("image")
-                            .add_header("src", src)
-                            .and_caption(cap);
-                        sections.push(section.to_string());
-                    }
+                .unwrap_or_else(|_| panic!("unable to parse: {}", line));
+
+            if let Some(html_parser::Node::Element(element)) = dom.children.get(0) {
+                if let Some(Some(src)) = element.attributes.get("src") {
+                    let cap = if let Some(Some(alt)) = element.attributes.get("alt") {
+                        alt.as_str()
+                    } else {
+                        ""
+                    };
+                    let section = ftd::p1::Section::with_name("image")
+                        .add_header("src", src)
+                        .and_caption(cap);
+                    sections.push(section.to_string());
                 }
             }
         } else {
