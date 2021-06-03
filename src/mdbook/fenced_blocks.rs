@@ -60,5 +60,46 @@ pub(crate) fn fenced_to_code(content: &str) -> String {
     }
 
     state.sections.push(buffer.drain(..).collect());
-    finalize(state)
+    let content = finalize(state);
+    // Need to remove this function call from here
+    img_to_code(content.as_str())
+}
+
+pub(crate) fn img_to_code(content: &str) -> String {
+    let mut sections = vec![];
+
+    let mut buffer: String = "".to_string();
+    for line in content.lines() {
+        if line.starts_with("<img") && line.ends_with("/>") {
+            if !buffer.is_empty() {
+                let section = ftd::p1::Section::with_name("markdown")
+                    .and_body(&buffer.drain(..).collect::<String>());
+                sections.push(section.to_string())
+            }
+
+            let dom = html_parser::Dom::parse(content)
+                .expect(format!("unable to parse: {}", line).as_str());
+            if let Some(child) = dom.children.get(0) {
+                if let html_parser::Node::Element(element) = child {
+                    if let Some(Some(src)) = element.attributes.get("src") {
+                        let cap = if let Some(Some(alt)) = element.attributes.get("alt") {
+                            alt.as_str()
+                        } else {
+                            ""
+                        };
+                        let section = ftd::p1::Section::with_name("image")
+                            .add_header("src", src)
+                            .and_caption(cap);
+                        sections.push(section.to_string());
+                    }
+                }
+            }
+        } else {
+            buffer.push_str(line);
+            buffer.push('\n');
+        }
+    }
+
+    sections.push(buffer.drain(..).collect());
+    sections.join("\n")
 }

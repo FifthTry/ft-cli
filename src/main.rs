@@ -45,9 +45,7 @@ fn main() {
                 false
             };
             match ft_cli::sync(&config, re_sync) {
-                Ok(()) => {
-                    println!("{:?}", args);
-                }
+                Ok(()) => {}
                 Err(e) => println!("{}", e.to_string()),
             }
         }
