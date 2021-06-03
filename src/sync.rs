@@ -1,4 +1,4 @@
-pub fn sync(config: &crate::Config) -> crate::Result<()> {
+pub fn sync(config: &crate::Config, re_sync: bool) -> crate::Result<()> {
     let auth_code = match &config.auth {
         crate::Auth::AuthCode(s) => s.to_string(),
         _ => return Ok(()),
@@ -15,7 +15,7 @@ pub fn sync(config: &crate::Config) -> crate::Result<()> {
 
     // Need to handle sync --all
     let actions = {
-        let files = if status.last_synced_hash.is_empty() {
+        let files = if re_sync || status.last_synced_hash.is_empty() {
             crate::git::ls_tree(&latest_hash, config.root.as_str())?
         } else {
             crate::git::changed_files(&status.last_synced_hash, &latest_hash, config.root.as_str())?
