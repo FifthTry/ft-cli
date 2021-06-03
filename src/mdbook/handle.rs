@@ -208,6 +208,11 @@ fn to_ftd_toc(book: &mdbook::book::Book, collection_id: &str) -> ftd::toc::ToC {
         for item in items.iter() {
             match item {
                 mdbook::BookItem::Chapter(chapter) => {
+                    if let Some(name) = chapter.path.as_ref() {
+                        if name.to_string_lossy().eq("title-page.md") {
+                            continue;
+                        }
+                    }
                     let id = path_to_doc_id(
                         &match chapter.path.as_ref() {
                             Some(p) => p.to_string_lossy().to_string(),
