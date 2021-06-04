@@ -72,14 +72,12 @@ pub(crate) fn img_to_code(content: &str) -> String {
     for line in content.lines() {
         if line.starts_with("<img") && line.ends_with("/>") {
             if !buffer.is_empty() {
-                let section = ftd::p1::Section::with_name("markdown")
-                    .and_body(&buffer.drain(..).collect::<String>());
-                sections.push(section.to_string())
+                let sec = ftd::Markdown::from_body(&buffer.drain(..).collect::<String>());
+                sections.push(sec.to_p1().to_string());
             }
 
-            let dom = html_parser::Dom::parse(content)
+            let dom = html_parser::Dom::parse(line)
                 .unwrap_or_else(|_| panic!("unable to parse: {}", line));
-
             if let Some(html_parser::Node::Element(element)) = dom.children.get(0) {
                 if let Some(Some(src)) = element.attributes.get("src") {
                     let cap = if let Some(Some(alt)) = element.attributes.get("alt") {
@@ -87,10 +85,12 @@ pub(crate) fn img_to_code(content: &str) -> String {
                     } else {
                         ""
                     };
-                    let section = ftd::p1::Section::with_name("image")
-                        .add_header("src", src)
-                        .and_caption(cap);
-                    sections.push(section.to_string());
+                    let sec = ftd::Image::default()
+                        .with_src(src)
+                        .with_caption(cap)
+                        .to_p1()
+                        .to_string();
+                    sections.push(sec);
                 }
             }
         } else {
@@ -99,6 +99,9 @@ pub(crate) fn img_to_code(content: &str) -> String {
         }
     }
 
-    sections.push(buffer.drain(..).collect());
-    sections.join("\n")
+    if !buffer.is_empty() {
+        let sec = ftd::Markdown::from_body(&buffer.drain(..).collect::<String>());
+        sections.push(sec.to_p1().to_string());
+    }
+    sections.join("\n\n")
 }
