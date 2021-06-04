@@ -67,14 +67,22 @@ pub(crate) fn fenced_to_code(content: &str) -> String {
 
 pub(crate) fn img_to_code(content: &str) -> String {
     let mut sections = vec![];
-
+    let mut is_markdown = false;
     let mut buffer: String = "".to_string();
     for line in content.lines() {
         if line.starts_with("<img") && line.ends_with("/>") {
             if !buffer.is_empty() {
-                let sec = ftd::Markdown::from_body(&buffer.drain(..).collect::<String>());
-                sections.push(sec.to_p1().to_string());
+                let sec = if is_markdown {
+                    ftd::Markdown::from_body(&buffer.drain(..).collect::<String>())
+                        .to_p1()
+                        .to_string()
+                } else {
+                    buffer.drain(..).collect::<String>()
+                };
+                sections.push(sec);
             }
+
+            is_markdown = true;
 
             let dom = html_parser::Dom::parse(line)
                 .unwrap_or_else(|_| panic!("unable to parse: {}", line));
@@ -88,6 +96,7 @@ pub(crate) fn img_to_code(content: &str) -> String {
                     let sec = ftd::Image::default()
                         .with_src(src)
                         .with_caption(cap)
+                        .with_alt(cap)
                         .to_p1()
                         .to_string();
                     sections.push(sec);
@@ -100,8 +109,14 @@ pub(crate) fn img_to_code(content: &str) -> String {
     }
 
     if !buffer.is_empty() {
-        let sec = ftd::Markdown::from_body(&buffer.drain(..).collect::<String>());
-        sections.push(sec.to_p1().to_string());
+        let sec = if is_markdown {
+            ftd::Markdown::from_body(&buffer.drain(..).collect::<String>())
+                .to_p1()
+                .to_string()
+        } else {
+            buffer.drain(..).collect::<String>()
+        };
+        sections.push(sec);
     }
     sections.join("\n\n")
 }
