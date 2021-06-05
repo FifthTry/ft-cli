@@ -1,5 +1,4 @@
-// TODO: Need to discuss how can we improve this function and where should we keep different parts
-pub(crate) fn fenced_to_code(content: &str) -> String {
+pub(crate) fn fenced_to_code(content: &str, img_src: &std::path::Path) -> String {
     #[derive(PartialEq)]
     enum ParsingState {
         WaitingForBackTick,
@@ -62,10 +61,10 @@ pub(crate) fn fenced_to_code(content: &str) -> String {
     state.sections.push(buffer.drain(..).collect());
     let content = finalize(state);
     // Need to remove this function call from here
-    img_to_code(content.as_str())
+    img_to_code(content.as_str(), img_src)
 }
 
-pub(crate) fn img_to_code(content: &str) -> String {
+pub(crate) fn img_to_code(content: &str, img_src: &std::path::Path) -> String {
     let mut sections = vec![];
     let mut is_markdown = false;
     let mut buffer: String = "".to_string();
@@ -93,9 +92,11 @@ pub(crate) fn img_to_code(content: &str) -> String {
                     } else {
                         ""
                     };
+                    let src = img_src.join(src);
                     let sec = ftd::Image::default()
-                        .with_src(src)
+                        .with_src(&src.to_string_lossy())
                         .with_caption(cap)
+                        .with_width(500)
                         .with_alt(cap)
                         .to_p1()
                         .to_string();

@@ -86,3 +86,13 @@ pub fn head() -> crate::Result<String> {
         .output()?;
     Ok(String::from_utf8(output.stdout)?.trim().to_string())
 }
+
+pub fn current_branch() -> crate::Result<String> {
+    // git rev-parse --abbrev-ref HEAD
+    let output = std::process::Command::new("git")
+        .arg("rev-parse")
+        .arg("--abbrev-ref")
+        .arg("HEAD")
+        .output()?;
+    Ok(String::from_utf8(output.stdout)?.trim().to_string())
+}
