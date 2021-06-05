@@ -27,6 +27,7 @@ chrono-tz = "0.5"
 realm-client = { path = "realm-client", version = "0.1.0" }
 fifthtry-mdbook = { git = "https://github.com/fifthtry/mdBook", version = "0.4.8", branch = "fifthtry" }
 html_parser = "0.6.2"
+url = "2.2.2"
 # mdbook = {path = "../mdBook"}
 
 [dependencies.chrono]
