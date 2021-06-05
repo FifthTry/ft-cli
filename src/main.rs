@@ -15,13 +15,13 @@ fn main() {
         )
         .subcommand(clap::SubCommand::with_name("status").about("show the sync status"))
         .subcommand(
-            clap::SubCommand::with_name("sync")
-                .about("sync files")
-                .subcommand(
-                    clap::SubCommand::with_name("all")
-                        .about("re-sync all document")
-                        .help("re-sync all document"),
-                ),
+            clap::SubCommand::with_name("sync").about("sync files").arg(
+                clap::Arg::with_name("all")
+                    .long("all")
+                    .short("a")
+                    .allow_hyphen_values(true)
+                    .help("re-sync all document"),
+            ),
         )
         .get_matches();
 
@@ -34,13 +34,7 @@ fn main() {
         },
         ("sync", args) => {
             let re_sync = if let Some(args) = args {
-                match args.subcommand() {
-                    ("all", _) => true,
-                    (t, _) => {
-                        eprintln!("unknown subcommand: {}", t);
-                        false
-                    }
-                }
+                args.args.get("all").is_some()
             } else {
                 false
             };
