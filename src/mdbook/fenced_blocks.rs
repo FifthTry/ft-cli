@@ -64,10 +64,10 @@ pub(crate) fn fenced_to_code(content: &str, img_src: &std::path::Path) -> String
                 "-- code:\nlang: {}{}\n\n",
                 lang,
                 filename
+                    .take()
                     .map(|x| format!("\nfilename: {}", x))
                     .unwrap_or_else(|| "".to_string())
             );
-            filename = None;
             is_markdown = false;
         } else if line.trim().starts_with("```")
             && state.state == ParsingState::WaitingForEndBackTick
