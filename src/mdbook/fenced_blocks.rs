@@ -35,30 +35,48 @@ pub(crate) fn fenced_to_code(content: &str, img_src: &std::path::Path) -> String
     }
 
     let mut buffer: String = "".to_string();
+    let mut is_markdown = false;
     for line in content.split('\n') {
         if line.trim().starts_with("```") && state.state == ParsingState::WaitingForBackTick {
             let lang = parse_lang(line);
-            if !buffer.trim().eq("-- markdown:") {
-                state.sections.push(buffer.drain(..).collect());
-            } else {
-                buffer.drain(..);
+            if !buffer.is_empty() {
+                let content = buffer.drain(..).collect::<String>();
+                if !content.trim().is_empty() {
+                    let section = if is_markdown {
+                        ftd::Markdown::from_body(&content).to_p1().to_string()
+                    } else {
+                        content
+                    };
+                    state.sections.push(section);
+                }
             }
-
             state.state = ParsingState::WaitingForEndBackTick;
             buffer = format!("-- code:\nlang: {}\n\n", lang);
+            is_markdown = false;
         } else if line.trim().starts_with("```")
             && state.state == ParsingState::WaitingForEndBackTick
         {
             state.sections.push(buffer.drain(..).collect());
             state.state = ParsingState::WaitingForBackTick;
-            buffer = "-- markdown:\n\n".to_string();
+            is_markdown = true;
         } else {
             buffer.push_str(line);
             buffer.push('\n');
         }
     }
 
-    state.sections.push(buffer.drain(..).collect());
+    if !buffer.is_empty() {
+        let content = buffer.drain(..).collect::<String>();
+        if !content.trim().is_empty() {
+            let section = if is_markdown {
+                ftd::Markdown::from_body(&content).to_p1().to_string()
+            } else {
+                content
+            };
+            state.sections.push(section);
+        }
+    }
+
     let content = finalize(state);
     // Need to remove this function call from here
     img_to_code(content.as_str(), img_src)
