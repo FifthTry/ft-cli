@@ -36,8 +36,17 @@ pub(crate) fn fenced_to_code(content: &str, img_src: &std::path::Path) -> String
 
     let mut buffer: String = "".to_string();
     let mut is_markdown = false;
+    let mut filename = Option::<String>::None;
     for line in content.split('\n') {
-        if line.trim().starts_with("```") && state.state == ParsingState::WaitingForBackTick {
+        if line.trim().starts_with("<span class=\"filename\"") && line.trim().ends_with("</span>") {
+            let dom = html_parser::Dom::parse(line.trim()).unwrap();
+            if let Some(html_parser::Node::Element(e)) = dom.children.get(0) {
+                if let Some(html_parser::Node::Text(s)) = e.children.get(0) {
+                    filename = Some(s.to_string());
+                }
+            }
+        } else if line.trim().starts_with("```") && state.state == ParsingState::WaitingForBackTick
+        {
             let lang = parse_lang(line);
             if !buffer.is_empty() {
                 let content = buffer.drain(..).collect::<String>();
@@ -51,7 +60,14 @@ pub(crate) fn fenced_to_code(content: &str, img_src: &std::path::Path) -> String
                 }
             }
             state.state = ParsingState::WaitingForEndBackTick;
-            buffer = format!("-- code:\nlang: {}\n\n", lang);
+            buffer = format!(
+                "-- code:\nlang: {}{}\n\n",
+                lang,
+                filename
+                    .map(|x| format!("\nfilename: {}", x))
+                    .unwrap_or_else(|| "".to_string())
+            );
+            filename = None;
             is_markdown = false;
         } else if line.trim().starts_with("```")
             && state.state == ParsingState::WaitingForEndBackTick
