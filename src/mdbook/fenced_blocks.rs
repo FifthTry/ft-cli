@@ -41,8 +41,16 @@ pub(crate) fn fenced_to_code(content: &str, img_src: &std::path::Path) -> String
         if line.trim().starts_with("<span class=\"filename\"") && line.trim().ends_with("</span>") {
             let dom = html_parser::Dom::parse(line.trim()).unwrap();
             if let Some(html_parser::Node::Element(e)) = dom.children.get(0) {
-                if let Some(html_parser::Node::Text(s)) = e.children.get(0) {
-                    filename = Some(s.to_string());
+                if let Some(html_parser::Node::Text(text)) = e.children.get(0) {
+                    let text = if text.contains(':') {
+                        match text.split(':').collect::<Vec<_>>().last() {
+                            Some(s) => s.to_string(),
+                            None => text.to_string(),
+                        }
+                    } else {
+                        text.to_string()
+                    };
+                    filename = Some(text);
                 }
             }
         } else if line.trim().starts_with("```") && state.state == ParsingState::WaitingForBackTick
