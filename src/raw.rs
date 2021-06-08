@@ -3,7 +3,6 @@ const RAW_EXTENSIONS: [&str; 4] = ["txt", "md", "mdx", "rst"];
 pub fn handle_files(
     config: &crate::Config,
     files: &[crate::FileMode],
-    preserve_meta: bool,
 ) -> crate::Result<Vec<ft_api::bulk_update::Action>> {
     let mut actions = vec![];
     let tree = crate::traverse::root_tree(&std::path::PathBuf::from(&config.root))?;
@@ -14,14 +13,14 @@ pub fn handle_files(
             &file,
             config.root.as_str(),
             config.collection.as_str(),
-            preserve_meta,
+            config.preserve_meta,
         )?);
     }
 
     if files.iter().any(|v| {
         matches!(v, crate::FileMode::Created(_)) || matches!(v, crate::FileMode::Deleted(_))
     }) {
-        actions.push(self::index(&tree, config, preserve_meta)?)
+        actions.push(self::index(&tree, config)?)
     }
 
     Ok(actions)
@@ -30,7 +29,6 @@ pub fn handle_files(
 fn index(
     tree: &crate::traverse::Node,
     config: &crate::Config,
-    preserve_meta: bool,
 ) -> crate::Result<ft_api::bulk_update::Action> {
     let readme_content = if let Some(readme) = tree.readme() {
         let file = crate::FileMode::Modified(readme);
@@ -58,7 +56,7 @@ fn index(
 
     println!("Updated: {}", config.collection.as_str());
     Ok(ft_api::bulk_update::Action::Updated {
-        preserve_meta,
+        preserve_meta: config.preserve_meta,
         id: config.collection.to_string(),
         content: ftd::Document::new(&content).convert_to_string(),
     })

@@ -15,6 +15,7 @@ pub struct Config {
     pub dot_ft: bool,
     pub path: std::path::PathBuf,
     pub index_extra: Vec<ftd::Section>,
+    pub preserve_meta: bool,
 }
 
 impl Config {
@@ -83,6 +84,7 @@ impl Config {
             dot_ft: false,
             path: std::path::PathBuf::from(file_path),
             index_extra,
+            preserve_meta: ft_sync.preserve_meta,
         })
     }
 
@@ -123,6 +125,7 @@ impl Config {
             dot_ft: false,
             path: std::path::PathBuf::from(""),
             index_extra: vec![],
+            preserve_meta: true,
         }
     }
 
