@@ -87,7 +87,7 @@ impl FtSync {
                 .string_optional("preserve-meta")?
                 .map(|x| {
                     x.parse::<bool>().unwrap_or_else(|_| {
-                        panic!("preserve_meta is bool, provide `true` or `false`")
+                        panic!("preserve-meta is bool, provide `true` or `false`")
                     })
                 })
                 .unwrap_or_else(|| false),
