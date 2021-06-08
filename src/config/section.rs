@@ -84,12 +84,7 @@ impl FtSync {
             title: p1.header.string_optional("title")?,
             preserve_meta: p1
                 .header
-                .string_optional("preserve-meta")?
-                .map(|x| {
-                    x.parse::<bool>().unwrap_or_else(|_| {
-                        panic!("preserve-meta is bool, provide `true` or `false`")
-                    })
-                })
+                .bool_optional("preserve-meta")?
                 .unwrap_or_else(|| false),
         })
     }
