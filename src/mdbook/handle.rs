@@ -3,6 +3,7 @@ use fifthtry_mdbook as mdbook;
 pub fn handle_files(
     config: &crate::Config,
     files: &[crate::FileMode],
+    preserve_meta: bool,
 ) -> crate::Result<Vec<ft_api::bulk_update::Action>> {
     let (book_config, mdbook) = {
         let book_root = config.root.as_str();
@@ -56,6 +57,7 @@ pub fn handle_files(
                 &file,
                 &src_dir.to_string_lossy(),
                 config.collection.as_str(),
+                preserve_meta,
             )?);
         }
         actions
@@ -72,6 +74,7 @@ fn handle(
     file: &crate::FileMode,
     root: &str,
     collection: &str,
+    preserve_meta: bool,
 ) -> crate::Result<Vec<ft_api::bulk_update::Action>> {
     fn title(summary: &mdbook::book::Summary, file_path: &std::path::Path, id: &str) -> String {
         match file_path.file_name() {
@@ -130,6 +133,7 @@ fn handle(
             &book,
             config,
             &book_config.book.src,
+            preserve_meta,
         )?]);
     }
 
@@ -163,6 +167,7 @@ fn handle(
                     &file,
                 ),
                 id,
+                preserve_meta,
             }]
         }
         crate::types::FileMode::Modified(_) => {
@@ -178,6 +183,7 @@ fn handle(
                     &file,
                 ),
                 id,
+                preserve_meta,
             }]
         }
         crate::types::FileMode::Deleted(_) => {
@@ -191,6 +197,7 @@ fn index(
     book: &mdbook::book::Book,
     config: &crate::Config,
     src: &std::path::Path,
+    preserve_meta: bool,
 ) -> crate::Result<ft_api::bulk_update::Action> {
     let mut title = self::summary_title(summary).unwrap_or_else(|| config.collection.to_string());
 
@@ -225,6 +232,7 @@ fn index(
 
     println!("Updated: {}", config.collection.as_str());
     Ok(ft_api::bulk_update::Action::Updated {
+        preserve_meta,
         id: config.collection.to_string(),
         content: ftd::Document::new(&sections).convert_to_string(),
     })
