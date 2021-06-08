@@ -68,7 +68,7 @@ impl FtSync {
                     Some(v) => v,
                     None => {
                         return Err(ftd::p1::Error::InvalidInput {
-                            message: "invalid backend (allowed: ftd)".to_string(),
+                            message: "invalid backend (allowed: ftd, mdbook, raw)".to_string(),
                             context: b.to_string(),
                         })
                     }
