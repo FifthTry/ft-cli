@@ -86,12 +86,31 @@ impl Config {
         })
     }
 
-    pub fn from_args(
-        repo: String,
-        collection: String,
-        root: String,
-        backend: crate::Backend,
-    ) -> Config {
+    pub fn from_args(args: &clap::ArgMatches) -> Config {
+        let repo = args
+            .value_of("repo")
+            .map(|x| x.to_string())
+            .unwrap_or_else(|| panic!("repo is mandatory argument"));
+        let collection = args
+            .value_of("collection")
+            .map(|x| x.to_string())
+            .unwrap_or_else(|| panic!("collection is mandatory argument"));
+        let root = args
+            .value_of("root")
+            .map(|x| x.to_string())
+            .unwrap_or_else(|| "".to_string());
+        let backend = args
+            .value_of("backend")
+            .map(|x| x.to_string())
+            .unwrap_or_else(|| panic!("backend is mandatory argument"));
+
+        let backend = match crate::Backend::from(&backend) {
+            Some(v) => v,
+            None => {
+                panic!("invalid backend (allowed: ftd, mdbook, raw)")
+            }
+        };
+
         Config {
             ignored: vec![],
             repo,
