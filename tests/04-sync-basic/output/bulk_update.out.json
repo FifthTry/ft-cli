@@ -9,6 +9,7 @@
         {
           "content": "-- h1: Hello",
           "id": "testuser/index/foo",
+          "preserve_meta": false,
           "type": "Updated"
         }
       ],
