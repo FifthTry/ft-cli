@@ -9,16 +9,19 @@
         {
           "content": "-- h0: `testuser/index/foo.md`\n\n\n\n-- markdown:\n\n# hello world\n",
           "id": "testuser/index/foo.md",
+          "preserve_meta": false,
           "type": "Updated"
         },
         {
           "content": "-- h0: `testuser/index/bar.txt`\n\n\n\n-- code:\nlang: txt\n\nbar bar bar\n",
           "id": "testuser/index/bar.txt",
+          "preserve_meta": false,
           "type": "Added"
         },
         {
           "content": "-- h0: hello world\n\n\n\n-- markdown:\n\n# This is markdown document\n\n- Hello world document.\n- This is another line added.\n\n\n\n-- toc:\n\n- testuser/index/README.md\n  `README.md`\n- testuser/index/bar.txt\n  `bar.txt`\n- testuser/index/foo.md\n  `foo.md`\n- testuser/index/a\n  `a/`\n  - testuser/index/a/a.txt\n    `a.txt`\n  - testuser/index/a/a_file1.txt\n    `a_file1.txt`\n  - testuser/index/a/a_file2.txt\n    `a_file2.txt`\n  - testuser/index/a/b\n    `b/`\n    - testuser/index/a/b/b_file1.txt\n      `b_file1.txt`\n    - testuser/index/a/b/b_file2.txt\n      `b_file2.txt`\n    - testuser/index/a/b/c/README.md\n      `c/`\n      - testuser/index/a/b/c/README.md\n        `README.md`\n      - testuser/index/a/b/c/c_file1.txt\n        `c_file1.txt`\n      - testuser/index/a/b/c/c_file2.txt\n        `c_file2.txt`\n      - testuser/index/a/b/c/d\n        `d/`\n        - testuser/index/a/b/c/d/d_file1.txt\n          `d_file1.txt`\n        - testuser/index/a/b/c/d/d_file2.txt\n          `d_file2.txt`\n\n\n\n\n-- meta:\ngit-repo: a/b\nlang: hi\n\n--- reader:\nwho: everyone\n",
           "id": "testuser/index",
+          "preserve_meta": false,
           "type": "Updated"
         }
       ],
