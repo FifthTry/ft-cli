@@ -82,7 +82,7 @@ impl FtSync {
             repo: p1.header.string("repo")?,
             collection: p1.header.string("collection")?,
             title: p1.header.string_optional("title")?,
-            preserve_meta: p1.header.bool_optional("preserve-meta")?.unwrap_or(false),
+            preserve_meta: p1.header.bool_with_default("preserve-meta", false)?,
         })
     }
 }
