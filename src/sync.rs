@@ -22,9 +22,9 @@ pub fn sync(config: &crate::Config, re_sync: bool, preserve_meta: bool) -> crate
         };
 
         match config.backend {
-            crate::Backend::FTD => crate::ftd::handle_files(config, &files)?,
-            crate::Backend::Raw => crate::raw::handle_files(config, &files)?,
-            crate::Backend::MdBook => crate::mdbook::handle_files(config, &files)?,
+            crate::Backend::FTD => crate::ftd::handle_files(config, &files, preserve_meta)?,
+            crate::Backend::Raw => crate::raw::handle_files(config, &files, preserve_meta)?,
+            crate::Backend::MdBook => crate::mdbook::handle_files(config, &files, preserve_meta)?,
         }
     };
 

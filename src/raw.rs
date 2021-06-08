@@ -3,6 +3,7 @@ const RAW_EXTENSIONS: [&str; 4] = ["txt", "md", "mdx", "rst"];
 pub fn handle_files(
     config: &crate::Config,
     files: &[crate::FileMode],
+    preserve_meta: bool,
 ) -> crate::Result<Vec<ft_api::bulk_update::Action>> {
     let mut actions = vec![];
     let tree = crate::traverse::root_tree(&std::path::PathBuf::from(&config.root))?;
@@ -13,13 +14,14 @@ pub fn handle_files(
             &file,
             config.root.as_str(),
             config.collection.as_str(),
+            preserve_meta,
         )?);
     }
 
     if files.iter().any(|v| {
         matches!(v, crate::FileMode::Created(_)) || matches!(v, crate::FileMode::Deleted(_))
     }) {
-        actions.push(self::index(&tree, config)?)
+        actions.push(self::index(&tree, config, preserve_meta)?)
     }
 
     Ok(actions)
@@ -28,6 +30,7 @@ pub fn handle_files(
 fn index(
     tree: &crate::traverse::Node,
     config: &crate::Config,
+    preserve_meta: bool,
 ) -> crate::Result<ft_api::bulk_update::Action> {
     let readme_content = if let Some(readme) = tree.readme() {
         let file = crate::FileMode::Modified(readme);
@@ -55,6 +58,7 @@ fn index(
 
     println!("Updated: {}", config.collection.as_str());
     Ok(ft_api::bulk_update::Action::Updated {
+        preserve_meta,
         id: config.collection.to_string(),
         content: ftd::Document::new(&content).convert_to_string(),
     })
@@ -65,6 +69,7 @@ fn handle(
     file: &crate::FileMode,
     root: &str,
     collection: &str,
+    preserve_meta: bool,
 ) -> crate::Result<Vec<ft_api::bulk_update::Action>> {
     if !RAW_EXTENSIONS.contains(&file.extension().as_str()) {
         return Ok(vec![]);
@@ -81,10 +86,11 @@ fn handle(
     Ok(match file {
         crate::types::FileMode::Created(ref file_path) => {
             println!("Created: {}", id.as_str());
-            let mut actions = ancestors(tree, file_path, root, collection);
+            let mut actions = ancestors(tree, file_path, root, collection, preserve_meta);
             actions.push(ft_api::bulk_update::Action::Added {
                 content: file.raw_content(&format!("`{}`", id))?,
                 id,
+                preserve_meta,
             });
             actions
         }
@@ -94,12 +100,13 @@ fn handle(
             vec![ft_api::bulk_update::Action::Updated {
                 content: file.raw_content(&format!("`{}`", id))?,
                 id,
+                preserve_meta,
             }]
         }
 
         crate::types::FileMode::Deleted(ref file_path) => {
             println!("Deleted: {}", id.as_str());
-            let mut actions = ancestors(tree, file_path, root, collection);
+            let mut actions = ancestors(tree, file_path, root, collection, preserve_meta);
             actions.push(ft_api::bulk_update::Action::Deleted { id });
             actions
         }
@@ -111,11 +118,13 @@ fn ancestors(
     file_path: &str,
     root_dir: &str,
     collection: &str,
+    preserve_meta: bool,
 ) -> Vec<ft_api::bulk_update::Action> {
     crate::traverse::ancestors(root_tree, file_path)
         .iter()
         .filter(|x| !x.readme_exists())
         .map(|node| ft_api::bulk_update::Action::Updated {
+            preserve_meta,
             id: node
                 .document_id(root_dir, collection)
                 .to_string_lossy()
