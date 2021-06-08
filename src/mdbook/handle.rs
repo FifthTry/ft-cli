@@ -86,6 +86,8 @@ fn handle(
     fn content_with_title(
         summary: &mdbook::book::Summary,
         book: &mdbook::book::Book,
+        config: &crate::Config,
+        book_config: &mdbook::Config,
         file_name: &str,
         doc_id: &str,
         file: &crate::types::FileMode,
@@ -93,11 +95,27 @@ fn handle(
         let (content, content_title) = self::content_with_extract_title(
             &self::find_chapter_in_book(book, &file_name).expect("File content not found"),
         );
+
+        let github_repo = url::Url::parse(&config.repo)
+            .unwrap_or_else(|_| panic!("repo url is not correct in config: {}", &config.repo));
+
+        let img_src = std::path::Path::new(super::GITHUB_CONTENT)
+            .join(github_repo.path().trim_start_matches('/'))
+            .join(
+                crate::git::current_branch()
+                    .expect("Not able to fetch git current branch")
+                    .trim_start_matches('/'),
+            )
+            .join(&book_config.book.src);
+
         // Fallback to summary title, If it is not found in md document
-        crate::mdbook::fenced_blocks::fenced_to_code(&file.raw_content_with_content(
-            &content_title.unwrap_or_else(|| title(summary, &file.path(), doc_id)),
-            &content,
-        ))
+        crate::mdbook::fenced_blocks::fenced_to_code(
+            &file.raw_content_with_content(
+                &content_title.unwrap_or_else(|| title(summary, &file.path(), doc_id)),
+                &content,
+            ),
+            &img_src,
+        )
     }
 
     // If the file is not part of SUMMARY.md then ignore the file
@@ -135,14 +153,30 @@ fn handle(
         crate::types::FileMode::Created(_) => {
             println!("Created: {}", id.as_str());
             vec![ft_api::bulk_update::Action::Added {
-                content: content_with_title(summary, book, &file_name, &id, &file),
+                content: content_with_title(
+                    summary,
+                    book,
+                    config,
+                    book_config,
+                    &file_name,
+                    &id,
+                    &file,
+                ),
                 id,
             }]
         }
         crate::types::FileMode::Modified(_) => {
             println!("Updated: {}", id.as_str());
             vec![ft_api::bulk_update::Action::Updated {
-                content: content_with_title(summary, book, &file_name, &id, &file),
+                content: content_with_title(
+                    summary,
+                    book,
+                    config,
+                    book_config,
+                    &file_name,
+                    &id,
+                    &file,
+                ),
                 id,
             }]
         }
@@ -208,6 +242,11 @@ fn to_ftd_toc(book: &mdbook::book::Book, collection_id: &str) -> ftd::toc::ToC {
         for item in items.iter() {
             match item {
                 mdbook::BookItem::Chapter(chapter) => {
+                    if let Some(name) = chapter.path.as_ref() {
+                        if name.to_string_lossy().eq("title-page.md") {
+                            continue;
+                        }
+                    }
                     let id = path_to_doc_id(
                         &match chapter.path.as_ref() {
                             Some(p) => p.to_string_lossy().to_string(),

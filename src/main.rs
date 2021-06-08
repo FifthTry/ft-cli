@@ -14,7 +14,15 @@ fn main() {
                 .takes_value(false),
         )
         .subcommand(clap::SubCommand::with_name("status").about("show the sync status"))
-        .subcommand(clap::SubCommand::with_name("sync").about("sync files"))
+        .subcommand(
+            clap::SubCommand::with_name("sync").about("sync files").arg(
+                clap::Arg::with_name("all")
+                    .long("all")
+                    .short("a")
+                    .allow_hyphen_values(true)
+                    .help("re-sync all document"),
+            ),
+        )
         .get_matches();
 
     let config = ft_cli::Config::from_file("ft-sync.p1").expect("failed to read config");
@@ -24,10 +32,17 @@ fn main() {
             Ok(()) => {}
             Err(e) => println!("{}", e.to_string()),
         },
-        ("sync", _args) => match ft_cli::sync(&config) {
-            Ok(()) => {}
-            Err(e) => println!("{}", e.to_string()),
-        },
+        ("sync", args) => {
+            let re_sync = if let Some(args) = args {
+                args.args.get("all").is_some()
+            } else {
+                false
+            };
+            match ft_cli::sync(&config, re_sync) {
+                Ok(()) => {}
+                Err(e) => println!("{}", e.to_string()),
+            }
+        }
         (_, _) => todo!("impossible!"),
     };
 }
