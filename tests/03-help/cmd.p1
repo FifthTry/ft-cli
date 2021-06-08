@@ -7,7 +7,7 @@ Will have to be updated every time version changes.
 
 ft 0.1.0
 Deepak Angrula <deepak@fifthtry.com>
-
+ft-cli is a tool for syncing a git repo or a local folder to a FifthTry account
 
 USAGE:
     ft [SUBCOMMAND]
