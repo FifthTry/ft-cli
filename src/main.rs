@@ -67,45 +67,19 @@ fn main() {
                 Err(e) => println!("{}", e.to_string()),
             }
         }
-        ("sync", args) => {
+        ("sync", Some(args)) => {
             let config = ft_cli::Config::from_file("ft-sync.p1").expect("failed to read config");
-            let re_sync = if let Some(args) = args {
-                args.args.get("all").is_some()
-            } else {
-                false
-            };
-            match ft_cli::sync(&config, re_sync) {
+            let re_sync = args.args.get("all").is_some();
+            match ft_cli::sync(&config, re_sync, false) {
                 Ok(()) => {}
                 Err(e) => println!("{}", e.to_string()),
             }
         }
-        ("import", args) => {
-            let args = args.unwrap_or_else(|| panic!());
-            let repo = args
-                .value_of("repo")
-                .map(|x| x.to_string())
-                .unwrap_or_else(|| panic!("repo is mandatory argument"));
-            let collection = args
-                .value_of("collection")
-                .map(|x| x.to_string())
-                .unwrap_or_else(|| panic!("collection is mandatory argument"));
-            let root = args
-                .value_of("root")
-                .map(|x| x.to_string())
-                .unwrap_or_else(|| "".to_string());
-            let backend = args
-                .value_of("backend")
-                .map(|x| x.to_string())
-                .unwrap_or_else(|| panic!("backend is mandatory argument"));
 
-            let backend = match ft_cli::Backend::from(&backend) {
-                Some(v) => v,
-                None => {
-                    panic!("invalid backend (allowed: ftd, mdbook, raw)")
-                }
-            };
-            let config = ft_cli::Config::from_args(repo, collection, root, backend);
-            match ft_cli::sync(&config, true) {
+        ("import", Some(args)) => {
+            let config = ft_cli::Config::from_args(args);
+
+            match ft_cli::import(&config, true) {
                 Ok(()) => {}
                 Err(e) => println!("{}", e.to_string()),
             }

@@ -1,4 +1,4 @@
-pub fn sync(config: &crate::Config, re_sync: bool) -> crate::Result<()> {
+pub fn sync(config: &crate::Config, re_sync: bool, preserve_meta: bool) -> crate::Result<()> {
     let auth_code = match &config.auth {
         crate::Auth::AuthCode(s) => s.to_string(),
         _ => return Ok(()),

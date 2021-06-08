@@ -3,6 +3,7 @@ pub mod error;
 mod ftd;
 pub mod git;
 mod id;
+mod import;
 mod mdbook;
 mod raw;
 pub mod status;
@@ -13,6 +14,7 @@ mod utils;
 
 pub use crate::config::Config;
 pub use error::Error;
+pub use import::import;
 pub use status::status;
 pub use sync::sync;
 pub use types::{Auth, Backend, FileMode, Result, SyncMode, User};
