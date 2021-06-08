@@ -56,6 +56,7 @@ pub struct FtSync {
     pub repo: String,
     pub collection: String,
     pub title: Option<String>,
+    pub preserve_meta: bool,
 }
 
 impl FtSync {
@@ -81,6 +82,15 @@ impl FtSync {
             repo: p1.header.string("repo")?,
             collection: p1.header.string("collection")?,
             title: p1.header.string_optional("title")?,
+            preserve_meta: p1
+                .header
+                .string_optional("preserve_meta")?
+                .map(|x| {
+                    x.parse::<bool>().unwrap_or_else(|_| {
+                        panic!("preserve_meta is bool, provide `true` or `false`")
+                    })
+                })
+                .unwrap_or_else(|| false),
         })
     }
 }

@@ -1,7 +1,6 @@
 pub fn handle_files(
     config: &crate::Config,
     files: &[crate::FileMode],
-    preserve_meta: bool,
 ) -> crate::Result<Vec<ft_api::bulk_update::Action>> {
     let mut actions = vec![];
 
@@ -10,7 +9,7 @@ pub fn handle_files(
             file,
             config.root.as_str(),
             config.collection.as_str(),
-            preserve_meta,
+            config.preserve_meta,
         )?);
     }
     Ok(actions)

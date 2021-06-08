@@ -70,7 +70,7 @@ fn main() {
         ("sync", Some(args)) => {
             let config = ft_cli::Config::from_file("ft-sync.p1").expect("failed to read config");
             let re_sync = args.args.get("all").is_some();
-            match ft_cli::sync(&config, re_sync, false) {
+            match ft_cli::sync(&config, re_sync) {
                 Ok(()) => {}
                 Err(e) => println!("{}", e.to_string()),
             }
