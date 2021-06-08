@@ -1,6 +1,7 @@
 pub mod env;
 pub mod section;
 
+#[derive(Debug)]
 pub struct Config {
     // https://www.fifthtry.com/fifthtry/ft-sync/config/
     pub ignored: Vec<String>,
@@ -83,6 +84,27 @@ impl Config {
             path: std::path::PathBuf::from(file_path),
             index_extra,
         })
+    }
+
+    pub fn from_args(
+        repo: String,
+        collection: String,
+        root: String,
+        backend: crate::Backend,
+    ) -> Config {
+        Config {
+            ignored: vec![],
+            repo,
+            collection,
+            title: None,
+            backend,
+            root,
+            mode: crate::SyncMode::LocalToRemote,
+            auth: crate::Auth::AuthCode(crate::config::env::auth_code()),
+            dot_ft: false,
+            path: std::path::PathBuf::from(""),
+            index_extra: vec![],
+        }
     }
 
     pub fn parent_dir(&self) -> std::path::PathBuf {

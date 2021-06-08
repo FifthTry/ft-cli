@@ -1,11 +1,13 @@
 pub type Result<T> = std::result::Result<T, crate::Error>;
 
+#[derive(Debug)]
 pub enum Auth {
     SignedIn(User),
     AuthCode(String),
     Anonymous,
 }
 
+#[derive(Debug)]
 pub struct User {
     pub cookie: String,
     pub username: String,
@@ -49,6 +51,7 @@ impl std::fmt::Display for Backend {
     }
 }
 
+#[derive(Debug)]
 pub enum SyncMode {
     LocalToRemote,
     RemoteToLocal,
