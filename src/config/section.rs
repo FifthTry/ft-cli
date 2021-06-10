@@ -10,7 +10,8 @@ impl Section {
         Ok(match p1.name.as_str() {
             "ft-sync" => Self::FtSync(FtSync::from_p1(p1)?),
             "ignored" => Self::Ignored(Ignored::from_p1(p1)?),
-            "index-extra" => Self::IndexExtra(IndexExtra::from_p1(p1)?),
+            "index-extra" => Self::IndexExtra(IndexExtra::from_index_extra(p1)?),
+            "meta" => Self::IndexExtra(IndexExtra::from_meta(p1)?),
             t => {
                 return Err(ftd::p1::Error::InvalidInput {
                     message: format!(
@@ -93,7 +94,7 @@ pub struct IndexExtra {
 }
 
 impl IndexExtra {
-    pub fn from_p1(p1: &ftd::p1::Section) -> ftd::p1::Result<Self> {
+    pub fn from_index_extra(p1: &ftd::p1::Section) -> ftd::p1::Result<Self> {
         Ok(Self {
             body: match p1.body.as_ref() {
                 Some(b) => ftd::Document::parse(b, "ft-sync").map_err(|e| {
@@ -109,6 +110,17 @@ impl IndexExtra {
                     })
                 }
             },
+        })
+    }
+
+    pub fn from_meta(p1: &ftd::p1::Section) -> ftd::p1::Result<Self> {
+        Ok(Self {
+            body: ftd::Document::new(&vec![ftd::Section::Meta(ftd::Meta::from_p1(p1).map_err(
+                |e| ftd::p1::Error::InvalidInput {
+                    message: "Can not parse index-extra".to_string(),
+                    context: e.to_string(),
+                },
+            )?)]),
         })
     }
 }
