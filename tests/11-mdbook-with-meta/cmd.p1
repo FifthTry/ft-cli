@@ -1,0 +1,9 @@
+-- fbt:
+cmd: $FBT_CWD/target/debug/ft --test sync
+
+-- stdout:
+
+Updated: testuser/index/foo.md
+Created: testuser/index/bar.txt
+Updated: testuser/index
+Synced successfully.
