@@ -1,7 +1,6 @@
 -- ft-sync:
 mode: local-to-remote
 backend: mdbook
-root: src
 repo: amitu/fifthtry
 collection: testuser/index
 

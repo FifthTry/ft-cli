@@ -1,10 +1,6 @@
 -- fbt:
 cmd: $FBT_CWD/target/debug/ft --test sync
-skip: We will remove it later
 
 -- stdout:
 
-Updated: testuser/index/foo.md
-Created: testuser/index/bar.txt
-Updated: testuser/index
 Synced successfully.
