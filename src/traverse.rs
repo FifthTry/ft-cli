@@ -151,7 +151,7 @@ pub fn collection_toc(node: &Node, root_dir: &str, collection_id: &str) -> Strin
             }
 
             if x.is_dir {
-                tree_to_toc_util(&x, level + 2, toc_string, root_dir, collection_id);
+                tree_to_toc_util(x, level + 2, toc_string, root_dir, collection_id);
             }
         }
     }
@@ -198,7 +198,7 @@ pub fn to_markdown(node: &Node, root_dir: &str, collection_id: &str) -> String {
                 ));
             }
             if x.is_dir {
-                tree_to_markdown_util(&x, level + 2, markdown, root_dir, collection_id);
+                tree_to_markdown_util(x, level + 2, markdown, root_dir, collection_id);
             }
         }
     }
@@ -214,7 +214,7 @@ pub fn ancestors<'a>(node: &'a Node, path: &str) -> Vec<&'a Node> {
         }
 
         for node in node.children.iter() {
-            if node.is_dir && dir_till_path_util(&node, path, dirs) {
+            if node.is_dir && dir_till_path_util(node, path, dirs) {
                 dirs.push(node);
                 return true;
             }
