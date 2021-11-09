@@ -10,7 +10,7 @@ pub fn handle_files(
     for file in files.iter() {
         actions.append(&mut self::handle(
             &tree,
-            &file,
+            file,
             config.root.as_str(),
             config.collection.as_str(),
             config.preserve_meta,

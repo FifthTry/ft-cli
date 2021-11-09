@@ -53,7 +53,7 @@ pub fn handle_files(
                 &book,
                 config,
                 &book_config,
-                &file,
+                file,
                 &src_dir.to_string_lossy(),
                 config.collection.as_str(),
             )?);
@@ -93,7 +93,7 @@ fn handle(
         file: &crate::types::FileMode,
     ) -> String {
         let (content, content_title) = self::content_with_extract_title(
-            &self::find_chapter_in_book(book, &file_name).expect("File content not found"),
+            &self::find_chapter_in_book(book, file_name).expect("File content not found"),
         );
 
         let github_repo = url::Url::parse(&config.repo)
@@ -126,8 +126,8 @@ fn handle(
 
     if file_name.eq("ft-sync.p1") || file_name.eq("SUMMARY.md") || file_name.eq("title-page.md") {
         return Ok(vec![self::index(
-            &summary,
-            &book,
+            summary,
+            book,
             config,
             &book_config.book.src,
         )?]);
@@ -160,7 +160,7 @@ fn handle(
                     book_config,
                     &file_name,
                     &id,
-                    &file,
+                    file,
                 ),
                 id,
                 preserve_meta: config.preserve_meta,
@@ -176,7 +176,7 @@ fn handle(
                     book_config,
                     &file_name,
                     &id,
-                    &file,
+                    file,
                 ),
                 id,
                 preserve_meta: config.preserve_meta,
