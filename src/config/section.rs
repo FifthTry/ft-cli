@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone, serde::Serialize, serde::Deserialize)]
 pub enum Section {
     FtSync(FtSync),
     Ignored(Ignored),
@@ -25,7 +25,7 @@ impl Section {
     }
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, PartialEq, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Ignored {
     pub patterns: Vec<String>,
 }
@@ -49,7 +49,7 @@ impl Ignored {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone, serde::Serialize, serde::Deserialize)]
 pub struct FtSync {
     pub mode: String,
     pub backend: crate::Backend,
@@ -88,7 +88,7 @@ impl FtSync {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone, serde::Serialize, serde::Deserialize)]
 pub struct IndexExtra {
     pub body: ftd::Document,
 }
