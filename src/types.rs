@@ -14,7 +14,7 @@ pub struct User {
     pub name: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone, serde::Serialize, serde::Deserialize)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum Backend {
     FTD,

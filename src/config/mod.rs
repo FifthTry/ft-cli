@@ -18,6 +18,18 @@ pub struct Config {
     pub preserve_meta: bool,
 }
 
+pub struct Library {}
+
+impl ftd::p2::Library for Library {
+    fn get(&self, name: &str) -> Option<String> {
+        None
+    }
+    fn process(&self, section: &ftd::p1::Section, doc:  &ftd::p2::TDoc) -> ftd::p1::Result<ftd::Value> {
+        // This is unimplemented for now!
+        unimplemented!("process not implemented!")
+    }
+}
+
 impl Config {
     pub fn from_file(file_path: &str) -> crate::Result<Self> {
         use std::fs;
@@ -26,35 +38,36 @@ impl Config {
         Self::parse(contents.as_str(), file_path)
     }
 
+    // TODO: update this to use the new way of parsing.
     pub fn parse(content: &str, file_path: &str) -> crate::Result<Self> {
-        let p1 = ftd::p1::parse(content)?;
-        let mut ft_sync: Option<section::FtSync> = None;
-        let mut ignored: Vec<section::Ignored> = vec![];
-        let mut index_extra: Option<section::IndexExtra> = None;
-        for section in p1 {
-            let s = section::Section::from_p1(&section)?;
-            match s {
-                section::Section::FtSync(sec) => {
-                    if ft_sync.is_none() {
-                        ft_sync = Some(sec)
-                    } else {
-                        return Err(crate::Error::ConfigFileParseError {
-                            error: "Duplicate ft-sync section".to_string(),
-                        });
-                    }
-                }
-                section::Section::Ignored(sec) => ignored.push(sec),
-                section::Section::IndexExtra(sec) => index_extra = Some(sec),
+        let library = Library{};
+        let p2  = match ftd::p2::Document::without_render("config", content, &library) {
+            Ok(v) => v,
+            Err(e) => {
+                println!("failed to parse config: {:?}\n\n{}", &e, content);
+                return Err(e.into());
             }
-        }
-
-        let ft_sync = match ft_sync {
-            Some(f) => f,
-            None => {
-                return Err(crate::Error::ConfigFileParseError {
-                    error: "No FTSync section found".to_string(),
-                })
+        };
+        let mut ft_sync: section::FtSync = match p2.only_instance("config#ft-sync")? {
+            Some(p) => {
+                p
+            },
+            None => return Err(crate::Error::ConfigFileParseError {
+                error: "No FTSync section found".to_string(),
+            })
+        };
+        let mut ignored: Vec<section::Ignored> = {
+            let mut ignored = vec![];
+            for i in p2.instances::<section::Ignored>("config#ignored")?.into_iter() {
+                ignored.push(i);
             }
+            ignored
+        };
+        let mut index_extra: Option<section::IndexExtra> = match p2.only_instance("config#index-extra")? {
+            Some(p) => {
+                p
+            },
+            None => None
         };
 
         let ignored = ignored
