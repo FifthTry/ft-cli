@@ -1,0 +1,19 @@
+-- or-type Backend:
+
+--- ftd:
+ftd: caption
+
+--- raw:
+raw: caption
+
+--- mdbook:
+mdbook: caption
+
+-- record config:
+mode: string
+backend: Backend
+root: string
+repo: string
+collection: string
+title: Optional string
+preserve_meta: boolean
